@@ -1,0 +1,71 @@
+<?php
+// $Id: weblinks_blocks.install,v 1.1.2.3 2009/07/11 02:35:34 nancyw Exp $
+
+/**
+ * @file
+ * Enable display of categorized web links in blocks.
+ * Drupal 6 Version
+ */
+
+/**
+ * Implementation of hook_update_N().
+ * Delete variables for unclassified and unpublished.
+ */
+function weblinks_blocks_update_6100() {
+  $ret = array();
+
+  variable_del('weblinks_create_block_0');
+  variable_del('weblinks_block_allow_groups_0');
+  variable_del('weblinks_maxdisp_0');
+  variable_del('weblinks_collapse_0');
+  variable_del('weblinks_group_sort_0');
+  variable_del('weblinks_create_block_unpublished');
+  variable_del('weblinks_block_allow_groups_unpublished');
+  variable_del('weblinks_maxdisp_unpublished');
+  variable_del('weblinks_collapse_unpublished');
+  variable_del('weblinks_group_sort_unpublished');
+
+  $ret[] = array('success' => TRUE, 'query' => t('Block flags cleared for unclassified and unpublished.'));
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Delete variables for unclassified and unpublished.
+ */
+function weblinks_blocks_update_6101() {
+  $ret = array();
+
+  $result = db_query("SELECT name, value FROM {variable} WHERE name LIKE ('weblinks_blocks_description_%')");
+  while ($row = db_fetch_object($result)) {
+    $row->value = unserialize($row->value);
+    if ($row->value == TRUE) {
+      $new = 'body';
+    }
+    else {
+      $new = 'none';
+    }
+    variable_set($row->name, $new);
+    $ret[] = array('success' => TRUE, 'query' => t('Variable %name changed from %old to %value.', array('%name' => $row->name, '%old' => (int) $row->value, '%value' => $new)));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall.
+ */
+function weblinks_blocks_uninstall() {
+  db_query("DELETE FROM {blocks} WHERE module = 'weblinks_blocks'");
+  $result = db_query("DELETE FROM {variable} WHERE"
+    ." name LIKE ('weblinks_maxdisp_%')"
+    ." OR name LIKE ('weblinks_block_%')"
+    ." OR name LIKE ('weblinks_blocks_%')"
+    ." OR name LIKE ('weblinks_create_block_%')"
+    ." OR name LIKE ('weblinks_page_%')"
+    ." OR name LIKE ('weblinks_collapse_%')" 
+    ." OR name LIKE ('weblinks_group_sort_%')" 
+    );
+  cache_clear_all();
+}

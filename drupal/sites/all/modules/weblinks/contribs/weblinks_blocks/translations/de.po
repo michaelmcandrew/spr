@@ -1,0 +1,340 @@
+# $Id: de.po,v 1.1.2.2 2009/09/13 23:27:44 nancyw Exp $
+#
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  weblinks_blocks.module,v 1.1.2.2.2.32 2009/08/18 15:01:31 nancyw
+#  weblinks_blocks.install,v 1.1.2.3 2009/07/11 02:35:34 nancyw
+#  weblinks_blocks.info,v 1.1.2.1.2.1 2009/05/02 14:42:47 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal Weblinks V6.x-2.x\n"
+"POT-Creation-Date: 2009-09-07 20:48+0200\n"
+"PO-Revision-Date: 2009-09-07 20:55+0100\n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: weblinks_blocks.module:20
+msgid "Random"
+msgstr "Zufall"
+
+#: weblinks_blocks.module:21
+msgid "Recent"
+msgstr "Neu"
+
+#: weblinks_blocks.module:22
+msgid "Popular"
+msgstr "Beliebt"
+
+#: weblinks_blocks.module:23
+msgid "Related"
+msgstr "Verwandt"
+
+#: weblinks_blocks.module:24
+msgid "Contributors"
+msgstr "Bereitsteller"
+
+#: weblinks_blocks.module:25
+msgid "Unpublished"
+msgstr "Nicht veröffentlicht"
+
+#: weblinks_blocks.module:26
+msgid "All"
+msgstr ""
+
+#: weblinks_blocks.module:37
+msgid "Enables the display of categorized links in blocks."
+msgstr "Ermöglicht das Anzeigen kategorisierter Links in Blöcken."
+
+#: weblinks_blocks.module:145
+msgid "more&#8230;"
+msgstr "mehr&#8230;"
+
+#: weblinks_blocks.module:273
+msgid "more"
+msgstr "mehr"
+
+#: weblinks_blocks.module:457
+msgid "My Links"
+msgstr "Meine Links"
+
+#: weblinks_blocks.module:521
+msgid "Unpublished Links"
+msgstr "Unveröffentlichte Links"
+
+#: weblinks_blocks.module:538
+msgid "Web Links Contributors"
+msgstr "Internet-Links-Bereitsteller"
+
+#: weblinks_blocks.module:561;825
+msgid "No"
+msgstr "Nein"
+
+#: weblinks_blocks.module:561;825
+msgid "Yes"
+msgstr "Ja"
+
+#: weblinks_blocks.module:568
+msgid "Web Links"
+msgstr "Internet-Links"
+
+#: weblinks_blocks.module:576
+msgid "Maximum users to display"
+msgstr "Maximal angezeigte Benutzer"
+
+#: weblinks_blocks.module:579
+msgid "The number of users to show in this block."
+msgstr "Die Anzahl Benutzer, die in diesem Block angezeigt werden soll."
+
+#: weblinks_blocks.module:588
+msgid "Maximum weblinks to display"
+msgstr "Maximum anzuzeigender Internet-Links"
+
+#: weblinks_blocks.module:591
+msgid "The number of links to show in each group in this block."
+msgstr "Anzahl anzuzeigender Links in jeder Gruppe dieses Blocks"
+
+#: weblinks_blocks.module:591
+msgid "The number of links to show in this block."
+msgstr "Die Anzahl von Links, die in diesem Block angezeigt werden soll."
+
+#: weblinks_blocks.module:601
+msgid "\"More...\" link"
+msgstr "Link „Mehr...“?"
+
+#: weblinks_blocks.module:603
+msgid "If there are more links than the limit above, do you want a \"more...\" link?"
+msgstr "Soll ein Link „Mehr...“ angezeigt werden, wenn es mehr Gruppen gibt als oben angegeben?"
+
+#: weblinks_blocks.module:613
+msgid "Show click count"
+msgstr "Aufruf-Zähler anzeigen"
+
+#: weblinks_blocks.module:615
+msgid "If this is selected, the number of times the link has been clicked will be shown."
+msgstr "Wenn dies ausgewählt wird, wird angezeigt wie oft der Link angeklickt wurde."
+
+#: weblinks_blocks.module:624
+msgid "Show last click date"
+msgstr "Datum des letzten Aufrufs anzeigen"
+
+#: weblinks_blocks.module:626
+msgid "If this is selected, the last date/time the link was clicked will be shown in the site short date format (\"%fmt\")."
+msgstr "Wenn dies ausgewählt wird, wird in kurzen Datumsformat der Website („%fmt“) angezeigt, wann der Link zuletzt angeklickt wurde."
+
+#: weblinks_blocks.module:637
+msgid "No description"
+msgstr "Keine Beschreibung"
+
+#: weblinks_blocks.module:638
+msgid "Teaser length"
+msgstr "Anrisstext-Länge"
+
+#: weblinks_blocks.module:639
+msgid "Full length"
+msgstr "Volle Länge"
+
+#: weblinks_blocks.module:644
+msgid "Show description"
+msgstr "Beschreibung anzeigen"
+
+#: weblinks_blocks.module:646
+msgid "If checked, the link's description will be shown."
+msgstr "Wenn aktiviert, wird die Beschreibung des Links angezeigt."
+
+#: weblinks_blocks.module:654
+msgid "Show image"
+msgstr "Bild anzeigen"
+
+#: weblinks_blocks.module:656
+msgid "If checked, the link's attached image will be shown."
+msgstr "Wenn aktiviert, wird das dem Link angehängte Bild angezeigt."
+
+#: weblinks_blocks.module:669
+msgid "Don't show block"
+msgstr "Block nicht anzeigen"
+
+#: weblinks_blocks.module:670
+msgid "Show block without current link"
+msgstr "Block ohne aktuellen Link anzeigen"
+
+#: weblinks_blocks.module:671
+msgid "Show block with current link highlighted"
+msgstr "Block mit hervorgehobenem aktuellen Link anzeigen."
+
+#: weblinks_blocks.module:676
+msgid "Block contains related"
+msgstr ""
+
+#: weblinks_blocks.module:677
+msgid "What would you like to do if the currently viewed node is included in the block. \"Highlighted\" means the item will have the \"weblinks-related-current\" class added."
+msgstr "Was soll passieren, wenn der aktuell aufgerufene Beitrag im Block integriert ist. „Hervorgehoben“ bedeutet, dass dem Element die Klasse „weblinks-related-current“ hinzugefügt wird."
+
+#: weblinks_blocks.module:685
+msgid "URL"
+msgstr "URL"
+
+#: weblinks_blocks.module:685
+msgid "node"
+msgstr "Beitrag"
+
+#: weblinks_blocks.module:687
+msgid "click tracking"
+msgstr "Klick-Verfolgung aktivieren"
+
+#: weblinks_blocks.module:692
+msgid "Links lead to URL or Web Link node"
+msgstr "Links führen zur URL oder zum Beitrag des Internet-Links"
+
+#: weblinks_blocks.module:694
+msgid "Most people will want to leave this as URL. Specifying \"node\" makes it easier to edit the links, but requires an additional click to follow the link."
+msgstr "Die meisten werden dies auf URL lassen. „Beitrag“ macht es einfacher, die Links zu bearbeiten, erfordert aber einen weiteren Mausklick, um dem Link zu folgen."
+
+#: weblinks_blocks.module:704
+msgid "List type"
+msgstr "Listen-Typ"
+
+#: weblinks_blocks.module:705
+msgid "Simple list"
+msgstr "Einfache Liste"
+
+#: weblinks_blocks.module:705
+msgid "Numbered list"
+msgstr "Numerierte Liste"
+
+#: weblinks_blocks.module:707
+msgid "This sets the way the list will be displayed."
+msgstr "Dies legt die Art der angezeigten Liste fest."
+
+#: weblinks_blocks.module:715;828
+msgid "Normal Drupal - by sticky, weight, created date."
+msgstr "Normales Drupal - nach Oben in Listen, Gewichtung, Erstelldatum."
+
+#: weblinks_blocks.module:716;829
+msgid "Legacy - by sticky, weight, title."
+msgstr "Alt - nach Oben in Listen, Gewichtung, Titel"
+
+#: weblinks_blocks.module:721
+msgid "Sort order"
+msgstr "Sortierreihenfolge"
+
+#: weblinks_blocks.module:723
+msgid "This determines how the links blocks will sort the links."
+msgstr "Dies legt fest, wie Links im Link-Block sortiert werden."
+
+#: weblinks_blocks.module:735
+msgid "Update every"
+msgstr "Aktualisieren alle"
+
+#: weblinks_blocks.module:743
+msgid "seconds"
+msgstr "Sekunden"
+
+#: weblinks_blocks.module:744
+msgid "minutes"
+msgstr "Minuten"
+
+#: weblinks_blocks.module:745
+msgid "hours"
+msgstr "Stunden"
+
+#: weblinks_blocks.module:746
+msgid "days"
+msgstr "Tage"
+
+#: weblinks_blocks.module:747
+msgid "weeks"
+msgstr "Wochen"
+
+#: weblinks_blocks.module:754
+msgid "If set, the link displayed in this block will get updated based on the interval specified (requires cron if page cache is enabled). Leave this value blank to have the link updated every time the block is viewed."
+msgstr "Wenn aktiviert, wird der in diesem Block angezeigte Link im angegebenen Intervall aktualisiert (erfordert Cron, wenn der Seitencache aktiviert ist). Wenn der Wert leergelassen wird, wird der Link jedes Mal aktualisiert, wenn der Block angezeigt wird."
+
+#: weblinks_blocks.module:827
+msgid "Default."
+msgstr "Standard"
+
+#: weblinks_blocks.module:835
+msgid "Web Links group settings"
+msgstr "Gruppen-Einstellungen für Internet-Links"
+
+#: weblinks_blocks.module:836
+msgid "These settings control the blocks and the main links group display."
+msgstr "Diese Einstellungen legen das Aussehen der Blöcke und der Haupt-Linkseite fest."
+
+#: weblinks_blocks.module:848
+msgid "Show %name"
+msgstr "%name anzeigen"
+
+#: weblinks_blocks.module:850
+msgid "Select to display this group on the main links page."
+msgstr "Aktivieren, damit diese Gruppe auf der Haupt-Linkseite angezeigt wird."
+
+#: weblinks_blocks.module:860
+msgid "Collapse by default"
+msgstr "Standardmäßig zusammenklappen"
+
+#: weblinks_blocks.module:862
+msgid "Check to collapse this group on the main links page by default."
+msgstr "Aktivieren, damit diese Gruppe auf der Haupt-Linkseite standardmäßig zusammengeklappt ist."
+
+#: weblinks_blocks.module:868
+msgid "Maximum links to display"
+msgstr "Maximale Anzahl angezeigter Links"
+
+#: weblinks_blocks.module:871
+msgid "Leave blank if you would not like to limit the number of links displayed"
+msgstr "Leer lassen, wenn die Anzahl angezeigter Links nicht begrenzt werden soll."
+
+#: weblinks_blocks.module:877
+msgid "Create block"
+msgstr "Block erstellen"
+
+#: weblinks_blocks.module:879
+msgid "Check to allow a block for this group to be created."
+msgstr "Ankreuzen, um einen Block für diese Gruppe zu erstellen."
+
+#: weblinks_blocks.module:887
+msgid "Blocks by group"
+msgstr "Blöcke nach Gruppen"
+
+#: weblinks_blocks.module:889
+msgid "Create Random, Recent, and Popular blocks for this group. Requires \"Create block\" above. Child groups will inherit this setting."
+msgstr "Erstellt einen Block Zufällig, Neueste und Beliebt für diese Gruppe. Erfordert oben „Block erstellen“. Untergeordnete Gruppen ererben diese Einstellung."
+
+#: weblinks_blocks.module:897
+msgid "Group Sort order"
+msgstr "Gruppen-Sortierreihenfolge"
+
+#: weblinks_blocks.module:899
+msgid "This determines how the blocks will sort the links."
+msgstr "Dies legt fest, wie Links in Blöcken sortiert werden."
+
+#: weblinks_blocks.install:28
+msgid "Block flags cleared for unclassified and unpublished."
+msgstr ""
+
+#: weblinks_blocks.install:50
+msgid "Variable %name changed from %old to %value."
+msgstr "Variable %name geändert von %old zu %value."
+
+#: weblinks_blocks.info:0
+msgid "Weblinks Blocks"
+msgstr "Weblinks-Blöcke"
+
+#: weblinks_blocks.info:0
+msgid "Module for adding blocks into weblinks"
+msgstr "Modul ergänzt Weblinks um Blöcke"
+
+#: weblinks_blocks.info:0
+msgid "Weblinks"
+msgstr "Internet-Links"
+

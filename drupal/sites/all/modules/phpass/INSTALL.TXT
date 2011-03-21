@@ -1,0 +1,2 @@
+Download phpass from http://www.openwall.com/phpass/ and put
+PasswordHash.php in this directory.

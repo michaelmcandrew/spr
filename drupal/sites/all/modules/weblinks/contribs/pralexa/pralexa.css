@@ -1,0 +1,11 @@
+/* $Id: pralexa.css,v 1.1.2.1 2009/07/07 01:05:30 nancyw Exp $ */
+/**
+* @file
+*   Style sheet for the Pralexa module.
+*/
+
+.weblinks-rank {
+  font-style: italic;
+  font-size: 89%;
+  margin-left: 2em;
+}

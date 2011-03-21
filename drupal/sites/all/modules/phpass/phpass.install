@@ -1,0 +1,42 @@
+<?php
+// $Id: phpass.install,v 1.1.4.1 2007/12/24 01:28:41 douggreen Exp $
+
+function phpass_schema() {
+  $schema = array();
+  $schema['user_phpass'] = array(
+    'fields' => array(
+      'uid' => array('type' => 'int', 'size' => 'normal', 'unsigned' => TRUE, 'not null' => TRUE),
+      'hash' => array('type' => 'varchar', 'length' => 60, 'default' => 'NULL'),
+    ),
+    'primary key' => array('uid'),
+    'indexes' => array('hash' => array('hash')),
+  );
+  return $schema;
+}
+
+function phpass_install() {
+  drupal_install_schema('phpass');
+}
+
+function phpass_disable() {
+  // don't allow the user to uninstall this module
+  // NOTE: this should never get called because the form_alter disables this modules selection
+  if (db_result(db_query("SELECT COUNT(*) FROM {users} WHERE pass = 'phpass'"))) {
+    drupal_set_message(t('Some users passwords have already been converted.  You can not disable this module.'), 'error');
+    drupal_goto('admin/build/modules');
+  }
+}
+
+function phpass_uninstall() {
+  drupal_uninstall_schema('phpass');
+  variable_del('user_hash_method');
+  variable_del('user_hash_strength');
+  variable_del('user_hash_portable');
+}
+
+function phpass_update_1() {
+  if ($method = variable_get('phpass_method', '')) {
+    variable_set('user_hash_method', $method);
+    variable_del('phpass_method');
+  }
+}

@@ -1,0 +1,201 @@
+# $Id: de.po,v 1.1.2.2 2009/09/13 23:27:44 nancyw Exp $
+#
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  pralexa.admin.inc,v 1.1.2.2.2.8 2009/07/08 00:42:53 nancyw
+#  pralexa.module,v 1.1.2.5.2.18 2009/07/07 01:05:30 nancyw
+#  pralexa.install,v 1.1.2.2.2.4 2009/05/20 16:53:36 nancyw
+#  pralexa.info,v 1.1.2.2 2009/02/27 21:58:27 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal Weblinks V6.x-2.x\n"
+"POT-Creation-Date: 2009-09-07 20:48+0200\n"
+"PO-Revision-Date: 2009-09-07 20:50+0100\n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: pralexa.admin.inc:13
+msgid "Yes"
+msgstr "Ja"
+
+#: pralexa.admin.inc:13
+msgid "No"
+msgstr "Nein"
+
+#: pralexa.admin.inc:18
+msgid "Link title"
+msgstr "Link-Titel"
+
+#: pralexa.admin.inc:18
+msgid "URL"
+msgstr "URL"
+
+#: pralexa.admin.inc:19
+msgid "Show title as"
+msgstr "Titel zeigen als"
+
+#: pralexa.admin.inc:21
+msgid "This option determines how the link's title will be shown in the rankings page."
+msgstr "Dies legt fest, wie der Linktitel auf der Ranking-Seite angezeigt wird."
+
+#: pralexa.admin.inc:29
+msgid "Link title to node"
+msgstr "Titel mit dem Beitrag verlinken"
+
+#: pralexa.admin.inc:31
+msgid "If this option is selected, the row title will be linked to the node."
+msgstr "Wenn diese Option ausgewählt wird, wird der Zeilen-Titel mit dem Beitrag verlinkt."
+
+#: pralexa.admin.inc:39
+msgid "Show ranking information"
+msgstr "Ranking-Informationen anzeigen"
+
+#: pralexa.admin.inc:41
+msgid "If this option is selected, the rankings will be displayed when the node is viewed."
+msgstr "Wenn diese Option ausgewählt wird, werden beim Aufruf des Beitrags die Rankings angezeigt."
+
+#: pralexa.admin.inc:48
+msgid "Rows per page"
+msgstr "Zeilen pro Seite"
+
+#: pralexa.admin.inc:51
+msgid "This sets the number of links per page that will be shown on the Pralexa page."
+msgstr "Dies legt die Anzahl von Links pro Seite fest, die auf der Pralexa-Seite angezeigt werden."
+
+#: pralexa.admin.inc:56
+msgid "Title length shown"
+msgstr "angezeigte Titel-Länge"
+
+#: pralexa.admin.inc:59
+msgid "This is the maximum length of the row title shown on the ranking page."
+msgstr "Die ist die maximale Länge des Zeilen-Titels, wie er auf der Ranking-Seite angezeigt wird."
+
+#: pralexa.admin.inc:64
+msgid "Links per cron"
+msgstr "Links pro Cron-Lauf"
+
+#: pralexa.admin.inc:67
+msgid "This sets the number of links that will be checked per Cron run. Checking too many may cause Cron to time out."
+msgstr "Dies legt die Anzahl von Links fest, die bei jedem Cron-Lauf geprüft werden. Wenn es zu viele sind, kann beim Cron-Lauf eine Auszeit verursacht werden."
+
+#: pralexa.admin.inc:74
+msgid "Cron interval"
+msgstr "Cron-Intervall"
+
+#: pralexa.admin.inc:75
+msgid "This sets the frequency of checking. If you run Cron frequently, you may wish to set this higher than your Cron frequency so that you don't overload the ranking sites. Note that those sites do not update more than once a day. The check will be run at the next scheduled Cron run after this interval expires. An interval of 0 means every cron run."
+msgstr "Dies stellt die Häufigkeit der Prüfung ein. Wenn Cron häufig läuft, muss dieser Wert möglicherweise höher als die Cron-Häufigkeit sein, damit die Website, auf die verwiesen wird, nicht überlastet wird. Zu beachten ist, dass diese Website nur einmal am Tag aktualisiert werden. Die Prüfung läuft beim nächsten Cron-Lauf nach Ablauf des Intervalls. Ein Intervall von 0 bedeutet jeder Cron-Lauf"
+
+#: pralexa.admin.inc:83
+msgid "Include \"Last checked\" in list"
+msgstr "„Zuletzt geprüft“ in die Liste aufnehmen"
+
+#: pralexa.admin.inc:85
+msgid "If this option is selected, the time since the link was last checked will be included in the display."
+msgstr "Wenn diese Option ausgewählt wird, wird die Zeit, wann der Link zum letzten Mal geprüft wurde, in die Anzeige aufgenommen."
+
+#: pralexa.module:50
+msgid "This module will update the Google Page rank and the Alexa Traffic rank at every crontab, run cron.php to get the latest statistics"
+msgstr "Dieses Module aktualisiert den Google PageRank und den Alexa TrafficRank bei jedem Cron-Lauf, cron.php kann aufgerufen werden um die neuesten Statistiken zu erhalten."
+
+#: pralexa.module:55
+msgid "Google's page ranks run from 0 to 10; higher is better. Alexa's traffic rank has no limit; lower is better."
+msgstr "Google's Pageranks gehen von 0 bis 10; höher ist besser. Alexa's Traffic Rank hat keinen Höchstwert; niedriger ist besser."
+
+#: pralexa.module:95
+msgid "Pralexa table insert failed."
+msgstr "Einfügen der Pralexa-Tabelle fehlgeschlagen."
+
+#: pralexa.module:100
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: pralexa.module:133
+msgid "Url"
+msgstr "URL"
+
+#: pralexa.module:134
+msgid "Groups"
+msgstr "Gruppen"
+
+#: pralexa.module:135
+msgid "Google Pagerank"
+msgstr ""
+
+#: pralexa.module:136
+msgid "Alexa Traffic Rank"
+msgstr ""
+
+#: pralexa.module:139
+msgid "Last Checked"
+msgstr "Zuletzt geprüft"
+
+#: pralexa.module:167
+msgid "Unclassified"
+msgstr "Nicht klassifiziert"
+
+#: pralexa.module:180
+msgid "none"
+msgstr "Keine"
+
+#: pralexa.module:188
+msgid "Never"
+msgstr "Nie"
+
+#: pralexa.module:100;211;289;31
+msgid "Pralexa"
+msgstr ""
+
+#: pralexa.module:100
+msgid "Fetched rankings on !count links."
+msgstr "Ränge von !count Links abgerufen."
+
+#: pralexa.module:211
+msgid "Bad Alexa response: @code"
+msgstr "Ungültige Antwort von Alexa: @code"
+
+#: pralexa.module:289
+msgid "Bad Google response: @code (url: @url)"
+msgstr "Ungültige Antwort von Google: @code (URL: @url)"
+
+#: pralexa.module:23
+msgid "Page rankings"
+msgstr "PageRanks"
+
+#: pralexa.module:24
+msgid "Information about Google pagerank and Alexa Rank"
+msgstr "Informationen über Google PageRank und Alexa Rank"
+
+#: pralexa.install:16
+msgid "Pralexa module installed."
+msgstr "Pralexa-Modul installiert."
+
+#: pralexa.install:19
+msgid "Pralexa table creation failed. Please \"uninstall\" the module and retry."
+msgstr "Das Erstellen der Pralexa-Tabelle ist festgeschlagen. Es wird empfohlen, das Modul zu „deinstallieren“ und es erneut zu versuchen."
+
+#: pralexa.install:116
+msgid "pralexa module uninstalled."
+msgstr "Pralexa-Modul deinstalliert."
+
+#: pralexa.info:0
+msgid "Google and Alexa Rank"
+msgstr "Google und Alexa Rank"
+
+#: pralexa.info:0
+msgid "Module for fetching Google and Alexa rankings from their database"
+msgstr "Modul zum Auslesen von Google und Alexa Rankings aus deren Datenbank"
+
+#: pralexa.info:0
+msgid "Weblinks"
+msgstr "Internet-Links"
+

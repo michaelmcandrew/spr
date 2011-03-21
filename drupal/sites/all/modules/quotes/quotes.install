@@ -1,0 +1,544 @@
+<?php
+// $Id: quotes.install,v 1.4.2.2.2.19 2009/05/11 17:10:44 nancyw Exp $
+
+/**
+ * @file
+ *   Handles installation and updates for the quotes module.
+ *
+ * @copyright Copyright (c) 2003-2007 Jim Riggs.  All rights reserved.
+ * @author Jim Riggs <drupal at jim and lissa dot com>
+ */
+
+//********************************************************************
+//* Drupal Hooks
+//********************************************************************
+
+/**
+ * Implementation of hook_schema().
+ */
+function quotes_schema() {
+  $schema = array(); 
+  $schema['quotes'] = array(
+    'module' => 'Quotes',
+    'description' => t('Extra node data.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('Node identifier.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'disp-width' => '10',
+        ),
+      'vid' => array(
+        'description' => t('Version identifier.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'disp-width' => '10',
+        ),
+      'aid' => array(
+        'description' => t('Author identifier.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'disp-width' => '10',
+        ),
+      'citation' => array(
+        'description' => t('Source of the quote.'),
+        'type' => 'text',
+        'not null' => FALSE,
+        ),
+      'promote' => array(
+        'description' => t('Status.'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,  
+        'default' => 0,
+        ),
+      ),
+    'primary key' => array('vid'),
+    'indexes' => array(
+      'quotes_nid' => array('nid'),
+      'quotes_promote' => array('promote'),
+      'quotes_aid' => array('aid'),
+      ),
+    ); 
+
+  $schema['quotes_blocks'] = array(
+    'module' => 'Quotes',
+    'description' => t('Quotes blocks data.'),
+    'fields' => array(
+      'bid' => array(
+        'description' => t('Block number'),
+        'type' => 'serial',
+        'not null' => TRUE,
+        ),
+      'block_type' => array(
+        'description' => t('Type of block'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        ),
+      'vid' => array(
+        'description' => t('Version id'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'count' => array(
+        'description' => t('Number of quotes in the block.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 1,
+        ),
+      'cron_interval' => array(
+        'description' => t('Cron frequency'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'cron_step' => array(
+        'description' => t('Cron step'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'cron_last' => array(
+        'description' => t('Last Cron run time'),
+        'type' => 'int',
+        'not null' => TRUE,
+        ),
+      'show_titles' => array(
+        'description' => t('Show titles.'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => FALSE,
+        'default' => 0,
+        'disp-width' => '6',
+        ),
+      'show_citation' => array(
+        'description' => t('Show citation.'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => FALSE,
+        'default' => 0,
+        ),
+      'max_length' => array(
+        'description' => t('Maximum length of quote in block.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+        'disp-width' => '11',
+        ),
+      'rand_freq' => array(
+        'description' => t('Display frequency for random blocks.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 100,
+        ),
+      'view_weight' => array(
+        'description' => t('Weight for the view link.'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => FALSE,
+        'default' => 1,
+        ),
+      'name' => array(
+        'description' => t('Name of this block'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        ),
+      'nid_filter' => array(
+        'description' => t('Node filter'),
+        'type' => 'text',
+        'not null' => TRUE,
+        ),
+      'aid_filter' => array(
+        'description' => t('Author filter'),
+        'type' => 'text',
+        'not null' => TRUE,
+        ),
+      'rid_filter' => array(
+        'description' => t('Role filter'),
+        'type' => 'text',
+        'not null' => TRUE,
+        ),
+      'uid_filter' => array(
+        'description' => t('User filter'),
+        'type' => 'text',
+        'not null' => TRUE,
+        ),
+      'tid_filter' => array(
+        'description' => t('Term filter'),
+        'type' => 'text',
+        'not null' => TRUE,
+        ),
+      'view_text' => array(
+        'description' => t('Text for the "view" link.'),
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        ),
+      'more_text' => array(
+        'description' => t('Text for the "more" link.'),
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        ),
+      ),
+    'primary key' => array('bid'),
+    'unique keys' => array(
+         'name' => array('name')),
+    ); 
+
+  $schema['quotes_authors'] = array(  
+    'module' => 'Quotes',
+    'description' => t('Quotes authors data.'),
+    'fields' => array(
+      'aid' => array(
+        'description' => t('Author identifier.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'disp-width' => '10',
+        ),
+      'name' => array(
+        'description' => t('Author of the quote.'),
+        'type' => 'text',
+        'not null' => TRUE,
+        ),
+      'bio' => array(
+        'description' => t("Author's biography."),
+        'type' => 'text',
+        'not null' => FALSE,
+        ),
+      ),
+    'primary key' => array('aid'),
+    'unique keys' => array(
+      'name' => array(array('name', 255)),
+      ),
+    ); 
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function quotes_install() {
+  drupal_install_schema('quotes');
+}
+
+/**
+ * Implementation of hook_update_N.
+ */
+function quotes_update_6100() {
+  // This update is provided for users upgrading from a release prior to 5.x-1.2.
+  $ret = array();
+
+  // 5.x-1.2 added 'citation'.
+  if (!db_column_exists('quotes', 'citation')) {
+  $spec = array(
+    'description' => t('Source of the quote.'),
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => FALSE,
+    );
+    db_add_field($ret, 'quotes', 'citation', $spec);
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N.
+ */
+function quotes_update_6101() {
+  // This update adds a block count column.
+  $ret = array();
+
+  // Skip this if upgrading from 5.x later than this addition.
+  if (!db_column_exists('quotes_blocks', 'count')) {
+    $spec1 = array(
+      'description' => t('Number of quotes in the block.'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 1,
+      );
+    $spec2 = array(
+      'description' => t('Show titles.'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+      );
+    db_add_field($ret, 'quotes_blocks', 'count', $spec1);
+    db_add_field($ret, 'quotes_blocks', 'show_titles', $spec2);
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N.
+ */
+function quotes_update_6102() {
+  global $db_type;
+  $items = $create = array();
+
+  // Skip this if upgrading from 5.x later than this addition.
+  if (db_table_exists('quotes_authors')) {
+    return $items;
+  }
+
+  $schema['quotes_authors'] = array(  
+    'module' => 'Quotes',
+    'description' => t('Quotes authors data.'),
+    'fields' => array(
+      'aid' => array(
+        'description' => t('Author identifier.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'disp-width' => '10',
+        ),
+      'name' => array(
+        'description' => t('Author of the quote.'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        ),
+      'bio' => array(
+        'description' => t("Author's biography."),
+        'type' => 'text',
+        'not null' => FALSE,
+        ),
+      ),
+    'primary key' => array('aid'),
+    'unique keys' => array(
+      'name' => array('name')),
+    ); 
+
+  db_create_table($items, 'quotes_authors', $schema['quotes_authors']);
+
+  // Add the aid column after the vid column.
+  db_add_column($items, 'quotes', 'aid', 'INT UNSIGNED NOT NULL AFTER vid');
+
+  $add = $items[count($items) - 1]['success'];
+  if (!$add) {
+    drupal_set_message(t('Add column "aid" failed.'), 'error');
+    return;
+  }
+
+  // Add an index for the aid.
+  db_add_index($items, 'quotes', 'quotes_aid', array('aid'));
+  $add = $items[count($items) - 1]['success'];
+  if (!$add) {
+    drupal_set_message(t('Add index for "aid" failed.'), 'error');
+    return;
+  }
+
+  // Get all the authors.
+  $result = db_query("SELECT DISTINCT(author) FROM {quotes} ORDER BY author");
+
+  while ($q = db_fetch_array($result)) {
+    $author = $q['author'];
+    // If the current author field has a mini-bio, split it off.
+    $paren = strpos($author, '(');
+    $comma = strpos($author, ',');
+    $sub = min(($paren === FALSE ? drupal_strlen($author) : $paren), ($comma === FALSE ? drupal_strlen($author) : $comma));
+    if ($sub === FALSE) {
+      $bio = NULL;
+    }
+    else {
+      $bio = trim(drupal_substr($author, $sub));
+      $author = trim(drupal_substr($author, 0, $sub));
+    }
+    // Add the row to the new table.
+    $items[] = update_sql("INSERT INTO {quotes_authors} (name, bio) VALUES ('". db_escape_string($author) ."', '". db_escape_string($bio) ."')");
+    $add = $items[count($items) - 1]['success'];
+    if ($add === FALSE) {
+      $aid = 'failed';
+      $upd = 'bypassed';
+    }
+    else {
+      $aid = db_result(db_query("SELECT LAST_INSERT_ID()"));
+      if ($aid < 1) {
+        drupal_set_message(t('Invalid aid returned: ') . $aid, 'error');
+      }
+      $query = 'UPDATE {quotes} SET aid='. $aid ." WHERE author='". db_escape_string($q['author']) ."'";
+      $items[] = update_sql($query);
+    }
+  }
+
+  db_drop_field($items, 'quotes', 'author');
+  $del = $items[count($items) - 1]['success'];
+  if (!$del) {
+    drupal_set_message(t('Drop column "author" failed.'), 'error');
+  } 
+
+  drupal_set_message(t('Update 6102 for Quotes complete.'), 'status');
+  return $items;
+}
+
+/**
+ * Implementation of hook_update_N.
+ * Change citation, author name to TEXT.
+ */
+function quotes_update_6103() {
+  $ret = array();
+
+  db_change_field($ret, 'quotes', 'citation', 'citation', array('type' => 'text', 'not null' => FALSE));
+  db_drop_index($ret, 'quotes_authors', 'name');
+  db_change_field($ret, 'quotes_authors', 'name', 'name', array('type' => 'text', 'not null' => FALSE));
+  db_add_index($ret, 'quotes_authors', 'name', array(array('name', 255)));
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N.
+ * Moving block variables to quotes_blocks table.
+ */
+function quotes_update_6104() {
+  $ret = array();
+
+  db_change_field($ret, 'quotes_blocks', 'show_titles', 'show_titles', array('type' => 'int', 'size' => 'small'));
+  db_add_field($ret, 'quotes_blocks', 'show_citation',
+    array(
+      'description' => t('Show citation.'),
+      'type' => 'int',
+      'size' => 'small',
+      'not null' => FALSE,
+      'default' => 0,
+      ));
+  db_add_field($ret, 'quotes_blocks', 'max_length',
+    array(
+        'description' => t('Maximum length of quote in block.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ));
+  db_add_field($ret, 'quotes_blocks', 'view_weight',
+    array(
+      'description' => t('Weight for the view link.'),
+      'type' => 'int',
+      'size' => 'small',
+      'not null' => FALSE,
+      'default' => 1,
+      ));
+  db_add_field($ret, 'quotes_blocks', 'more_text',
+    array(
+      'description' => t('Text for the "more" link.'),
+      'type' => 'varchar',
+      'length' => 64,
+      'not null' => FALSE,
+      ));
+  db_add_field($ret, 'quotes_blocks', 'view_text',
+    array(
+      'description' => t('Text for the "view" link.'),
+      'type' => 'varchar',
+      'length' => 64,
+      'not null' => FALSE,
+      ));
+
+  // Incorrectly set per block.
+  $max_len = variable_get('quotes_block_max_length', 0);
+  
+  // Set globally in admin page.
+  $view_text = variable_get('quotes_block_view_text', t('View'));
+  $view_weight = variable_get('quotes_block_view_weight', 1);
+  $show_citation = variable_get('quotes_block_citation', TRUE);
+
+  $ret[] = update_sql("UPDATE {quotes_blocks} SET view_text='". $view_text ."', view_weight=". $view_weight .", show_citation=". $show_citation .", max_length=". $max_len ." WHERE 1=1");
+
+  // "more" text is per block already, but in a variable.
+  $result = db_query('SELECT bid FROM {quotes_blocks}');
+  while ($block = db_fetch_array($result)) {
+    $more_text = variable_get('quotes_more_'. $block['bid'], NULL);
+    $ret[] = update_sql("UPDATE {quotes_blocks} SET more_text='". $more_text ."' WHERE bid=". $block['bid']);
+  }
+  // Don't delete variables in case the update fails.
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N.
+ * Adding author filter to quotes_blocks table.
+ */
+function quotes_update_6105() {
+  $ret = array();
+
+  if (db_column_exists('quotes_blocks', 'aid_filter')) {
+    $ret[] = array('success' => TRUE, 'query' => t('The aid_filter column already exists.'));
+    db_change_field($ret, 'quotes_blocks', 'aid_filter', 'aid_filter', array('type' => 'text', 'not null' => TRUE));
+  }
+  else {
+    db_add_field($ret, 'quotes_blocks', 'aid_filter',
+      array(
+        'description' => t('Author filter.'),
+        'type' => 'text',
+        'not null' => TRUE,
+        'initial' => 'none',    /* see http://drupal.org/node/159329 */
+        ));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N.
+ * Adding random frequency to quotes_blocks table.
+ */
+function quotes_update_6106() {
+  $ret = array();
+
+  if (db_column_exists('quotes_blocks', 'rand_freq')) {
+    $ret[] = array('success' => TRUE, 'query' => t('The rand_freq column already exists.'));
+  }
+  else {
+    db_add_field($ret, 'quotes_blocks', 'rand_freq',
+      array(
+        'description' => t('Display frequency for random blocks.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 100,
+        ));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function quotes_uninstall() {
+  variable_del('quotes_author_bio');
+  variable_del('quotes_author_link');
+  variable_del('quotes_block_citation');
+  variable_del('quotes_block_view_text');
+  variable_del('quotes_block_view_weight');
+  variable_del('quotes_leader');
+  variable_del('quotes_node_view_link');
+  variable_del('quotes_node_view_weight');
+  variable_del('quotes_per_page');
+  variable_del('quotes_show_myquotes');
+  variable_del('quotes_showlink');
+  variable_del('quotes_user_recent');
+  variable_del('quotes_block_max_length');
+  variable_del('quotes_edit_link');
+  variable_del('quotes_show_myquotes_original');
+  db_query("DELETE FROM {variable} WHERE name LIKE ('quotes_more_%')");
+
+  // Remove all Quotes nodes.
+  $result = db_query("SELECT nid FROM {node} WHERE type = 'quotes'");
+  while ($obj = db_fetch_object($result)) {
+    node_delete($obj->nid);
+  }
+  drupal_uninstall_schema('quotes');
+
+  // Delete all our blocks.
+  db_query("DELETE FROM {blocks} WHERE module='quotes'");
+  
+  // Clear the cache.
+  cache_clear_all;
+}

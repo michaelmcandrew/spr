@@ -1,0 +1,143 @@
+<?php
+// $Id: weblinks_embed.module,v 1.1.2.3 2009/08/09 16:56:02 nancyw Exp $
+
+/**
+ * @file
+ * Allows users to include links with [links-embed: title].
+ */
+
+/**
+ * Implementation of hook_filter().
+ */
+function weblinks_embed_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return weblinks_embed_list();
+
+    case 'description':
+      return weblinks_embed_description($delta);
+
+    case 'prepare':
+      return $text;
+
+    case 'process':
+      return weblinks_embed_process($delta, $format, $text);
+
+    case 'no cache':
+      return TRUE;
+//      return FALSE;
+
+    case 'settings':
+      return weblinks_embed_settings($delta, $format);
+
+    default:
+      return $text;
+  }
+}
+
+/**
+ *  Provide a list of filters we provide.
+ */
+function weblinks_embed_list() {
+  return array(0 => t('Weblinks embed'));
+}
+
+/**
+ *  Provide a description of filters we provide.
+ */
+function weblinks_embed_description($delta) {
+  switch ($delta) {
+    case 0:
+      return t('Allows users to include a link group in a node with [links-embed: <em>id | name</em>].');
+
+    default:
+      return t('Unknown filter description requested from Weblinks.');
+  }
+}
+
+/**
+ *  Process the content for filters we provide.
+ */
+function weblinks_embed_process($delta, $format, $text) {
+  if (preg_match_all("/\[links-embed?:([^=\]]+)=?([^=\]]+)?=?([^\]]*)?\]/i", $text, $match)) {
+    // Save the string we found.
+    $search = $match[0];
+
+    $replace = array();
+    $special = array(0 => 'unclassified', 'unpublished' => 'unpublished');    
+    // Process all the terms.
+    foreach ($match[1] as $key => $tid) {
+      $output = NULL;
+      $error = FALSE;
+      $tid = trim($tid);
+      if (!is_numeric($tid)) {
+        $special_tid = array_search($tid, $special);
+        if ($special_tid === FALSE) {
+          $terms = taxonomy_get_term_by_name($tid);
+          if ($terms) {
+            $tid = $terms[0]->tid;
+          }
+          else {
+            $error = TRUE;
+          }
+        }
+        else {
+          $tid = $special_tid;
+        }
+      }
+      if (!$error) {
+        $tree = weblinks_get_tree($tid);
+        $tree[$tid]->collapsible = variable_get('weblinks_embed_collapse_'. $format, variable_get('weblinks_collapsible', TRUE)) && !empty($tree[$tid]->title);
+        $output .= _weblinks_format_group($tree[$tid], $tree);
+      }
+      if (!$output) {
+        $output .= '<p>'. t('There are no weblinks in group "@id".', array('@id' => $tid)) .'</p>';
+      }
+      $replace[$key] = $output;
+    }
+    return str_replace($search, $replace, $text);
+  }
+  else {
+    return $text;
+  }
+}
+
+/**
+ *  Provide settings for filters we provide.
+ */
+function weblinks_embed_settings($delta, $format) {
+//  drupal_add_js(drupal_get_path('module', 'weblinks') .'/weblinks.admin.js');
+  drupal_add_css(drupal_get_path('module', 'weblinks') .'/weblinks.admin.css');
+  $form = array('#attributes' => array('class' => 'weblinks-settings'));
+
+  $form['link'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Weblinks embed settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    );
+
+  $form['link']['weblinks_embed_collapse_'. $format] = array(
+    '#type' => 'radios',
+    '#title' => t('Make groups collapsible'),
+    '#default_value' => variable_get('weblinks_embed_collapse_'. $format, variable_get('weblinks_collapsible', TRUE)),
+    '#description' => t('This will override the main setting for making the top-level group collapsible.'),
+    '#options' => array(1 => t('Yes'), 0 => t('No')),
+    '#prefix' => '<div class="weblinks-radios">',
+    '#suffix' => '</div>',
+    );
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_filter_tips().
+ */
+function weblinks_embed_filter_tips($delta, $format, $long = FALSE) {
+  if ($long) {
+    return t('To insert a Weblinks group into your content, you may use the pseudo-tag: [links-embed: <em>id | name</em>]. The Weblinks module will insert the appropriate links at that spot in the content.');
+  }
+  else {
+    return t('You may insert a links group with [links-embed: <em>id | name</em>].');
+  }
+}

@@ -1,0 +1,1301 @@
+<?php
+// $Id: weblinks.module,v 1.86.2.85.2.70 2009/09/20 22:33:41 nancyw Exp $
+
+/**
+ * @file
+ * Enable submission and display of categorized web links.
+ * Drupal 6 Version
+ */
+
+  if (module_exists('token')) {
+    module_load_include('inc', 'weblinks', 'token_weblinks');
+  }
+  if (!module_exists('weight')) {
+    module_load_include('inc', 'weblinks', 'weblinks.weight');
+  }
+  if (module_exists('content')) {
+    module_load_include('inc', 'weblinks', 'weblinks.cck');
+  }
+
+/**
+ * Implementation of hook_help().
+ */
+function weblinks_help($path, $args) {
+  switch ($path) {
+    case 'admin/modules#description':
+    case 'admin/help#weblinks':
+      return '<p>'. t('Enables the submission and display of categorized links to other web sites.') .'</p>';
+
+    case 'node/%':
+      $node = node_load($args[1]);
+      if ($node->type != 'weblinks') {
+        return NULL;
+      }
+      // Fall through to get css.
+
+    case 'weblinks/%':
+    case 'weblinks':
+      drupal_add_css(drupal_get_path('module', 'weblinks') .'/weblinks.css');
+      return theme('weblinks_pagedesc');
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function weblinks_perm() {
+  return module_invoke_all('weblinks_perm');
+}
+
+/**
+ * Implementation of hook_weblinks_perm().
+ */
+function weblinks_weblinks_perm() {
+  return array(
+    'access web links',
+    'create weblinks', 
+    'edit own weblinks',
+    'view my weblinks',
+    'edit group weblinks',
+    'administer weblinks',
+    'view click count',
+    );
+}
+
+/**
+ * Implementation of hook_node_info().
+ */
+function weblinks_node_info() {
+  return array(
+    'weblinks' => array(
+      'name' => t('Web Links'),
+      'description' => t('Web links are pointers to other sites or pages on the Internet.'),
+      'has_title' => TRUE,
+      'title_label' => t('Link Name'),
+      'has_body' => TRUE,
+      'body_label' => t('Link Description'),
+      'module' => 'weblinks',
+    )
+  );
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function weblinks_init() {
+  global $base_path;
+  // The menu title is not correct if the menu item has been moved to
+  // a menu other than Navigation. See http://drupal.org/node/184955.
+  if (arg(0) == 'weblinks') {
+    $active_trail = menu_set_active_trail();
+    foreach ($active_trail as $key => $item) {
+      if ($item['path'] == 'weblinks') {
+        $active_trail[$key]['title'] = _weblinks_get_menu_title();
+      }
+    }
+    menu_set_active_trail($active_trail);
+  }
+}
+
+/**
+ * Get the correct menu title.
+ * This is a helper function for hook_init and hook_view.
+ */
+function _weblinks_get_menu_title() {
+  return t(db_result(db_query("SELECT link_title FROM {menu_links} WHERE link_path = 'weblinks'")));
+}
+
+/**
+ * Implementation of hook_form().
+ * Validation of the url, if desired, is performed by the weblinks_checker module.
+ */
+function weblinks_form(&$node) {
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#maxlength' => 255,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+    );
+  }
+  if ($type->has_body) {
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+    $form['body_field']['body']['#rows'] = 5;
+    $form['body_field']['body']['#default_value'] = isset($node->body) ? $node->body : variable_get('weblinks_body_stub', '');
+    $form['body_field']['format'] = filter_form(isset($node->format) ? $node->format : variable_get('weblinks_format', FILTER_FORMAT_DEFAULT));
+  }
+
+  $form['url'] = array(
+    '#type' => 'textarea',
+    '#rows' => 2,
+    '#title' => t('URL'),
+    '#default_value' => isset($node->url) ? $node->url : variable_get('weblinks_url_stub', 'http://'),
+    '#required' => TRUE,
+    '#weight' => -4,
+  );
+
+  // If the weight module is available, skip this.
+  $form['node_weight'] = array(
+    '#type' => module_exists('weight') ? 'value' : 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => isset($node->node_weight) ? $node->node_weight : 0,
+    '#description' => t('In listings, the heavier terms (with a larger weight) will sink and the lighter terms will be positioned nearer the top.'),
+    '#access' => user_access('administer weblinks'),
+    '#required' => TRUE,
+  );
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function weblinks_access($op, $node, $account) {
+  if ($op == 'create') {
+    return user_access('create weblinks', $account);
+  }
+
+  if ($op == 'update' || $op == 'delete') {
+    if (user_access('edit own weblinks', $account) && ($account->uid == $node->uid)) {
+      return TRUE;
+    }
+    if (user_access('administer weblinks', $account)) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_term_path().
+ *  Replaces the taxonomy term path with one for Weblinks.
+ */
+function weblinks_term_path($term) {
+  return 'weblinks/'. $term->tid;
+}
+
+/**
+ * Returns the vocabulary id for weblinks navigation.
+ *
+ * @param none.
+ *
+ * @return vocid
+ *   an integer specifying the vocabulary in use.
+ */
+function _weblinks_get_vocid() {
+  $vocid = variable_get('weblinks_nav_vocabulary', '');
+  if (empty($vocid) && function_exists('taxonomy_vocabulary_load')) {
+    // Check to see if a weblinks vocabulary exists
+    $vocid = db_result(db_query("SELECT vid FROM {vocabulary} WHERE module='weblinks'"));
+    if ($vocid) {
+      // We found a vocabulary, so make sure it is associated with our content.
+      $vocabulary = (array)taxonomy_vocabulary_load($vocid);
+      $vocabulary['nodes'] = array('weblinks' => 1);
+      $status = taxonomy_save_vocabulary($vocabulary);
+    }
+    else {
+      // Didn't find one, so create vocabulary from scratch.
+      $vocabulary = array(
+        'name' => 'Web Links',
+        'multiple' => 1,
+        'required' => 0,
+        'hierarchy' => 2,
+        'relations' => 0,
+        'module' => 'weblinks',
+        'nodes' => array('weblinks' => 1),
+      );
+      $status = taxonomy_save_vocabulary($vocabulary);
+      $vocid = $vocabulary['vid'];
+    }
+    variable_set('weblinks_nav_vocabulary', $vocid);
+  }
+  return $vocid;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function weblinks_insert($node) {
+  if (!isset($node->is_converted) || !$node->is_converted) {
+    $node->last_click = NULL;
+    $node->click_count = 0;
+  }
+  weblinks_write($node);
+}
+
+/**
+ * Generic write function.
+ */
+function weblinks_write($node) {
+  $node->url = strip_tags(trim($node->url));
+  $node->urlhash = md5($node->url);
+  $node->last_status = $node->last_checked = NULL;
+  if ($node->revision || $node->is_new) {
+    drupal_write_record('weblinks', $node);
+  }
+  else {
+    drupal_write_record('weblinks', $node, array('nid', 'vid'));
+  }
+  $_REQUEST['destination'] = 'weblinks';
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function weblinks_update($node) {
+  if ($node->revision) {
+    $node->last_click = NULL;
+    $node->click_count = 0;
+  }
+  weblinks_write($node);
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function weblinks_delete(&$node) {
+  db_query('DELETE FROM {weblinks} WHERE nid = %d', $node->nid);
+  $_REQUEST['destination'] = 'weblinks';
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function weblinks_nodeapi(&$node, $op, $teaser, $page) {
+  // If it's not ours, leave it alone.
+  if ($node->type != 'weblinks') {
+    return;
+  }
+  switch ($op) {
+    case 'delete revision':
+      db_query('DELETE FROM {weblinks} WHERE vid = %d', $node->vid);
+      break;
+    case 'update index':
+      // Adds URL to the search text search.
+      $text = '<h2>'. $node->url .'</h2>';
+      $parts = parse_url($node->url);
+      $pieces = explode('.', $parts['host']);
+      if (substr($pieces[0], 0, 3) == 'www') {
+        unset($pieces[0]);
+      }
+      $j = count($pieces);
+      for ($i = 0; $i < $j; ++$i) {
+        $text .= '<h2>'. implode('.', array_slice($pieces, 0, $i + 1)) .'</h2>';
+      }
+      return $text;
+    case 'presave':
+      if (!module_exists('weight')) {
+        // Non-weighted nodes have a weight of zero.
+        if (!isset($node->node_weight)) {
+          $node->node_weight = 0;
+        }
+        // Encode weight into the sticky value for the database.
+        weblinks_weight_encode($node);
+      }
+      break;
+    case 'load':
+      if (!module_exists('weight')) {
+        weblinks_weight_decode($node);
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function weblinks_load($node) {
+  $obj = db_fetch_object(db_query('SELECT urlhash, url, last_status, last_checked, click_count, last_click, reciprocal FROM {weblinks} WHERE nid = %d AND vid=%d', $node->nid, $node->vid));
+  // This makes formatting easier.
+  $obj->none = NULL;
+  return $obj;
+}
+
+/**
+ * Implementation of hook_view().
+ * This formats a viewable link node.
+ */
+function weblinks_view(&$node, $teaser = FALSE, $page = FALSE) {
+  if ($page) {
+    // Breadcrumb navigation
+    $breadcrumb = array();
+    $breadcrumb[] = l(t('Home'), '<front>');
+
+    // See the comments in hook_init.
+    $breadcrumb[] = l(_weblinks_get_menu_title(), 'weblinks');
+
+    if (isset($node->taxonomy)) {
+      $tids = array_keys($node->taxonomy);
+      $parent_links = array();
+      foreach ($tids as $tid) {
+        if ($parents = taxonomy_get_parents_all($tid)) {
+          $parents = array_reverse($parents);
+          foreach ($parents as $p) {
+            $parent_links[] = l($p->name, 'weblinks/'. $p->tid);
+          }
+        }
+      }
+      $breadcrumb[] = implode(' | ', $parent_links);
+    }
+    drupal_set_breadcrumb($breadcrumb);
+  }
+  $node->is_teaser = $teaser;
+  $node->content['body']['#value'] = theme('weblinks_link', $node, $teaser);
+  return $node;
+}
+
+/**
+* Implementation of hook_preprocess_node().
+*/
+function weblinks_preprocess_node(&$variables) {
+  // We only do this for our content and only on the links page.
+  if ($variables['type'] == 'weblinks' && arg(0) == 'weblinks') {
+    // Set the node title destination (1 = node, 0 = site).
+    if (variable_get('weblinks_title_link', TRUE)) {
+      $variables['node_url'] = drupal_get_path_alias('node/'. $variables['nid']);
+    }
+    else {
+      $variables['node_url'] = $variables['weblinks_title_link'];
+    }
+  }
+}
+
+/**
+ * Build template variables.
+ */
+function template_preprocess_weblinks_link(&$variables) {
+  $node = $variables[0];
+  $node = node_prepare($node, $node->is_teaser);
+
+  $variables['teaser'] = $node->is_teaser;
+//  $variables['weblinks_body'] = $node->content['body']['#value'];
+
+  // Call all contribs to add to the variables.
+  $variables += module_invoke_all('weblinks_preprocess', $node);
+}
+
+/**
+ * Implementation of hook_weblinks_preprocess().
+ */
+function weblinks_weblinks_preprocess($node) {
+  global $user;
+  // Making these static means we only need to set them the first time we come here.
+  static $description, $urlnode, $admin_weblinks, $edit_group, $options, $dest, $comments, $user_link;
+  if (!isset($description)) {
+    $description = variable_get('weblinks_linkdesc', TRUE);
+    $admin_weblinks = user_access('administer weblinks');
+    $edit_group = user_access('edit group weblinks');
+    $dest = drupal_get_destination();
+    $user_link = variable_get('weblinks_user_links', FALSE);
+
+    $options = array();
+    if (variable_get('weblinks_external', TRUE)) {
+      $options['attributes']['target'] = '_blank';
+    }
+
+    if (variable_get('weblinks_nofollow', FALSE)) {
+      $options['attributes']['rel'] = 'nofollow';
+    }
+  }
+  $variables = array();
+
+  $options['attributes']['title'] = check_plain($node->title);
+
+  if (variable_get('weblinks_title_link', TRUE)) {
+    $variables['title'] = l($node->title, 'node/'. $node->nid);
+  }
+  else {
+    $variables['title'] = check_plain($node->title);
+  }
+  // If this is a full-page view (e.g. node/xxx), then disregard "description" setting.
+  if (!$node->is_teaser) {
+    $description = 'body';
+  }
+  switch ($description) {
+    case 'none':
+      $variables['weblinks_body'] = NULL;
+      break;
+    case 'teaser':
+      $variables['weblinks_body'] = $node->teaser;
+      break;
+    case 'body':
+      $variables['weblinks_body'] = $node->body;
+      break;
+  }
+  $variables['link'] = theme('weblinks_node_view', $node, $options);
+
+  if (user_access('view click count')) {
+    $variables['click_count'] = $node->click_count;
+    $node->last_click = strtotime($node->last_click);
+    $variables['last_click'] = format_date($node->last_click, 'small');
+  }
+
+  return $variables;
+}
+
+/**
+ * Implementation of hook_link().
+ */
+function weblinks_link($type, $object, $teaser = FALSE) {
+  global $base_path, $user;
+  static $users = array();
+  static $user_link, $admin;
+
+  $links = array();
+
+  // Make sure it's only our content and on a node page.
+  if ($type != 'node' || arg(0) == 'node') {
+    return $links;
+  }
+  if (isset($object->nid) && isset($object->type) && $object->type != 'weblinks') {
+    return $links;
+  }
+
+  // Check our static variables.
+  if (!isset($user_link)) {
+    $user_link = variable_get('weblinks_user_links', FALSE);
+    $admin = user_access('administer weblinks');
+  }
+
+  if ($admin) {
+    $dest = drupal_get_destination();
+    $links['edit'] = array(
+      'title' => t('Edit link'),
+      'href' => "node/{$object->nid}/edit",
+      'query' => $dest,
+      'attributes' => array('class' => 'weblinks-ops'),
+      );
+    $links['delete'] = array(
+      'title' => t('Delete link'),
+      'href' => "node/{$object->nid}/delete",
+      'query' => $dest,
+      'attributes' => array('class' => 'weblinks-ops'),
+      );
+  }
+
+  // We don't want the link if we are asking for a specific user.
+  // This way we don't see every link on the page saying "xxx's links".
+  if ($user_link && $object->uid != $user->uid && !(arg(1) == 'user' && arg(2) == $object->uid))  {
+    // Check for correct implementation of theme_username (should not return a link).
+    $name = theme('username', $object, array('plain' => TRUE));
+    if (substr($name, 0, 1) == '<') {
+      $name = $object->name;
+    }
+    $links['weblinks-user-link'] = array(
+      'title' => t("!name's links", array('!name' => $name)),
+      'href' => 'weblinks/user/'. $object->uid,
+      );
+  }
+
+  return $links;
+}
+
+function _weblinks_add() {
+  drupal_goto('node/add/weblinks');
+}
+
+function _weblinks_settings() {
+  drupal_goto('admin/settings/weblinks');
+}
+
+function _weblinks_links_page() {
+  drupal_goto('weblinks');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function weblinks_menu() {
+  $items = array();
+  // Full group listing of all weblinks categories.
+  $items['weblinks'] = array(
+    'title' => 'Web Links',
+    'page callback' => 'weblinks_page',
+    'access arguments' => array('access web links'),
+    'type' => MENU_NORMAL_ITEM,
+    ); /* */
+
+  // Main links page.
+  $items['weblinks/%'] = array(
+    'title' => 'Links page',
+    'page callback' => 'weblinks_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access web links'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -5,
+    ); /* */
+
+  // Add new link.
+  $items['weblinks/add'] = array(
+    'title' => 'Add a new link',
+    'page callback' => '_weblinks_add',
+    'access arguments' => array('create weblinks'),
+    'type' => MENU_LOCAL_TASK,
+    );
+
+  // Group operations.
+  $items['weblinks/group/add'] = array(
+    'title' => 'Add a group',
+    'page callback' => '_weblinks_group_operations',
+    'page arguments' => array(2),
+    'access callback' => 'weblinks_group_access',
+    'type' => MENU_LOCAL_TASK,
+    );
+
+  $items['weblinks/group/edit'] = array(
+    'title' => 'Edit a group',
+    'page callback' => '_weblinks_group_operations',
+    'page arguments' => array(2, 3),
+    'access callback' => 'weblinks_group_access',
+    'type' => MENU_CALLBACK,
+    );
+
+  // Admin settings for the site.
+  $items['weblinks/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Set a variety of options for web link display and categorization.',
+    'page callback' => '_weblinks_settings',
+    'access arguments' => array('administer weblinks'),
+    'type' => MENU_LOCAL_TASK,
+    );
+
+  // Links redirect.
+  $items['weblinks/goto/%'] = array(
+    'title' => 'Web Links',
+    'page callback' => 'weblinks_goto',
+    'page arguments' => array(2),
+    'access arguments' => array('access web links'),
+    'type' => MENU_CALLBACK,
+    );
+
+  // User-limited links.
+  $items['weblinks/user/%'] = array(
+    'title' => 'Web Links',
+    'page callback' => '_weblinks_user',
+    'page arguments' => array(2),
+    'access arguments' => array('access web links'),
+    'type' => MENU_CALLBACK,
+    );
+
+  // User Edit weblinks
+  $items['user/%user/weblinks'] = array(
+    'title' => 'Web Links',
+    'page callback' => 'weblinks_user_page',
+    'page arguments' => array(1),
+    'file' => 'weblinks.user.inc',
+    'access arguments' => array('view my weblinks'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    );
+
+  // Admin settings for the site.
+  $items['admin/settings/weblinks'] = array(
+    'title' => 'Web Links',
+    'description' => 'Set a variety of options for web link display and categorization.',
+    'page callback' => 'weblinks_settings_page',
+    'file' => 'weblinks.admin.inc',
+    'access arguments' => array('administer weblinks'),
+    'type' => MENU_NORMAL_ITEM,
+    );
+
+  $items['admin/settings/weblinks/general'] = array(
+    'title' => 'General',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('weblinks_admin_settings'),
+    'file' => 'weblinks.admin.inc',
+    'access arguments' => array('administer weblinks'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1,
+    );
+
+  $items['admin/settings/weblinks/links'] = array(
+    'title' => 'Links page',
+    'page callback' => '_weblinks_links_page',
+    'access arguments' => array('access web links'),
+    'file' => 'weblinks.module',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+    );
+
+  return $items;
+}
+
+/**
+ * Determine menu access for group adding/editing.
+ */
+function weblinks_group_access() {
+  return module_exists('taxonomy') && (user_access('administer weblinks') || user_access('edit group weblinks') || user_access('administer taxonomy'));
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function weblinks_cron() {
+  global $user;
+  // Let's see if we need to refresh the random block.
+  $theme = !empty($user->theme) && !empty($themes[$user->theme]->status) ? $user->theme : variable_get('theme_default', 'garland');
+}
+
+/**
+ * Make a dummy term for unclassified links.
+ *
+ * @param none.
+ * @return Pseudo term object.
+ */
+function _weblinks_unclassed() {
+  $noclass = new stdClass();
+  $noclass->tid = $noclass->vid = $noclass->depth = 0;
+  $noclass->name = variable_get('weblinks_unclassified_title', t('Unclassified'));
+  $noclass->description = variable_get('weblinks_unclassified_desc', t('These links have not been assigned a group.'));
+
+  return $noclass;
+}
+
+/**
+ * Make a dummy term for unpublished links.
+ *
+ * @param none.
+ * @return Pseudo term object.
+ */
+function _weblinks_unpublished() {
+  $noclass = new stdClass();
+  $noclass->vid = $noclass->depth = 0;
+  $noclass->tid = 'unpublished';
+  $noclass->name = variable_get('weblinks_unpublished_title', t('Unpublished'));
+  $noclass->description = variable_get('weblinks_unpublished_desc', t('These links are not published and need to be reviewed.'));
+
+  return $noclass;
+}
+
+/**
+ * Format a group's fieldset.
+ *
+ * @param $term
+ *   the term object being formatted.
+ * @param $tree
+ *   the entire array of terms (array of objects) - will be used for handling child terms.
+ * @return
+ *   The formatted HTML string.
+ */
+function _weblinks_format_group($term, $tree) {
+  static $admin;
+  if (!isset($admin)) {
+    $admin = user_access('administer weblinks') && arg(0) != 'node';
+  }
+
+  $data = $term->image . $term->desc;
+
+  if ($admin && is_numeric($term->tid) && $term->tid !== 0) {
+    $data .= '<div class="more-link">'. l(t('Edit group'), 'weblinks/group/edit/'. $term->tid, array('query' => drupal_get_destination())) .'</div>';
+  }
+
+  $data .= _weblinks_links($term);
+  foreach ($term->children as $child) {
+    $data .= _weblinks_format_group($tree[$child], $tree);
+  }
+  // Can't be collapsed if the title is empty.
+  $fieldset = array(
+    '#title' => $term->title,
+    '#collapsible' => $term->collapsible,
+    '#collapsed' => $term->collapsed,
+    '#value' => $data,
+    );
+  return '<div class="weblinkCat weblinkCat-depth-'. $term->depth .'">'. theme('fieldset', $fieldset) ."</div>\n";
+}
+
+/**
+ * Returns tree of existing containers.
+ * Replacement for taxonomy_get_tree.
+ *
+ * @param $parent
+ *   the parent term to restrict the tree to. (optional)
+ *
+ * @return an array of term objects.
+ */
+
+function weblinks_get_tree($parent = 0, $quick = FALSE) {
+  $admin = user_access('administer weblinks');
+
+  $taxo_img = module_exists('taxonomy_image');
+
+  $collapsible = variable_get('weblinks_collapsible', TRUE);
+  $collapsed = variable_get('weblinks_collapsed', FALSE);
+  $empty_text = variable_get('weblinks_empty_text', NULL);
+  $skip_empty = empty($empty_text);
+  if ($admin) {
+    $skip_empty = FALSE;
+  }
+  $show_desc = variable_get('weblinks_catdesc', TRUE);
+  $format = variable_get('weblinks_format', FILTER_FORMAT_DEFAULT);
+  $max_depth = $admin ? 99999999 : variable_get('weblinks_maxfrontdepth', 1);
+
+  $tree = array();
+  if (module_exists('taxonomy')) {
+    $tree = taxonomy_get_tree(_weblinks_get_vocid(), $parent);
+  }
+
+  // Is this a top level request?
+  if ($parent) {
+    // The existing elements have depths one too low.
+    foreach ($tree as $term) {
+      ++$term->depth;
+    }
+    // Not top level, so we need to get the requested term
+    // and stick it on the front of the tree.
+    $parent_term = taxonomy_get_term($parent);
+    array_unshift($tree, $parent_term);
+    $tree[0]->depth = 0;
+  }
+  else {
+    // Top level, so do we have unclassified links?
+    $unclassed_count = db_result(_weblinks_get_query(0, 'count'));
+    if ($admin || $unclassed_count > 0) {
+      // Add our dummy unclassified term object to the list.
+      $tree[] = _weblinks_unclassed();
+    }
+
+    // Do we want a separate unpublished group?
+    if (variable_get('weblinks_unpublished_title', t('Unpublished'))) {
+      // Do we have unpublished nodes?
+      $unpub_count = db_result(_weblinks_get_query('unpublished', 'count'));
+      if ($admin && $unpub_count > 0) {
+        $tree[] = _weblinks_unpublished();
+      }
+    }
+  }
+
+  $new_tree = array();
+  foreach ($tree as $term) {
+    $tid = $term->tid;
+    // If we are too deep already, or the admin doesn't want it, skip the whole term.
+    $show_this_term = variable_get('weblinks_page_'. $tid, TRUE);
+    if (!$admin && ($term->depth > $max_depth || !$show_this_term)) {
+      continue;
+    }
+    // If we are suppressing empty terms and there are no links in this group, skip it.
+    if ($tid === 0) {
+      $term->node_count = $unclassed_count;
+    }
+    else {
+      if ($tid == 'unpublished') {
+        $term->node_count = $unpub_count;
+      }
+      else {
+        $term->node_count = taxonomy_term_count_nodes($tid, 'weblinks');
+      }
+    }
+    if ($skip_empty && $term->node_count == 0) {
+      continue;
+    }
+
+    $new_tree[$tid] = $term;
+    $new_tree[$tid]->children = array();
+    if ($term->parents[0] != 0) {
+      foreach ($term->parents as $parent) {
+        if (isset($new_tree[$parent])) {
+          $new_tree[$parent]->children[] = $tid;
+        }
+      }
+    }
+
+    $new_tree[$tid]->limit = variable_get('weblinks_maxdisp_'. $tid, '');
+    $new_tree[$tid]->sort = variable_get('weblinks_group_sort_'. $term->tid, '');
+
+    // Collapsible is more complicated than just the setting.
+    $new_tree[$tid]->collapsible = $collapsible && ($new_tree[$tid]->depth < $max_depth)  && !empty($term->name);
+    $collapse_me = variable_get('weblinks_collapse_'. $tid, FALSE);
+    $new_tree[$tid]->collapsed = $collapsed || ($new_tree[$tid]->depth > $max_depth) || ($new_tree[$tid]->collapsible ? $collapse_me : FALSE);
+
+    if ($new_tree[$tid]->collapsible) {
+      $new_tree[$tid]->title = check_plain($term->name);
+    }
+    else {
+      if (variable_get('weblinks_linktitle', TRUE)) {
+        $new_tree[$tid]->title = l($term->name, 'weblinks/'. $tid);
+      }
+      else {
+        $new_tree[$tid]->title = check_plain($term->name);
+      }
+    }
+
+    $new_tree[$tid]->desc = NULL;
+    if ($show_desc && $new_tree[$tid]->collapsible) {
+      if ($term->description) {
+        $new_tree[$tid]->desc = '<div class="weblinks-cat-desc">'. check_markup($term->description, $format, FALSE) .'</div><!--class="weblinks-cat-desc"-->';
+      }
+    }
+    else {
+      $new_tree[$tid]->desc = '';
+    }
+    // Position first node after whatever description there was.
+    $new_tree[$tid]->desc .= '<div class="clear-block"></div>';
+    $new_tree[$tid]->image = $taxo_img ? '<div class="weblinks-cat-image">'. taxonomy_image_display($term->tid, NULL, NULL, array('wrapper' => FALSE)) .'</div>' : NULL;
+  }
+  return $new_tree;
+}
+
+/**
+ * Display the main web links page, separated by category (term).
+ *
+ * @param $tid
+ *   The term for which to display the links. If ommitted or 0, then show all.
+ *
+ * @return
+ *   HTML formatted page.
+ */
+function weblinks_page($tid = 0) {
+  global $base_path;
+
+  // Get the page description, if there is one
+//  $output = theme('weblinks_pagedesc');
+
+  // If the tid is not numeric, we came from a block "more".
+  if (!is_numeric($tid)) {
+    if (!in_array($tid, array('popular', 'recent', 'unpublished', 'random')) || !module_exists('weblinks_blocks')) {
+      drupal_set_message(t('Invalid group requested (%tid).', array('%tid' => $tid)), 'error');
+      return ' ';
+    }
+
+    $group_id = arg(2);
+    $content = _weblinks_blocks_content($tid, $tid, 0, $group_id);
+
+    $term = taxonomy_get_term($group_id);
+    $fieldset = array(
+      '#title' => check_plain(drupal_ucfirst($tid) .' '. $term->name),
+      '#collapsible' => variable_get('weblinks_collapsible', TRUE),
+      '#collapsed' => FALSE,
+      '#value' => $content,
+      );
+    $output = '<div class="weblinkCat weblinkCat-depth-0">'. theme('fieldset', $fieldset) ."</div>\n";
+    return $output;
+  }
+
+  $output = '<div class="weblinks">';
+  $tree = weblinks_get_tree($tid);
+  foreach ($tree as $term) {
+    if ($term->depth == 0) {
+      $output .= _weblinks_format_group($term, $tree);
+    }
+  }
+
+  if (!$output) {
+    $output .= '<p>'. t('There are no weblinks to display yet.') .'</p>';
+  }
+
+  return $output .'</div>';
+}
+
+/**
+ * Handle group operations.
+ */
+function _weblinks_group_operations($op, $tid = NULL) {
+  if (!weblinks_group_access()) {
+    drupal_access_denied();
+  }
+
+  // Force admin theme.
+  global $custom_theme;
+  $custom_theme = variable_get('admin_theme', '0');
+  drupal_add_css(drupal_get_path('module', 'system') .'/admin.css');
+  drupal_add_css(drupal_get_path('module', 'weblinks') .'/weblinks.admin.css');
+
+  drupal_set_title(t('Group !op', array('!op' => $op)));
+
+  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+
+  $vocabulary = taxonomy_vocabulary_load(_weblinks_get_vocid());
+  $_REQUEST['destination'] = 'weblinks';
+
+  switch ($op) {
+    case 'add':
+      return drupal_get_form('taxonomy_form_term' , $vocabulary);
+
+    case 'edit':
+      return taxonomy_admin_term_edit($tid);
+  }
+}
+
+/**
+ * Process page for specific user.
+ *
+ * @param $uid
+ *   user id to retrieve.
+ *
+ * @return the page of links submitted by the user.
+ */
+function _weblinks_user($uid) {
+  $output = $username = NULL;
+  $linkdesc = variable_get('weblinks_linkdesc', 'teaser');
+
+  // See if name instead of id.
+  if (!is_numeric($uid)) {
+    $uid = _weblinks_find_user($uid);
+  }
+
+  $result = _weblinks_get_query($uid, 'user', 0);
+  while ($row = db_fetch_object($result)) {
+    $node = node_load($row->nid);
+    if (!$username) {
+      $username = theme('username', $node);
+    }
+    $output .= node_view($node, !($linkdesc == 'body')); 
+  }
+  drupal_set_title(t('Links submitted by !name', array('!name' => $username)));
+  $breadcrumb = drupal_get_breadcrumb();
+  $breadcrumb[] = l(_weblinks_get_menu_title(), 'weblinks');
+  drupal_set_breadcrumb($breadcrumb);
+  return $output;
+}
+
+function _weblinks_find_user($name) {
+  if (function_exists('user_locate')) {
+    $account = user_locate(array('name' => $name));
+    $uid = $account->uid;
+  }
+  else {
+    $uid = db_result(db_query("SELECT uid FROM {users} WHERE name='%s'", $name));
+  }
+  return $uid;
+}
+
+/**
+ * Process redirect for URL. Count clicks and node views.
+ *
+ * @param $nid
+ *   node id that contains the link.
+ * $param $update_node_counter
+ *   bool indicating whether or not the node view counter should be updated.
+ *
+ * @return none.
+ *   the page will be redirected (302) to the desired URL.
+ */
+function weblinks_goto($nid) {
+  $node = db_fetch_object(db_query("SELECT n.nid, n.vid, l.url FROM {node} n LEFT JOIN {weblinks} l USING(nid, vid) WHERE n.nid=%d", $nid));
+  $qargs = array(date('Y-m-d H:i:s'), $nid, $node->vid);
+  db_query("UPDATE {weblinks} SET click_count=click_count+1, last_click='%s' WHERE nid=%d AND vid=%d", $qargs);
+  if (module_exists('statistics')) {
+    statistics_exit('node', $nid, '');
+  }
+  header('Location: '. $node->url);
+}
+
+/**
+ * Prepare links content.
+ *
+ * @param $term
+ *   a term object to process links for.
+ *
+ * @return
+ *   list of links for the given term (HTML).
+ */
+function _weblinks_links($term) {
+  global $user;
+  // Making these static means we only need to set them the first time we come here.
+  static $options, $empty_text, $filter_format, $linkdesc;
+  if (!isset($empty_text)) {
+    $empty_text = variable_get('weblinks_empty_text', NULL);
+    $filter_format = variable_get('weblinks_format', FILTER_FORMAT_DEFAULT);
+    $linkdesc = variable_get('weblinks_linkdesc', 'teaser');
+
+    $options = array();
+    if (variable_get('weblinks_external', TRUE)) {
+      $options['attributes']['target'] = '_blank';
+    }
+
+    if (variable_get('weblinks_nofollow', FALSE)) {
+      $options['attributes']['rel'] = 'nofollow';
+    }
+  }
+
+  $output = NULL;
+
+  $limit = isset($term->limit) ? $term->limit : 99999999;
+  $need_more = $limit < $term->node_count;
+
+  if ($term->tid === 'unpublished') {
+    $sort_order = 'recent';
+  }
+  else {
+    $sort_order = variable_get('weblinks_group_sort_'. $term->tid, variable_get('weblinks_page_sort', 'title'));
+  }
+
+  $result = _weblinks_get_query($term->tid, $sort_order, ($limit ? ++$limit : 0));
+
+  $items = array();
+  $i = 0;
+  while ($row = db_fetch_array($result)) {
+    $node = node_load($row['nid']);
+    $output .= node_view($node, !($linkdesc == 'body'), FALSE, TRUE);
+  }
+
+  // Do we need a "more" link?
+  if ($need_more) {
+    $more_link = '<div class="more-link">'. l(t('more&#8230;'), 'weblinks/'. $term->tid) .'</div>';
+  }
+  else {
+    $more_link = NULL;
+  }
+  if ($term->node_count == 0) {
+    $output = check_markup($empty_text, $filter_format, FALSE);
+  }
+
+  return decode_entities($output);
+}
+
+/**
+ * Trim the link title (either text or the url itself) to the admin-specified length.
+ */
+function _weblinks_trim($text, $length = NULL) {
+  if (!$length) {
+    // Blocks have to specify the length.
+    $length = variable_get('weblinks_trim', 0);
+  }
+
+  // Zero means no limit;
+  if ($length == 0) {
+    return $text;
+  }
+
+  // Use +3 for '...' string length.
+  if (drupal_strlen($text) > $length + 3) {
+    $text = drupal_substr($text, 0, $length) .'...';
+  }
+
+  return $text;
+}
+
+/**
+ * General database query function.
+ *
+ * @param $tid
+ *   the term id to fetch links for. May be a comma separated list.
+ * @param $sort
+ *   the order in which to sort.
+ * @param $limit
+ *   the maximum number of rows to retrieve - 0 means unlimited.
+ *
+ * @return result set from the query.
+ */
+function _weblinks_get_query($tid = 0, $sort = 'title', $limit = 0) {
+  $wheres = array();
+  if ($tid === 'unpublished') {
+    $wheres[] = 'n.status = 0';
+  }
+  else {
+    // If there is an "unpublished" group title, then don't show them in this group.
+    if (variable_get('weblinks_unpublished_title', t('Unpublished'))) {
+      $wheres[] = 'n.status = 1';
+    }
+  }
+
+  // Acts as filter on {node}.
+  $join = 'INNER JOIN {weblinks} bw ON n.vid = bw.vid ';
+
+  // In some cases we need a join on term_node; in some we don't. We decide later according to $sort.
+  if (function_exists('taxonomy_get_term') && $tid !== 'all') {
+    if ($tid === 0) {
+      $join_tn = 'LEFT JOIN {term_node} tn ON tn.nid=n.nid AND tn.vid=n.vid ';
+      $where_tn = 'tn.nid IS NULL';
+    }
+    else {
+      $join_tn = 'INNER JOIN {term_node} tn ON tn.nid=n.nid AND tn.vid=n.vid ';
+      $where_tn = 'tn.tid IN (%s)';
+    }
+  }
+  else {
+    $join_tn = '';
+    $where_tn = '1 = 1';
+  }
+
+  switch ($sort) {
+    case 'standard':
+      // Distinct is in case a node has more than one term from this group.
+      $cols = 'DISTINCT(n.nid), n.sticky, n.created';
+      $join .= $join_tn;
+      $wheres[] = $where_tn;
+      $order = 'ORDER BY n.sticky DESC, n.created ASC';
+      break;
+    case 'title':
+      $cols = 'DISTINCT(n.nid), n.title';
+      $join .= $join_tn;
+      $wheres[] = $where_tn;
+      $order .= 'ORDER BY n.sticky DESC, n.title ASC';
+      break;
+    case 'popular':
+      $cols = 'DISTINCT(n.nid), bw.click_count, bw.last_click';
+      $wheres[] = 'bw.click_count>0';
+      $order .= 'ORDER BY bw.click_count DESC, bw.last_click DESC';
+      break;
+    case 'user':
+      $cols = 'DISTINCT(n.nid), n.sticky, n.created';
+      $wheres[] = 'n.uid=%d';
+      $order .= 'ORDER BY n.sticky, n.created';
+      break;
+    case 'recent':
+      $cols = 'DISTINCT(n.nid), n.changed, n.title';
+      if ($tid != 0) {
+        $join .= $join_tn;
+        $wheres[] = $where_tn;
+      }
+      $order .= 'ORDER BY n.changed DESC, n.title ASC';
+      break;
+    case 'random':
+      $cols = 'DISTINCT(n.nid)';
+      if ($tid != 0) {
+        $join .= $join_tn;
+        $wheres[] = $where_tn;
+      }
+      $order .= 'ORDER BY RAND()';
+      break;
+    case 'count':
+      $cols = 'COUNT(n.nid)';
+      if ($tid !== 'unpublished') {
+        $join .= $join_tn;
+        $wheres[] = $where_tn;
+      }
+      $order = '';
+      break;
+  }
+ 
+  $where = $wheres ? (' WHERE '. implode(' AND ', $wheres) .' ') : NULL;
+  $query = 'SELECT ' . $cols . ' FROM {node} n ' . $join . $where .' '. $order;
+  $query = db_rewrite_sql($query);
+// $term = taxonomy_get_term($tid);
+// drupal_set_message("$tid ($term->name), $sort: ".$query);
+
+  if ($limit) {
+    $result = db_query_range($query, $tid, 0, $limit);
+  }
+  else {
+    $result = db_query($query, $tid);
+  }
+
+  return $result;
+}
+
+/**
+ * Implementation of hook_form_alter
+ * Alters the taxonomy term form to allow us to use it.
+ * @TODO - check if necessary for this user and include. ** if (weblinks_group_access()) { **
+ */
+function weblinks_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'taxonomy_form_term':
+      // Is this for our vocabulary?
+      if ($form['#vocabulary']['vid'] != _weblinks_get_vocid()) {
+        return '';
+      }
+      $form['identification']['#weight'] = -10;
+      $form['identification']['#collapsible'] = FALSE;
+      $form['identification']['name']['#title'] = t('Group name');
+      $form['identification']['name']['#description'] = t('The name of this group.');
+      $form['identification']['description']['#title'] = t('Group description');
+      $form['identification']['description']['#description'] = t('A description of the group, to be displayed on web links pages and forms.');
+
+      $form['advanced']['#weight'] = -5;
+      $form['advanced']['parent']['#description'] = t('Parent groups.');
+      $form['advanced']['weight']['#description'] = t('Groups are displayed in ascending order by weight.');
+      unset($form['advanced']['relations']);
+      unset($form['advanced']['synonyms']);
+
+      if (isset($form['taxonomy_image'])) {
+        $form['taxonomy_image']['#title'] = t('Group image');
+        $form['taxonomy_image']['new_image']['path']['#description'] = t('The image file you wish to associate this group.');
+      }
+
+      break;
+  } // End switch form_id.
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function weblinks_theme() {
+  return array(
+    // In separate files.
+    'weblinks_user_form' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'weblinks.user.inc',
+      ),
+    // In template files.
+    'weblinks_node_view' => array(
+      'template' => 'weblinks_node_view',
+      'arguments' => array('node' => NULL, 'options' => NULL, 'status' => NULL),
+      ),
+    'weblinks_link' => array(
+      'arguments' => array('node', 'teaser'),
+      'template' => 'weblinks-link',
+      ),
+    // In this module.
+    'weblinks_pagedesc' => array(
+      'arguments' => array(),
+      ),
+    'weblinks_user_link' => array(
+      'arguments' => array('acct_id'),
+      ),
+    );
+}
+
+/**
+ *  Theme the page description.
+ *
+ *  @param none
+ *
+ *  @return
+ *    String containing the formatted info.
+ */
+function theme_weblinks_pagedesc() {
+  // Get the page description, if there is one.
+  $pagedesc = variable_get('weblinks_pagedesc', NULL);
+  if (empty($pagedesc)) {
+    return NULL;
+  }
+  else {
+    return '<div class="weblinks-pagedesc">'. check_markup($pagedesc, variable_get('weblinks_format', FILTER_FORMAT_DEFAULT, FALSE)) .'</div>';
+  }
+}
+
+/**
+ *  Theme the user link.
+ *
+ *  @param $acct_id
+ *    User ID for the link to be made.
+ *
+ *  @return
+ *    String containing the formatted info.
+ */
+function theme_weblinks_user_link($acct_id) {
+  static $users = array();
+  if (!isset($users[$acct_id])) {
+    $account = user_load(array('uid' => $acct_id));
+    $users[$acct_id] = l($account->name ."'s links", 'user/'. $acct_id .'/weblinks');
+  }
+  return '<div class="weblinks-user-link">'. $users[$acct_id] .'</div>';
+}
+
+/**
+ *  Implementation of hook_views_api()
+ */
+function weblinks_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'weblinks'),
+    );
+}
+
+/**
+ *  Implementation of hook_views_handlers()
+ */
+function weblinks_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'weblinks'),
+      ),
+    'handlers' => array(
+      'views_handler_field_weblinks' => array('parent' => 'views_handler_field'),
+      ),
+    );
+}

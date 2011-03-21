@@ -1,0 +1,117 @@
+<?php
+// $Id: pralexa.install,v 1.1.2.2.2.4 2009/05/20 16:53:36 nancyw Exp $
+
+/**
+ * @file
+ * Weblinks add-on to fetch Google and Alexa pageranks.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function pralexa_install() {
+  $result = drupal_install_schema('pralexa');
+
+  if (count($result) > 0) {
+    drupal_set_message(t('Pralexa module installed.'));
+  }
+  else {
+    drupal_set_message(t('Pralexa table creation failed. Please "uninstall" the module and retry.'));
+  }
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function pralexa_schema() {
+  $schema['weblinks_pralexa'] = array(
+    'fields' => array(
+      'nid' => array(
+        'description' => 'Node identifier',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        ),
+      'last_checked' => array(
+        'description' => 'Date/time of the last ranking check',
+        'type' => 'int', 
+        'unsigned' => TRUE, 
+        'not null' => FALSE, 
+        'default' => 0,
+        ),
+      'pagerank' => array(
+        'description' => 'Google pagerank',
+        'type' => 'int',
+        'unsigned' => TRUE, 
+        'default' => 0,
+        ),
+      'alexa' => array(
+        'description' => 'Alexa traffic rank',
+        'type' => 'int',
+        'unsigned' => TRUE, 
+        'default' => 2147483647,
+        ),
+      ),
+    'primary key' => array('nid'),
+    );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Update alexa column.
+ */
+function pralexa_update_6100() {
+  $ret = array();
+  db_change_field($ret, 'weblinks_pralexa', 'alexa', 'alexa', array('type' => 'int', 'length' => 11, 'unsigned' => TRUE, 'not null' => TRUE, 'default' => '2147483647'));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Change to DATETIME.
+ */
+function pralexa_update_6101() {
+  $ret = array();
+
+  // Convert "last_checked" date and time.  
+  db_add_field($ret, 'weblinks_pralexa', 'last_checked_new', array('type' => 'datetime'));
+  $ret[] = $last = update_sql("UPDATE {weblinks_pralexa} SET last_checked_new = FROM_UNIXTIME(last_checked) WHERE last_checked <> 0");
+  if ($last['success']) {
+    db_drop_field($ret, 'weblinks_pralexa', 'last_checked');
+    db_change_field($ret, 'weblinks_pralexa', 'last_checked_new', 'last_checked', array('type' => 'datetime'));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Remove vid column.
+ */
+function pralexa_update_6102() {
+  $ret = array();
+
+  db_drop_primary_key($ret, 'weblinks_pralexa');
+  db_add_primary_key($ret, 'weblinks_pralexa', array('nid'));
+  db_drop_field($ret, 'weblinks_pralexa', 'vid');
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function pralexa_uninstall() {
+  drupal_uninstall_schema('pralexa');
+  variable_del('pralexa_cron_interval');
+  variable_del('pralexa_cron_last');
+  variable_del('pralexa_link_title');
+  variable_del('pralexa_links_per_cron');
+  variable_del('pralexa_rows_per_page');
+  variable_del('pralexa_show_title');
+  variable_del('pralexa_url_trim');
+  drupal_set_message(t('pralexa module uninstalled.'));
+}

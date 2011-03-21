@@ -1,0 +1,28 @@
+/* $Id: weblinks_blocks.css,v 1.1.2.1 2009/07/07 01:05:30 nancyw Exp $ */
+/**
+* @file
+*   Style sheet for the Weblinks_blocks module.
+*/
+
+.block-weblinks_blocks .weblinks-link {
+  margin-left: 0;
+  display: inline;
+}
+
+.block-weblinks_blocks li.weblinks, .weblinkCat li.weblinks {
+  display: block;
+}
+
+.block-weblinks_blocks {
+  font-size: 89%;
+  line-height: 100%;
+}
+
+.block-weblinks_blocks .description p {
+  margin: 0 0 0 -2em;
+  font-size: 89%;
+}
+
+.weblinks-related-current {
+  border: 1px outset #000000;
+}

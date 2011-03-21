@@ -1,0 +1,1003 @@
+# $Id: quotes.pot,v 1.1.2.10 2009/10/01 04:26:30 nancyw Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  quotes.admin.inc,v 1.1.2.14 2009/02/10 14:38:02 nancyw
+#  quotes.module,v 1.19.2.1.2.56 2009/08/05 14:58:33 nancyw
+#  quotes.user.inc,v 1.1.2.3 2009/03/09 18:24:30 nancyw
+#  quotes.node.inc,v 1.1.2.3 2009/02/09 18:18:40 nancyw
+#  quotes.views.inc,v 1.1.2.1 2009/02/19 06:05:06 nancyw
+#  quotes.info,v 1.1.2.1.2.3 2008/08/14 15:27:27 nancyw
+#  views_handler_field_quotes.inc,v 1.1.2.1 2009/02/19 06:05:06 nancyw
+#  quotes.install,v 1.4.2.2.2.19 2009/05/11 17:10:44 nancyw
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2009-10-01 00:16-0400\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: quotes.admin.inc:28
+msgid "Yes"
+msgstr ""
+
+#: quotes.admin.inc:28
+msgid "No"
+msgstr ""
+
+#: quotes.admin.inc:32
+msgid "There are currently !count published quotations."
+msgstr ""
+
+#: quotes.admin.inc:37
+msgid "Display Options"
+msgstr ""
+
+#: quotes.admin.inc:40
+msgid "These options are for general theming."
+msgstr ""
+
+#: quotes.admin.inc:45
+msgid "Quotes per page"
+msgstr ""
+
+#: quotes.admin.inc:48
+msgid "The number of quotes included on a page."
+msgstr ""
+
+#: quotes.admin.inc:54
+msgid "Author leader"
+msgstr ""
+
+#: quotes.admin.inc:56
+msgid "The text placed before the author attribution (e.g. \"&amp;mdash;\" for an em-dash or \"&amp;#8226;\" for a bullet)."
+msgstr ""
+
+#: quotes.admin.inc:64
+msgid "Make author a link"
+msgstr ""
+
+#: quotes.admin.inc:66
+msgid "If selected, the author text will be a link to show all quotes by that author."
+msgstr ""
+
+#: quotes.admin.inc:71
+msgid "Don't display"
+msgstr ""
+
+#: quotes.admin.inc:71
+msgid "Include text"
+msgstr ""
+
+#: quotes.admin.inc:71
+msgid "Include as a link"
+msgstr ""
+
+#: quotes.admin.inc:72
+msgid "Include author's bio"
+msgstr ""
+
+#: quotes.admin.inc:74
+msgid "If selected, the author's biography will be shown on the Quotes page."
+msgstr ""
+
+#: quotes.admin.inc:87
+msgid "Author, citation, and bio input format"
+msgstr ""
+
+#: quotes.admin.inc:89
+msgid "This will be used as the input format for the author, citation, and bio fields."
+msgstr ""
+
+#: quotes.admin.inc:99
+msgid "Add an \"edit\" link"
+msgstr ""
+
+#: quotes.admin.inc:101
+msgid "If selected, an \"edit\" link will be shown for each quote."
+msgstr ""
+
+#: quotes.admin.inc:106
+msgid "My Quotes links"
+msgstr ""
+
+#: quotes.admin.inc:116
+msgid "Show link to users' quotes"
+msgstr ""
+
+#: quotes.admin.inc:118
+msgid "Uncheck this to disable the link to each users' \"my quotes\" page when viewing a node."
+msgstr ""
+
+#: quotes.admin.inc:131
+msgid "Show the \"my quotes\" menu item"
+msgstr ""
+
+#: quotes.admin.inc:133
+msgid "Uncheck this to disable the \"My quotes\" menu item for all users. Note, changing this setting will <a href=\"!url\">require the menu to be rebuilt</a>."
+msgstr ""
+
+#: quotes.admin.inc:138
+msgid "User Options"
+msgstr ""
+
+#: quotes.admin.inc:141
+msgid "These options are for users."
+msgstr ""
+
+#: quotes.admin.inc:149
+msgid "Add a \"Quotes\" tab on the \"My account\" page"
+msgstr ""
+
+#: quotes.admin.inc:176
+msgid "Copy and paste this list to the receiving site"
+msgstr ""
+
+#: quotes.admin.inc:189
+msgid "Found !count quotes."
+msgstr ""
+
+#: quotes.admin.inc:192
+msgid "No quotes were found."
+msgstr ""
+
+#: quotes.admin.inc:233
+msgid "Add block"
+msgstr ""
+
+#: quotes.admin.inc:246
+msgid "You must specify a valid block name."
+msgstr ""
+
+#: quotes.admin.inc:250
+msgid "The block name %name already exists. Please choose another block name."
+msgstr ""
+
+#: quotes.admin.inc:277 quotes.module:759
+msgid "Name"
+msgstr ""
+
+#: quotes.admin.inc:277
+msgid "Filters"
+msgstr ""
+
+#: quotes.admin.inc:277 quotes.user.inc:73
+msgid "Operations"
+msgstr ""
+
+#: quotes.admin.inc:285
+msgid "node"
+msgstr ""
+
+#: quotes.admin.inc:289
+msgid "role"
+msgstr ""
+
+#: quotes.admin.inc:293 quotes.module:559;665
+msgid "user"
+msgstr ""
+
+#: quotes.admin.inc:297
+msgid "term"
+msgstr ""
+
+#: quotes.admin.inc:302 quotes.module:688;904;1570
+msgid "none"
+msgstr ""
+
+#: quotes.admin.inc:303
+msgid "configure block"
+msgstr ""
+
+#: quotes.admin.inc:304
+msgid "delete block"
+msgstr ""
+
+#: quotes.admin.inc:319
+msgid "No blocks are defined."
+msgstr ""
+
+#: quotes.admin.inc:347
+msgid "Are you sure you want to delete the block %name?"
+msgstr ""
+
+#: quotes.admin.inc:347
+msgid "This action cannot be undone."
+msgstr ""
+
+#: quotes.admin.inc:347
+msgid "Delete"
+msgstr ""
+
+#: quotes.admin.inc:347
+msgid "Cancel"
+msgstr ""
+
+#: quotes.admin.inc:364
+msgid "The block %name has been removed."
+msgstr ""
+
+#: quotes.admin.inc:400
+msgid "Pick the author whose biography you wish to update."
+msgstr ""
+
+#: quotes.admin.inc:405
+msgid "Biography for %name"
+msgstr ""
+
+#: quotes.admin.inc:410
+msgid "This is the author's biography."
+msgstr ""
+
+#: quotes.admin.inc:416
+msgid "Get biography"
+msgstr ""
+
+#: quotes.admin.inc:416
+msgid "Update"
+msgstr ""
+
+#: quotes.node.inc:22 quotes.user.inc:73 quotes.module:1650
+msgid "Title"
+msgstr ""
+
+#: quotes.node.inc:25
+msgid "Enter the title for the quote(s). If you include the variable %%id, it will be replaced by the new quote's ID."
+msgstr ""
+
+#: quotes.node.inc:32 quotes.module:1660
+msgid "Format"
+msgstr ""
+
+#: quotes.node.inc:36 quotes.module:1664
+msgid "Single quote."
+msgstr ""
+
+#: quotes.node.inc:37 quotes.module:1665
+msgid "Import tab-separated text."
+msgstr ""
+
+#: quotes.node.inc:38 quotes.module:1666
+msgid "Import Fortune file."
+msgstr ""
+
+#: quotes.node.inc:51
+msgid "Quote"
+msgstr ""
+
+#: quotes.node.inc:55
+msgid "Enter the text of the quote or the group of quotes to be imported."
+msgstr ""
+
+#: quotes.node.inc:60 quotes.views.inc:50 quotes.module:1692
+msgid "Author"
+msgstr ""
+
+#: quotes.node.inc:68 quotes.views.inc:39 quotes.module:1702
+msgid "Citation"
+msgstr ""
+
+#: quotes.node.inc:77 quotes.module:1713
+msgid "Display in quote blocks"
+msgstr ""
+
+#: quotes.user.inc:10
+msgid "Home"
+msgstr ""
+
+#: quotes.user.inc:37
+msgid "published"
+msgstr ""
+
+#: quotes.user.inc:37
+msgid "not published"
+msgstr ""
+
+#: quotes.user.inc:39
+msgid "promoted"
+msgstr ""
+
+#: quotes.user.inc:42
+msgid "sticky"
+msgstr ""
+
+#: quotes.user.inc:45
+msgid "moderated"
+msgstr ""
+
+#: quotes.user.inc:59
+msgid "edit"
+msgstr ""
+
+#: quotes.user.inc:60
+msgid "delete"
+msgstr ""
+
+#: quotes.user.inc:73
+msgid "Status"
+msgstr ""
+
+#: quotes.user.inc:73
+msgid "Tags"
+msgstr ""
+
+#: quotes.user.inc:73
+msgid "Last updated"
+msgstr ""
+
+#: quotes.user.inc:89
+msgid "No posts available."
+msgstr ""
+
+#: quotes.views.inc:18;27 quotes.module:333;572;1586;127;169 quotes.info:0
+msgid "Quotes"
+msgstr ""
+
+#: quotes.views.inc:40
+msgid "The source of the quote."
+msgstr ""
+
+#: quotes.views.inc:51
+msgid "The name of the quote's author."
+msgstr ""
+
+#: quotes.views.inc:62
+msgid "Biography"
+msgstr ""
+
+#: quotes.views.inc:63
+msgid "The biography of the quote's author."
+msgstr ""
+
+#: views_handler_field_quotes.inc:30
+msgid "Show author as"
+msgstr ""
+
+#: quotes.module:246
+msgid "page"
+msgstr ""
+
+#: quotes.module:264
+msgid "A quote is a famous, infamous, humorous, witty, or otherwise noteworthy quotation or fortune file entry. Quotes can be entered one at a time or mass imported in either tab-separated text or fortune file format."
+msgstr ""
+
+#: quotes.module:268
+msgid "<p>Use the form below to mass import quotes in either tab-separated text or fortune file format. Many quotes will be imported in this one step by creating an individual node for each imported quote. Expand the %Notes section below for more information.</p>"
+msgstr ""
+
+#: quotes.module:268
+msgid "Notes"
+msgstr ""
+
+#: quotes.module:271
+msgid "Notes for importing"
+msgstr ""
+
+#: quotes.module:274
+msgid "<ul><li>Tab-separated quotes should appear one quote per line in the format <em><span style=\"color: blue;\">quote</span><span style=\"color: red;\">&lt;tab&gt;</span><span style=\"color: green;\">author</span></em>. The author and citation are optional; however, the tab is still required. To import quotes, authors, or citations with more than one line, escape the embedded newlines with a backslash. <p>Examples:</p>\r\n  <pre style=\"font-size: .75em;\">\r\n<span style=\"color: blue;\">Single-line quote.</span><em style=\"color: red;\">&lt;tab&gt;</em><span style=\"color: green;\">Author</span>\r\n<span style=\"color: blue;\">Quote without author.</span><em style=\"color: red;\">&lt;tab&gt;</em>\r\n<span style=\"color: blue;\">Multi-line quote: line 1...\\\r\n...line 2.</span><em style=\"color: red;\">&lt;tab&gt;</em><span style=\"color: green;\">Author line 1\\\r\nAuthor line 2</span>\r\n<span style=\"color: blue;\">Another quote.<em style=\"color: red;\">&lt;tab&gt;</em><span style=\"color: green;\">Another Author</span>\r\n  </pre></li>\r\n  <li>Fortune files do not explicitly provide an author or attribution\r\n    for each quote/fortune. This import will extract an author when\r\n    there is a line of the form <em>-- Author</em> with any amount of\r\n    leading whitespace.  Examples:\r\n\r\n  <pre style=\"font-size: .75em;\">\r\n<span style=\"color: blue;\">A fortune without an author.</span>\r\n<em style=\"color: red;\">%</em>\r\n<span style=\"color: blue;\">Fortune with author.</span>\r\n--<span style=\"color: green;\">Author</span>\r\n<em style=\"color: red;\">%</em>\r\n<span style=\"color: blue;\">Multi-line fortune: line 1...\r\n...line 2.</span>\r\n          -- <span style=\"color: green;\">Author line 1\r\n             Author line 2</span>\r\n  </pre></li>\r\n  <li>Any settings used in the form below (comment, moderation, sticky, input format, categories, etc.) will be applied to all imported quotes.</li>\r\n  <li>The title entered below will be applied to all quotes. You can use the variable <em>%id</em> in the title which will be replaced by the newly-created quote's node ID.</li>\r\n  <li>Fortune files and tab-separated text data can contain many quotes. To avoid timeout errors while importing large amounts of data, consider importing in smaller chunks with no more than 1000 quotes at a time.</li>\r\n  <li>If the path module is enabled, you cannot create a path alias while importing, as the import will attempt to use the same path for every quote.</li></ul>"
+msgstr ""
+
+#: quotes.module:305
+msgid "Use the form below to enter a single quote."
+msgstr ""
+
+#: quotes.module:305
+msgid "Multiple quotes can also be !mass imported in either tab-separted text or fortune file format."
+msgstr ""
+
+#: quotes.module:305
+msgid "mass imported"
+msgstr ""
+
+#: quotes.module:310
+msgid "This page displays the status of, and settings for, the quotes module. The permissions for this module are found <a href=\"!url\">here</a>."
+msgstr ""
+
+#: quotes.module:315
+msgid "You can define any number of blocks that will each display a randomly-selected quote, the most-recent quotes, or unpublished quotes. The quotes displayed in each block can be restricted to certain node IDs, roles, users, or categories. Each block has a name that is used for identification on the !block administration page and as the default title when the block is displayed."
+msgstr ""
+
+#: quotes.module:316;762
+msgid "block administration page"
+msgstr ""
+
+#: quotes.module:320
+msgid "Use the form below to define a new quote block."
+msgstr ""
+
+#: quotes.module:323
+msgid "The quotes module allows users to maintain a list of quotations that they find notable, humorous, famous, infamous, or otherwise worthy of sharing with website visitors. The quotes can be displayed in any number of administrator-defined blocks. These blocks will display quotes based on the restrictions of each block. Blocks can be configured to restrict to certain nodes, roles, users, or categories."
+msgstr ""
+
+#: quotes.module:335
+msgid "A quote is a famous, infamous, humorous, witty, or otherwise noteworthy quotation or fortune file entry. Users can maintain personal lists of quotations and display quotes in one or more blocks. Quotes can be entered one at a time or mass imported in either tab-separated text or fortune file format."
+msgstr ""
+
+#: quotes.module:394
+msgid "!count quotes imported."
+msgstr ""
+
+#: quotes.module:426
+msgid "Quotes: insert author failed."
+msgstr ""
+
+#: quotes.module:431
+msgid "Quotes: get aid failed."
+msgstr ""
+
+#: quotes.module:480;518;718;724;1470
+msgid "Anonymous"
+msgstr ""
+
+#: quotes.module:481;526;1152
+msgid "!name's !menu"
+msgstr ""
+
+#: quotes.module:495
+msgid "!count quotes will be imported:"
+msgstr ""
+
+#: quotes.module:528
+msgid "View !name's !menu."
+msgstr ""
+
+#: quotes.module:537
+msgid "Edit !menu"
+msgstr ""
+
+#: quotes.module:539
+msgid "Edit this !menu"
+msgstr ""
+
+#: quotes.module:555;661
+msgid "interval"
+msgstr ""
+
+#: quotes.module:556;662
+msgid "bid"
+msgstr ""
+
+#: quotes.module:557;663
+msgid "title"
+msgstr ""
+
+#: quotes.module:558;664
+msgid "nid"
+msgstr ""
+
+#: quotes.module:746
+msgid "Type"
+msgstr ""
+
+#: quotes.module:750
+msgid "Random"
+msgstr ""
+
+#: quotes.module:750
+msgid "Most recent"
+msgstr ""
+
+#: quotes.module:750
+msgid "Unpublished"
+msgstr ""
+
+#: quotes.module:751
+msgid "\"Random\" will choose a published quote at random. \"Most recent\" will display the most recently updated quotes. \"Unpublished\" will display quotes that are marked as not published (awaiting approval)."
+msgstr ""
+
+#: quotes.module:762
+msgid "Enter a unique name for this block. This will identify the block on the !block administration page and be used for the default block title. The name may include any of: '%subs'."
+msgstr ""
+
+#: quotes.module:766
+msgid "No title"
+msgstr ""
+
+#: quotes.module:767
+msgid "Title linked to quote"
+msgstr ""
+
+#: quotes.module:768
+msgid "Plain text"
+msgstr ""
+
+#: quotes.module:773
+msgid "Show titles"
+msgstr ""
+
+#: quotes.module:776
+msgid "If this option is selected, the titles of the quotes in this block will be shown."
+msgstr ""
+
+#: quotes.module:783
+msgid "Show citation?"
+msgstr ""
+
+#: quotes.module:785
+msgid "If this option is selected, the citation for the quote will be included in blocks."
+msgstr ""
+
+#: quotes.module:790
+msgid "Maximum quote length"
+msgstr ""
+
+#: quotes.module:793
+msgid "This will limit the length of a quote shown in the block. A value of zero (0) means no limit."
+msgstr ""
+
+#: quotes.module:799
+msgid "Number of quotes in this block"
+msgstr ""
+
+#: quotes.module:801
+msgid "This sets the maximum number of quotes that will be displayed in this block. Note that \"Random\" and timed (\"Update every\") blocks may contain only one quote."
+msgstr ""
+
+#: quotes.module:806
+msgid "Block \"View\" link text"
+msgstr ""
+
+#: quotes.module:809
+msgid "The text of the link to view the quote from a block. Leaving this field blank disables the link."
+msgstr ""
+
+#: quotes.module:814
+msgid "\"View\" link weight"
+msgstr ""
+
+#: quotes.module:817
+msgid "A positive value sets the link after the body; a negative value before."
+msgstr ""
+
+#: quotes.module:822
+msgid "\"More\" link text"
+msgstr ""
+
+#: quotes.module:825
+msgid "This sets the text that will display on the \"more\" link at the bottom of the block. Leave it blank for no link. This is only available for a \"Random\" block."
+msgstr ""
+
+#: quotes.module:833
+msgid "How often block will show"
+msgstr ""
+
+#: quotes.module:836
+msgid "This sets the frequency with which the block will be shown. 100% is all the time; 0% is none of the time."
+msgstr ""
+
+#: quotes.module:850 quotes.install:151
+msgid "Node filter"
+msgstr ""
+
+#: quotes.module:853
+msgid "To restrict this block to display only certain quotes based on node IDs, enter the IDs here separated by commas, spaces, or returns."
+msgstr ""
+
+#: quotes.module:859;869 quotes.install:156
+msgid "Author filter"
+msgstr ""
+
+#: quotes.module:863
+msgid "To restrict this block to display only quotes from certain authors, select the authors here."
+msgstr ""
+
+#: quotes.module:870
+msgid "There are no authors.  To filter by authors, there must be at least one quote with an attributed author"
+msgstr ""
+
+#: quotes.module:877;887 quotes.install:161
+msgid "Role filter"
+msgstr ""
+
+#: quotes.module:881
+msgid "To restrict this block to display only quotes submitted by users in specific roles, select the roles here."
+msgstr ""
+
+#: quotes.module:888
+msgid "There are no roles configured with the %create quotes, %import quotes, or %edit own quotes permissions, so no roles are available. To filter by role, please assign this permission to at least one role on the !access control page."
+msgstr ""
+
+#: quotes.module:888;28
+msgid "create quotes"
+msgstr ""
+
+#: quotes.module:888;29
+msgid "import quotes"
+msgstr ""
+
+#: quotes.module:888;30
+msgid "edit own quotes"
+msgstr ""
+
+#: quotes.module:888
+msgid "administer permissions page"
+msgstr ""
+
+#: quotes.module:894 quotes.install:166
+msgid "User filter"
+msgstr ""
+
+#: quotes.module:898
+msgid "To restrict this block to display only quotes submitted by specific users, select the users here."
+msgstr ""
+
+#: quotes.module:908
+msgid "Category filter"
+msgstr ""
+
+#: quotes.module:912
+msgid "To restrict this block to display only quotes in specific categories, select the categories here."
+msgstr ""
+
+#: quotes.module:918
+msgid "Update options"
+msgstr ""
+
+#: quotes.module:919
+msgid "Note: Timed blocks will contain only one quote."
+msgstr ""
+
+#: quotes.module:929
+msgid "Update every"
+msgstr ""
+
+#: quotes.module:937
+msgid "seconds"
+msgstr ""
+
+#: quotes.module:938
+msgid "minutes"
+msgstr ""
+
+#: quotes.module:939
+msgid "hours"
+msgstr ""
+
+#: quotes.module:940
+msgid "days"
+msgstr ""
+
+#: quotes.module:941
+msgid "weeks"
+msgstr ""
+
+#: quotes.module:948
+msgid "If set, the quote displayed in this block will get updated based on the interval specified (requires cron if page cache is enabled). Leave this value blank to have the quote updated every time the block is viewed."
+msgstr ""
+
+#: quotes.module:1011
+msgid "Please enter valid node IDs."
+msgstr ""
+
+#: quotes.module:1016
+msgid "The update interval must be between 1 and 999."
+msgstr ""
+
+#: quotes.module:1085
+msgid "(more)"
+msgstr ""
+
+#: quotes.module:1103;1117
+msgid "View all quotes by this author"
+msgstr ""
+
+#: quotes.module:1117
+msgid "See biography and !menu"
+msgstr ""
+
+#: quotes.module:1172
+msgid "RSS - !title"
+msgstr ""
+
+#: quotes.module:1175
+msgid "No quotes found."
+msgstr ""
+
+#: quotes.module:1372;1591;1604
+msgid "unspecified"
+msgstr ""
+
+#: quotes.module:1389
+msgid "I couldn't locate that author."
+msgstr ""
+
+#: quotes.module:1396
+msgid "!menu by @name"
+msgstr ""
+
+#: quotes.module:1436
+msgid "Choose an author from the list."
+msgstr ""
+
+#: quotes.module:1441
+msgid "Select"
+msgstr ""
+
+#: quotes.module:1470
+msgid "!name's quotes"
+msgstr ""
+
+#: quotes.module:1485;0
+msgid "quotes"
+msgstr ""
+
+#: quotes.module:1516
+msgid "Parse error on quote !num. \"@found\""
+msgstr ""
+
+#: quotes.module:1534;1545
+msgid "Parse error on quote !num."
+msgstr ""
+
+#: quotes.module:1556
+msgid "Please select a valid import format. (!format)"
+msgstr ""
+
+#: quotes.module:1653
+msgid "Enter the title for the quote(s). If you include the variable %id, it will be replaced by the new quote's ID."
+msgstr ""
+
+#: quotes.module:1679
+msgid "Enter the text of the quote or the group of quotes to be imported. It will be filtered according to the input format. Note: The \"Split summary\" button cannot be used when importing a group of quotes."
+msgstr ""
+
+#: quotes.module:1680
+msgid "This should not be used when importing."
+msgstr ""
+
+#: quotes.module:1683
+msgid "Enter the text of the quote. It will be filtered according to the input format."
+msgstr ""
+
+#: quotes.module:1697
+msgid "This is who is credited for the quotation."
+msgstr ""
+
+#: quotes.module:1707
+msgid "This is the source (book, magazine, etc.) of the quote."
+msgstr ""
+
+#: quotes.module:1715
+msgid "This option allows you to decide whether this quote will be displayable in the blocks."
+msgstr ""
+
+#: quotes.module:1759
+msgid "The author of this quote."
+msgstr ""
+
+#: quotes.module:1760
+msgid "The author of this quote. WARNING - raw user input.)"
+msgstr ""
+
+#: quotes.module:1761
+msgid "The author id of this quote.)"
+msgstr ""
+
+#: quotes.module:1586
+msgid "Deleted aid=!aid (!name) because of no quotes."
+msgstr ""
+
+#: quotes.module:26
+msgid "access quotes"
+msgstr ""
+
+#: quotes.module:27
+msgid "administer quotes"
+msgstr ""
+
+#: quotes.module:31
+msgid "promote quotes to block"
+msgstr ""
+
+#: quotes.module:86
+msgid "My Quotes"
+msgstr ""
+
+#: quotes.module:97
+msgid "RSS feed"
+msgstr ""
+
+#: quotes.module:104
+msgid "Autocomplete Author Field"
+msgstr ""
+
+#: quotes.module:111
+msgid "Autocomplete Citation Field"
+msgstr ""
+
+#: quotes.module:119
+msgid "My quotes"
+msgstr ""
+
+#: quotes.module:134
+msgid "Quotes page"
+msgstr ""
+
+#: quotes.module:144
+msgid "Add a new quote"
+msgstr ""
+
+#: quotes.module:151
+msgid "By author"
+msgstr ""
+
+#: quotes.module:160
+msgid "Settings"
+msgstr ""
+
+#: quotes.module:161;170
+msgid "Configure Quotes module options and blocks."
+msgstr ""
+
+#: quotes.module:178
+msgid "General"
+msgstr ""
+
+#: quotes.module:188
+msgid "Configure blocks"
+msgstr ""
+
+#: quotes.module:197
+msgid "Export"
+msgstr ""
+
+#: quotes.module:207
+msgid "Bios"
+msgstr ""
+
+#: quotes.module:216
+msgid "Delete quote block"
+msgstr ""
+
+#: quotes.install:23
+msgid "Extra node data."
+msgstr ""
+
+#: quotes.install:26
+msgid "Node identifier."
+msgstr ""
+
+#: quotes.install:33
+msgid "Version identifier."
+msgstr ""
+
+#: quotes.install:40;198;297
+msgid "Author identifier."
+msgstr ""
+
+#: quotes.install:47;241
+msgid "Source of the quote."
+msgstr ""
+
+#: quotes.install:52
+msgid "Status."
+msgstr ""
+
+#: quotes.install:70
+msgid "Quotes blocks data."
+msgstr ""
+
+#: quotes.install:73
+msgid "Block number"
+msgstr ""
+
+#: quotes.install:78
+msgid "Type of block"
+msgstr ""
+
+#: quotes.install:84
+msgid "Version id"
+msgstr ""
+
+#: quotes.install:89;262
+msgid "Number of quotes in the block."
+msgstr ""
+
+#: quotes.install:95
+msgid "Cron frequency"
+msgstr ""
+
+#: quotes.install:100
+msgid "Cron step"
+msgstr ""
+
+#: quotes.install:105
+msgid "Last Cron run time"
+msgstr ""
+
+#: quotes.install:110;268
+msgid "Show titles."
+msgstr ""
+
+#: quotes.install:118;407
+msgid "Show citation."
+msgstr ""
+
+#: quotes.install:125;415
+msgid "Maximum length of quote in block."
+msgstr ""
+
+#: quotes.install:132;501
+msgid "Display frequency for random blocks."
+msgstr ""
+
+#: quotes.install:138;422
+msgid "Weight for the view link."
+msgstr ""
+
+#: quotes.install:145
+msgid "Name of this block"
+msgstr ""
+
+#: quotes.install:171
+msgid "Term filter"
+msgstr ""
+
+#: quotes.install:176;437
+msgid "Text for the \"view\" link."
+msgstr ""
+
+#: quotes.install:182;430
+msgid "Text for the \"more\" link."
+msgstr ""
+
+#: quotes.install:195;294
+msgid "Quotes authors data."
+msgstr ""
+
+#: quotes.install:205;304
+msgid "Author of the quote."
+msgstr ""
+
+#: quotes.install:210;310
+msgid "Author's biography."
+msgstr ""
+
+#: quotes.install:327
+msgid "Add column \"aid\" failed."
+msgstr ""
+
+#: quotes.install:335
+msgid "Add index for \"aid\" failed."
+msgstr ""
+
+#: quotes.install:365
+msgid "Invalid aid returned: "
+msgstr ""
+
+#: quotes.install:375
+msgid "Drop column \"author\" failed."
+msgstr ""
+
+#: quotes.install:378
+msgid "Update 6102 for Quotes complete."
+msgstr ""
+
+#: quotes.install:447
+msgid "View"
+msgstr ""
+
+#: quotes.install:472
+msgid "The aid_filter column already exists."
+msgstr ""
+
+#: quotes.install:478
+msgid "Author filter."
+msgstr ""
+
+#: quotes.install:496
+msgid "The rand_freq column already exists."
+msgstr ""
+
+#: quotes.info:0
+msgid "Allows users to maintain personal lists of quotations and display quotes in one or more blocks."
+msgstr ""
+

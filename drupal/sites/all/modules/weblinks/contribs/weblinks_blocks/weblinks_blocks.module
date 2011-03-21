@@ -1,0 +1,924 @@
+<?php
+// $Id: weblinks_blocks.module,v 1.1.2.2.2.32 2009/08/18 15:01:31 nancyw Exp $
+
+/**
+ * @file
+ * Enable display of categorized web links in blocks.
+ * Drupal 6 Version
+ */
+
+/**
+ * Produces a list of valid block types for the Web Links module.
+ * @param none.
+ * @return keyed array where the key is the block type,
+ *   each element is a keyed array of block attributes:
+ *     name => string: translated proper name for the block.
+ *     group => boolean: whether the block can be by group. 
+ */
+function weblinks_blocks_types() {
+  return array(
+    'random'       => array('name' => t('Random'), 'group' => TRUE),
+    'recent'       => array('name' => t('Recent'), 'group' => TRUE),
+    'popular'      => array('name' => t('Popular'), 'group' => TRUE),
+    'related'      => array('name' => t('Related'), 'group' => FALSE),
+    'contributors' => array('name' => t('Contributors'), 'group' => FALSE),
+    'unpublished'  => array('name' => t('Unpublished'), 'group' => FALSE),
+    'all'          => array('name' => t('All'), 'group' => FALSE),
+    );
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function weblinks_blocks_help($path, $args) {
+  switch ($path) {
+    case 'admin/modules#description':
+    case 'admin/help#weblinks_blocks':
+      return '<p>'. t('Enables the display of categorized links in blocks.') .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function weblinks_blocks_theme() {
+  return array(
+    'weblinks_block_item' => array(
+      'arguments' => array('node', 'title_length', 'urlnode', 'options', 'show_image'),
+      ),
+    );
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function weblinks_blocks_cron() {
+  global $user;
+  // Let's see if we need to refresh the random block.
+  $block_exists = db_result(db_query("SELECT COUNT(*) FROM {blocks} b WHERE b.theme='%s' AND b.module='weblinks' AND b.delta='weblink-random' AND b.status=1", $theme));
+  if ($block_exists) {
+    $interval = variable_get('weblinks_blocks_update_interval_'. $tid, '');
+    if ($interval > 0) {
+      $step = variable_get('weblinks_blocks_update_step_'. $tid, 86400);
+      $last = variable_get('weblinks_blocks_update_last_'. $tid, 0);
+      $now = time();
+
+      // Is it time to update yet?
+      if (($last + ($interval * $step)) < $now) {
+        // Clear the cached data and let the block regenerate.
+        cache_clear_all('weblinks:weblink-random:', 'cache_block', TRUE);
+      }
+    }
+  }
+}
+
+/**
+ * Prepare block content.
+ * @param $tid - the group id for which this request applies.
+ * @param $sort - the sorting order for the block.
+ * @param $limit - the max number of links to get.
+ * @param $group_id - allows the special blocks (random, recent, etc.) to be furthr qualified.
+ * @return the block contents.
+ */
+function _weblinks_blocks_content($tid = 0, $sort, $limit, $group_id = NULL) {
+  $blktid = $tid . ($group_id ? '_'. $group_id : NULL);
+  if ($sort == 'user') {
+    $blktid = 'user';
+  }
+  $urlnode = variable_get('weblinks_blocks_urlnode_'. $blktid, 'url');
+  $more = variable_get('weblinks_blocks_more_'. $blktid, FALSE);
+  $desc = variable_get('weblinks_blocks_description_'. $blktid, 'none');
+  $title_length = variable_get('weblinks_trim_blocks', 0);
+  $show_image = variable_get('weblinks_blocks_image_'. $blktid, FALSE);
+  $show_count = variable_get('weblinks_blocks_show_count_'. $blktid, FALSE);
+  $show_last = variable_get('weblinks_blocks_show_last_'. $blktid, FALSE);
+
+  $options = $items = array();
+  if (variable_get('weblinks_external', TRUE)) {
+    $options['attributes']['target'] = '_blank';
+  }
+  if (variable_get('weblinks_nofollow', FALSE)) {
+    $options['attributes']['rel'] = 'nofollow';
+  }
+
+  if ($group_id) {
+    // Get the tree for this group (using "quick").
+    $tree = weblinks_get_tree($group_id, TRUE);
+    $tids = array();
+    foreach ($tree as $term) {
+      $tids[] = $term->tid;
+    }
+    $qtid = implode(',', $tids);
+  }
+  else {
+    $qtid = $tid;
+  }
+
+  $result = _weblinks_get_query($qtid, $sort, ($limit ? $limit + $more : 0));
+  while ($row = db_fetch_array($result)) {
+    $node = node_load($row['nid']);
+    if ($sort == 'popular') {
+      // Include click count and date for popular block.
+      $stuff = array();
+      if ($show_count) {
+        $stuff[] = $node->click_count;
+      }
+      if ($show_last) {
+        $stuff[] = format_date($node->last_click, 'small');
+      }
+      if ($stuff) {
+        $node->title .= ' ('. implode(', ', $stuff) .')';
+      }
+    }
+    $items[] = theme('weblinks_block_item', $node, $title_length, $urlnode, $options, $show_image, $desc);
+  }
+
+  if ($more && $limit && (count($items) > $limit)) {
+    unset($items[$limit]);
+    $more_link = '<div class="more-link">';
+    if ($sort == 'user') {
+      $where = "user/$tid";
+    }
+    else {
+      $where = $tid . ($group_id ? '/'. $group_id : NULL);
+    }
+    $more_link .= l(t('more&#8230;'), 'weblinks/'. $where);
+    $more_link .= '</div>';
+  }
+  else {
+    $more_link = NULL;
+  }
+  return $items ? decode_entities(theme('item_list', $items, NULL, 'ul', array('class' => 'weblinks')) . $more_link) : NULL;
+}
+
+/**
+ * Theme a block link.
+ */
+function theme_weblinks_block_item($node, $title_length, $urlnode, $options, $show_image, $desc) {
+  if ($show_image && $node->iid) {
+    $image = theme('image_attach_teaser', $node);
+  }
+  switch ($desc) {
+    case 'none':
+      $description = NULL;
+      break;
+    case 'teaser':
+      $description = '<div class="description">'. check_markup(node_teaser($node->body, $node->format), $node->format, FALSE) .'</div>';
+      break;
+    case 'body':
+      $description = '<div class="description">'. check_markup($node->body, $node->format, FALSE) .'</div>';
+      break;
+  }
+  return array(
+    'data' => weblinks_blocks_build_link($node, $title_length, $urlnode, $options) . $image . $description,
+    'class' => 'weblinks weblinks-item weblinks-link-'. $row['nid'],
+    );
+}
+
+/**
+ * Build a link.
+ *
+ * $param $node
+ *   node object for which to build the link.
+ * $param $show_url
+ *   whether to show the URL, or length to trim title.
+ * $param $urlnode
+ *   string indicating where the link should point.
+ * $param $options
+ *   optional atributes for the link.
+ *
+ * @return link
+ *   the constructed link.
+ */
+function weblinks_blocks_build_link($node, $show_url, $urlnode, $options) {
+  $class = array(weblinks-link);
+  switch ($urlnode) {
+    // @TODO Handle "redirect."
+    case 'node':
+      $url = 'node/'. $node->nid;
+      // Force target=_blank off.
+      unset($options['attributes']['target']);
+      break;
+    case 'url':
+      $url = $node->url;
+      $options['attributes']['class'] = 'previewlink'. (isset($options['attributes']['class']) ? ' '. $options['attributes']['class'] : NULL);
+      break;
+    case 'goto':
+      $url = 'weblinks/goto/'. $node->nid;
+      break;
+  }
+  $url = drupal_get_path_alias($url);
+
+  switch ($show_url) {
+    case 0;
+      $title = $node->title;
+      break;
+    default:
+      $title = _weblinks_trim($node->title, $show_url);
+  }
+
+  if (!isset($options['attributes']['title'])) {
+    $options['attributes']['title'] = check_plain($node->title);
+  }
+
+  return '<div class="weblinks-link">'. l($title, $url, $options) .'</div>';
+} /* */
+
+/**
+ * Prepare the Related Links block.
+ */
+function _weblinks_blocks_related_block($tid, $limit = 0, $show_current) {
+  $urlnode = variable_get('weblinks_blocks_urlnode_related', 'url');
+  $sort = variable_get('weblinks_blocks_sort_related', 'title');
+  $more = variable_get('weblinks_blocks_more_related', FALSE);
+  $desc = variable_get('weblinks_blocks_description_related', FALSE);
+  $title_length = variable_get('weblinks_trim_blocks', 0);
+  $show_image = variable_get('weblinks_blocks_image_related', FALSE);
+  $current_nid = arg(1);
+
+  $options = array();
+  if (variable_get('weblinks_external', TRUE)) {
+    $options['attributes']['target'] = '_blank';
+  }
+  if (variable_get('weblinks_nofollow', FALSE)) {
+    $options['attributes']['rel'] = 'nofollow';
+  }
+
+  $content = NULL;
+  $tree = weblinks_get_tree($tid, TRUE);
+  $show_title = count($tree) > 1;
+  foreach ($tree as $term) {
+    if ($show_title) {
+      $content .= '<h3>'. check_plain($term->name) .'</h3>';
+    }
+    $items = array();
+    $result = _weblinks_get_query($term->tid, $sort, ($limit ? $limit + $more : 0));
+    while ($row = db_fetch_array($result)) {
+      // Is the item the one currently being viewed?
+      if ($row['nid'] == $current_nid) {
+        if ($show_current == 'without') {
+          // Admin wants to skip it.
+          continue;
+        }
+        if ($show_current == 'highlight') {
+          // Admin wants to highlight it.
+          $options['attributes']['class'] = 'weblinks-related-current';
+        }
+      }
+      $items[] = theme('weblinks_block_item', node_load($row['nid']), $title_length, $urlnode, $options, $show_image, $desc);
+      unset($options['attributes']['class']);
+    }
+    if ($more && $limit && (count($items) > $limit)) {
+      unset($items[$limit]);
+      $more_link = '<div class="more-link">'. l(t('more') .'&#8230;', 'weblinks/'. $tid . ($group_id ? '/'. $group_id : NULL)) .'</div>';
+    }
+    else {
+      $more_link = NULL;
+    }
+    $content .= $items ? decode_entities(theme('item_list', $items, NULL, 'ul', array('class' => 'weblinks')) . $more_link) : NULL;
+  }
+  return $content;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function weblinks_blocks_block($op = 'list', $delta = 0, $edit = array()) {
+  $block = $form = array();
+  switch ($op) {
+    case 'list':
+      return weblinks_blocks_block_list();
+
+    case 'view':
+      return weblinks_blocks_block_view($delta);
+
+    case 'configure':
+      return weblinks_blocks_block_configure($delta);
+
+    case 'save':
+      weblinks_blocks_block_save($delta, $edit);
+      return;
+  }
+}
+
+/**
+ * Perform the "list" op for hook_block().
+ *
+ * @param $delta
+ *   String specifying which block to proocess.
+ *
+ * @return
+ *   Array of block definition.
+ */
+function weblinks_blocks_block_list() {
+  $block = array();
+  // Get the tree of terms.
+  $tree = weblinks_get_tree(0, TRUE);
+  $allow_groups = FALSE;
+  if ($tree) {
+    foreach ($tree as $term) {
+      $term->blockname = $term->name ? $term->name : ($term->tid == 0 ? 'Unclassified' : $term->tid);
+      $term->create_block = variable_get('weblinks_create_block_'. $term->tid, TRUE);
+      // If the admin said "no" to this block, skip it.
+      if (!$term->create_block) {
+        continue;
+      }
+
+      if ($term->depth == 0) {
+        $allow_this_group = variable_get('weblinks_block_allow_groups_'. $term->tid, FALSE);
+        if ($allow_this_group) {
+          $allow_groups |= $allow_this_group;
+          $term->allow = $allow_this_group;
+        }
+      }
+      else {
+        if ($term->parents[0] != 0) {
+          // If a term is a child, show its parenthood.
+          $parent_list = array();
+          foreach ($term->parents as $ptid) {
+            $parent = $tree[$ptid];
+            $term->blockname = decode_entities($parent->blockname ." &raquo; ". $term->name);
+            $term->allow = $parent->allow;
+          }
+        }
+        else {
+          $term->blockname = $term->name;
+        }
+      }
+    }
+  }
+
+  // These blocks are not per group.
+  $block['weblink-related'] = array(
+    'info' => 'Web Links: Related',
+    'cache' => BLOCK_NO_CACHE,
+    );
+  $block['weblink-contributors'] = array(
+    'info' => 'Web Links: Contributors',
+    'cache' => BLOCK_CACHE_GLOBAL,
+    );
+  $block['weblink-unpublished'] = array(
+    'info' => 'Web Links: Unpublished',
+    'cache' => BLOCK_CACHE_PER_ROLE,
+    );
+  $block['weblink-user'] = array(
+    'info' => 'Web Links: My Links',
+    'cache' => BLOCK_CACHE_PER_ROLE,
+    );
+  $block['weblink-all'] = array(
+    'info' => 'Web Links: All Links',
+    'cache' => BLOCK_CACHE_PER_ROLE,
+    );
+
+  // Even if we are doing blocks by group, generate the "catch-all" blocks.
+  $block['weblink-random'] = array(
+    'info' => 'Web Links: Random',
+    'cache' => BLOCK_CACHE_PER_ROLE,
+    );
+  $block['weblink-recent'] = array(
+    'info' => 'Web Links: Recent',
+    'cache' => BLOCK_CACHE_PER_ROLE,
+    );
+  $block['weblink-popular'] = array(
+    'info' => 'Web Links: Most Popular',
+    'cache' => BLOCK_NO_CACHE,
+    );
+
+  foreach ($tree as $term) {
+    if ($term->create_block) {
+      $block['weblink-'. $term->tid] = array(
+        'info' => 'Web Links: '. $term->blockname,
+        'cache' => BLOCK_CACHE_PER_ROLE,
+        );    
+      if ($term->allow) {
+        // Blocks by group.
+        $block['weblink-random-'. $term->tid] = array(
+          'info' => 'Web Links: '. $term->blockname .': Random',
+          'cache' => BLOCK_CACHE_PER_ROLE,
+          );
+        $block['weblink-recent-'. $term->tid] = array(
+          'info' => 'Web Links: '. $term->blockname .': Recent',
+          'cache' => BLOCK_CACHE_PER_ROLE,
+          );
+        $block['weblink-popular-'. $term->tid] = array(
+          'info' => 'Web Links: '. $term->blockname .': Most Popular',
+          'cache' => BLOCK_NO_CACHE,
+          );
+      }
+    }
+  }
+
+  return $block;
+}
+
+/**
+ * Perform the "view" op for hook_block().
+ *
+ * @param $delta
+ *   String specifying which block to proocess.
+ *
+ * @return
+ *   Array of block contents and title.
+ */
+function weblinks_blocks_block_view($delta) {
+  drupal_add_css(drupal_get_path('module', 'weblinks_blocks') .'/weblinks_blocks.css');
+
+  $block = array();
+  list($type, $tid, $group_id) = explode('-', $delta);
+  // "User" block has its own check.
+  if ($tid != 'user' && !user_access('access web links')) {
+    return $block;
+  }
+
+  $blktid = $tid . ($group_id ? '_'. $group_id : NULL);
+
+  if (function_exists('taxonomy_get_term')) {
+    $term = is_numeric($tid) ? taxonomy_get_term($tid) : taxonomy_get_term($group_id);
+  }
+  else {
+    $term = _weblinks_unclassed();
+  }
+  $types = weblinks_blocks_types();
+  $blk_name = t($types[$tid]['name'] .' '. $term->name .' Links');
+  $block['subject'] = $blk_name;
+
+  $limit = variable_get('weblinks_maxdisp_blocks_'. $blktid, 10);
+
+  switch ($tid) {
+    case 'popular':
+    case 'recent':
+      $block['content'] = _weblinks_blocks_content($tid, $tid, $limit, $group_id);
+      break;
+
+    case 'user':
+      global $user;
+      if (user_access('view my weblinks')) {
+        $block['content'] = _weblinks_blocks_content($user->uid, 'user', $limit);
+        $block['subject'] = t('My Links');
+      }
+      break;
+
+    case 'related':
+      // This is only for a node page.
+      if (arg(0) != 'node' || !is_numeric(arg(1))) {
+        return array();
+      }
+      $vid = _weblinks_get_vocid();
+      // Look for a term in our vocabulary.
+      if ($node = menu_get_object()) {
+        foreach ($node->taxonomy as $term) {
+          // Check if this term is in our vocabulary.
+          if ($term->vid == $vid) {
+            $tid = $term->tid;
+            break;
+          }
+        }
+      }
+      // Did we find a term?
+      if ($tid == 'related') {
+        return;
+      }
+
+      $show_current = variable_get('weblinks_blocks_current_related', 'no');
+      if ($show_current == 'no') {
+        unset($block['subject']);
+      }
+      else {
+        if ($show_current == 'without' && $node->type == 'weblinks') {
+          // If we skip the current link, then we need a limit increase if the limit is not zero.
+          $limit += $limit > 0;
+        }
+        $block['content'] = _weblinks_blocks_related_block($tid, $limit, $show_current);
+      }
+      break;
+
+    case 'random':
+      $interval = variable_get('weblinks_blocks_update_interval_'. $blktid, '');
+      if ($interval > 0) {
+        $step = variable_get('weblinks_blocks_update_step_'. $blktid, 86400);
+        $last = variable_get('weblinks_blocks_update_last_'. $blktid, 0);
+        $now = time();
+
+        // Is it time to update yet?
+        if (($last + ($interval * $step)) < $now) {
+          $block['content'] = _weblinks_blocks_content('random', 'random', $limit, $group_id);
+          variable_set('weblinks_blocks_update_last_'. $blktid, $now);
+          variable_set('weblinks_blocks_update_content_'. $blktid, $block['content']);
+        }
+        else {
+          $block['content'] = variable_get('weblinks_blocks_update_content_'. $blktid, '???');
+        }
+      }
+      else {
+        $block['content'] = _weblinks_blocks_content('random', 'random', $limit, $group_id);
+      }
+      break;
+
+    case 'unpublished':
+      $content = _weblinks_blocks_content('unpublished', 'recent', $limit);
+      if ($content) {
+        $block['content'] = $content;
+        $block['subject'] = t('Unpublished Links');
+      }
+      break;
+
+    case 'contributors':
+      $rows = $header = array();
+      $how_many = variable_get('weblinks_maxdisp_blocks_contributors', 10);
+      $result = db_query("SELECT u.uid, u.name, COUNT(n.uid) as count FROM {node} n "
+        ."LEFT JOIN {users} u USING(uid) WHERE n.type='weblinks' "
+        ."GROUP BY u.name, u.uid ORDER BY count DESC", 0, $how_many);
+      while ($row = db_fetch_object($result)) {
+        $rows[] = array(
+          theme('username', $row, array('levels' => FALSE, 'plain' => TRUE)),
+          l($row->count, 'weblinks/user/'. $row->uid),
+          );
+      }
+      if ($rows) {
+        $block['subject'] = t('Web Links Contributors');
+        $block['content'] = theme('table', $header, $rows);
+      }
+      break;
+
+    default:
+      $block['content'] = _weblinks_blocks_content($tid, variable_get('weblinks_blocks_sort_'. $tid, 'title'), $limit);
+  }
+  return $block;
+}
+
+/**
+ * Perform the "configure" op for hook_block().
+ *
+ * @param $delta
+ *   String specifying which block to proocess.
+ *
+ * @return
+ *   Settings form array.
+ */
+function weblinks_blocks_block_configure($delta = 0) {
+  drupal_add_css(drupal_get_path('module', 'weblinks') .'/weblinks.admin.css');
+  $form = array();
+  $yesno = array(t('No'), t('Yes'));
+  list($type, $tid, $group_id) = explode('-', $delta);
+  $blktid = $tid . ($group_id ? '_'. $group_id : NULL);
+  $form['#attributes'] = array('class' => 'weblinks-settings');
+
+  $form['weblinks'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Web Links'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    );
+
+  if ($tid == 'contributors') {
+    $form['weblinks']['weblinks_maxdisp_blocks'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Maximum users to display'),
+      '#size' => 3,
+      '#default_value' => variable_get('weblinks_maxdisp_blocks_contributors', 10),
+      '#description' => t('The number of users to show in this block.'),
+      );
+    return $form;  // That's all for this block.
+  }
+
+  $disp = variable_get('weblinks_maxdisp_blocks_'. $blktid, ($tid == 'random' ? 1 : 10));
+  $disp = empty($disp) ? 10 : $disp;
+  $form['weblinks']['weblinks_maxdisp_blocks'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Maximum weblinks to display'),
+    '#size' => 3,
+    '#default_value' => $disp,
+    '#description' => $tid == 'related' ? t('The number of links to show in each group in this block.') : t('The number of links to show in this block.'),
+    );
+
+  if ($tid == 'random') {
+    $form['weblinks']['weblinks_blocks_more'] = array('#type' => 'value', '#value' => 0);
+  }
+  else {
+    $form['weblinks']['weblinks_blocks_more'] = array(
+      '#type' => 'radios',
+      '#options' => $yesno, 
+      '#title' => t('"More..." link'),
+      '#default_value' => (int) variable_get('weblinks_blocks_more_'. $blktid, 0),
+      '#description' => t('If there are more links than the limit above, do you want a "more..." link?'),
+      '#prefix' => '<div class="weblinks-radios">',
+      '#suffix' => '</div>',
+      );
+  }
+
+  if ($tid == 'popular') {
+    $form['weblinks']['weblinks_blocks_show_count'] = array(
+      '#type' => 'radios',
+      '#options' => $yesno, 
+      '#title' => t('Show click count'),
+      '#default_value' => (int) variable_get('weblinks_blocks_show_count_'. $blktid, 0),
+      '#description' => t('If this is selected, the number of times the link has been clicked will be shown.'),
+      '#prefix' => '<div class="weblinks-radios">',
+      '#suffix' => '</div>',
+      );
+
+    $fmt = variable_get('date_format_short', 'm/d/Y - H:i');
+    $form['weblinks']['weblinks_blocks_show_last'] = array(
+      '#type' => 'radios', 
+      '#options' => $yesno, 
+      '#title' => t('Show last click date'),
+      '#default_value' => (int) variable_get('weblinks_blocks_show_last_'. $blktid, 0),
+      '#description' => t('If this is selected, the last date/time the link was clicked will be shown in the site short date format ("%fmt").', array('%fmt' => $fmt)),
+      '#prefix' => '<div class="weblinks-radios">',
+      '#suffix' => '</div>',
+      );
+  }
+  else {
+    $form['weblinks']['weblinks_blocks_show_count'] = array('#type' => 'value', '#value' => 0);
+    $form['weblinks']['weblinks_blocks_show_last'] = array('#type' => 'value', '#value' => 0);
+  }
+
+  $desc_opts = array(
+    'none' => t('No description'),
+    'teaser' => t('Teaser length'),
+    'body' => t('Full length'),
+    );
+  $form['weblinks']['weblinks_blocks_description'] = array(
+    '#type' => 'radios',
+    '#options' => $desc_opts, 
+    '#title' => t('Show description'),
+    '#default_value' => variable_get('weblinks_blocks_description_'. $blktid, 'none'),
+    '#description' => t("If checked, the link's description will be shown."),
+    '#prefix' => '<div class="weblinks-radios">',
+    '#suffix' => '</div>',
+    );
+
+  $form['weblinks']['weblinks_blocks_image'] = array(
+    '#type' => 'radios',
+    '#options' => $yesno, 
+    '#title' => t('Show image'),
+    '#default_value' => (int) variable_get('weblinks_blocks_image_'. $blktid, FALSE),
+    '#description' => t("If checked, the link's attached image will be shown."),
+    '#prefix' => '<div class="weblinks-radios">',
+    '#suffix' => '</div>',
+    );
+
+  switch ($tid) {
+    case 'unpublished':
+      // Force unpublished to the node.
+      $form['weblinks']['weblinks_blocks_urlnode'] = array('#type' => 'value', '#value' => 'node');
+      break;
+
+    case 'related':
+      $related_opts = array(
+        'no' => t('Don\'t show block'),
+        'without' => t('Show block without current link'),
+        'highlight' => t('Show block with current link highlighted'),
+        );
+      $form['weblinks']['weblinks_blocks_current_related'] = array(
+        '#type' => 'radios',
+        '#options' => $related_opts,
+        '#title' => t('Block contains related'),
+        '#description' => t('What would you like to do if the currently viewed node is included in the block. "Highlighted" means the item will have the "weblinks-related-current" class added.'),
+        '#default_value' => variable_get('weblinks_blocks_current_related', 'no'),        
+        '#prefix' => '<div class="weblinks-radios">',
+        '#suffix' => '</div>',
+        );
+      // Note, this falls through.
+
+    default:
+      $lead_to_opts = array('url' => t('URL'), 'node' => t('node'));
+      if (variable_get('weblinks_redirect', FALSE)) {
+        $lead_to_opts['goto'] = t('click tracking');
+      }
+
+      $form['weblinks']['weblinks_blocks_urlnode'] = array(
+        '#type' => 'radios',
+        '#title' => t('Links lead to URL or Web Link node'),
+        '#default_value' => variable_get('weblinks_blocks_urlnode_'. $blktid, 'url'),
+        '#description' => t('Most people will want to leave this as URL. Specifying "node" makes it easier to edit the links, but requires an additional click to follow the link.'),
+        '#options' => $lead_to_opts,
+        '#prefix' => '<div class="weblinks-radios">',
+        '#suffix' => '</div>',
+        );
+  }
+
+  if ($tid == 'popular') {
+    $form['weblinks']['weblinks_blocks_popular_list_type'] = array(
+      '#type' => 'radios',
+      '#title' => t('List type'),
+      '#options' => array('ul' => t('Simple list'), 'ol' => t('Numbered list')),
+      '#default_value' => variable_get('weblinks_blocks_popular_list_type', 'ul'),
+      '#description' => t('This sets the way the list will be displayed.'),
+      '#prefix' => '<div class="weblinks-radios">',
+      '#suffix' => '</div>',
+      );
+  }
+
+  if ($tid != 'recent' && $tid != 'popular' && $tid != 'random' && $tid != 'user') {
+    $sort_options = array(
+      'standard' => t('Normal Drupal - by sticky, weight, created date.'),
+      'title' => t('Legacy - by sticky, weight, title.'),
+      );
+    $form['weblinks']['weblinks_blocks_sort'] = array(
+      '#type' => 'radios',
+      '#options' => $sort_options,
+      '#title' => t('Sort order'),
+      '#default_value' => variable_get('weblinks_blocks_sort_'. $blktid, 'title'),
+      '#description' => t('This determines how the links blocks will sort the links.'),
+      '#prefix' => '<div class="weblinks-radios">',
+      '#suffix' => '</div>',
+      );
+  }
+
+  if ($tid == 'random') {
+    $form['weblinks']['cron_interval'] = array(
+      '#type' => 'textfield',
+      '#size' => 4,
+      '#maxlength' => 3,
+      '#default_value' => variable_get('weblinks_blocks_update_interval_'. $blktid, ''),
+      '#field_prefix' => '<strong>'. t('Update every') .'</strong>',
+      '#prefix' => '<div class="container-inline">',
+      );
+
+    $form['weblinks']['cron_step'] = array(
+      '#type' => 'select',
+      '#default_value' => variable_get('weblinks_blocks_update_step_'. $blktid, 86400),
+      '#options' => array(
+        1 => t('seconds'),
+        60 => t('minutes'),
+        3600 => t('hours'),
+        86400 => t('days'),
+        604800 => t('weeks'),
+        ),
+      '#suffix' => '</div>'
+      );
+
+    $form['weblinks']['description'] = array(
+      '#type' => 'item',
+      '#description' => t('If set, the link displayed in this block will get updated based on the interval specified (requires cron if page cache is enabled). Leave this value blank to have the link updated every time the block is viewed.'),
+      '#prefix' => '<div style="display: block;">',
+      '#suffix' => '</div>',
+      );
+  }
+
+  return $form;
+}
+
+/**
+ * Perform the "save" op for hook_block().
+ *
+ * @param $delta
+ *   String specifying which block to process.
+ * @param $edit
+ *   Array containing all (not just the fields set here) of the form input.
+ *
+ * @return
+ *   None. Values are saved as system variables.
+ */
+function weblinks_blocks_block_save($delta = 0, $edit = array()) {
+  list($type, $tid, $group_id) = explode('-', $delta);
+  $blktid = $tid . ($group_id ? '_'. $group_id : NULL);
+
+  variable_set('weblinks_maxdisp_blocks_'. $blktid, $edit['weblinks_maxdisp_blocks']);
+  if ($tid == 'contributors') {
+    return;
+  }
+  variable_set('weblinks_blocks_urlnode_'. $blktid, $edit['weblinks_blocks_urlnode']);
+  variable_set('weblinks_blocks_more_'. $blktid, $edit['weblinks_blocks_more']);
+  variable_set('weblinks_blocks_description_'. $blktid, $edit['weblinks_blocks_description']);
+  variable_set('weblinks_blocks_image_'. $blktid, $edit['weblinks_blocks_image']);
+
+  // Don't save sort for popular or recent.
+  if ($tid != 'popular' && $tid != 'recent') {
+    variable_set('weblinks_blocks_sort_'. $blktid, $edit['weblinks_blocks_sort']);
+  }
+
+  if ($tid = 'popular') {
+    variable_set('weblinks_blocks_popular_list_type', $edit['weblinks_blocks_popular_list_type']);
+    variable_set('weblinks_blocks_show_count_'. $blktid, $edit['weblinks_blocks_show_count']);
+    variable_set('weblinks_blocks_show_last_'. $blktid, $edit['weblinks_blocks_show_last']);
+  }
+
+  if ($tid = 'related') {
+    variable_set('weblinks_blocks_current_related',   $edit['weblinks_blocks_current_related']);
+  }
+
+  if ($tid = 'random') {
+    variable_set('weblinks_blocks_update_interval_'. $blktid, $edit['cron_interval']);
+    variable_set('weblinks_blocks_update_step_'. $blktid, $edit['cron_step']);
+  }
+}
+
+/**
+ * Implementation of hook_form_alter
+ * Alters the taxonomy term form to add block options.
+ */
+function weblinks_blocks_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'taxonomy_form_term':
+      // Is this for our vocabulary?
+      if ($form['#vocabulary']['vid'] != _weblinks_get_vocid()) {
+        return '';
+      }
+      // Don't show our fieldset if we're deleting this term.
+      if ($form_state['confirm_delete']) {
+        return;
+      }
+
+      drupal_add_css(drupal_get_path('module', 'weblinks') .'/weblinks.css');
+      $yesno = array(1 => t('Yes'), 0 => t('No'));
+      $sort_options = array(
+        '' => t('Default.'),
+        'standard' => t('Normal Drupal - by sticky, weight, created date.'),
+        'title' => t('Legacy - by sticky, weight, title.'),
+        );
+      $tid = $form['#term']['tid'];
+
+      $form['weblinks'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Web Links group settings'),
+        '#description' => t('These settings control the blocks and the main links group display.'),
+        '#attributes' => array('id' => 'weblinks-page-settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#prefix' => '<div class="weblinks-settings">',
+        '#suffix' => '</div>',
+        '#weight' => -1,
+        );
+
+      $form['weblinks']['weblinks_page_'. $tid] = array(      
+        '#type' => 'radios',
+        '#options' => $yesno,
+        '#title' => t('Show %name', array('%name' => $form['#term']['name'])),
+        '#default_value' => (int) variable_get('weblinks_page_'. $tid, TRUE),
+        '#description' => t('Select to display this group on the main links page.'),
+        '#prefix' => '<div class="weblinks-radios">',
+        '#suffix' => '</div>',
+        );
+
+      $form['weblinks']['weblinks_collapse_'. $tid] = array(      
+        '#type' => 'radios',
+        '#options' => $yesno,
+        '#prefix' => '<div class="weblinks-radios">',
+        '#suffix' => '</div>',
+        '#title' => t('Collapse by default'),
+        '#default_value' => (int) variable_get('weblinks_collapse_'. $tid, FALSE),
+        '#description' => t('Check to collapse this group on the main links page by default.'),
+        );
+
+      // Set the maximum number of links to display for each group
+      $form['weblinks']['weblinks_maxdisp_'. $tid] = array(
+        '#type' => 'textfield',
+        '#title' => t('Maximum links to display'),
+        '#size' => 10,
+        '#default_value' => variable_get('weblinks_maxdisp_'. $tid, ''),
+        '#description' => t('Leave blank if you would not like to limit the number of links displayed'),
+        );
+
+      $form['weblinks']['weblinks_create_block_'. $tid] = array(      
+        '#type' => 'radios',
+        '#options' => $yesno,
+        '#title' => t('Create block'),
+        '#default_value' => (int) variable_get('weblinks_create_block_'. $tid, TRUE),
+        '#description' => t('Check to allow a block for this group to be created.'),
+        '#prefix' => '<div class="weblinks-radios">',
+        '#suffix' => '</div>',
+        );
+
+      $form['weblinks']['weblinks_block_allow_groups_'. $tid] = array(
+        '#type' => 'radios',
+        '#options' => $yesno,
+        '#title' => t('Blocks by group'),
+        '#default_value' => (int) variable_get('weblinks_block_allow_groups_'. $tid, FALSE),
+        '#description' => t('Create Random, Recent, and Popular blocks for this group. Requires "Create block" above. Child groups will inherit this setting.'),
+        '#prefix' => '<div class="weblinks-radios weblinks-indented">',
+        '#suffix' => '</div>',
+        );
+
+      $form['weblinks']['weblinks_group_sort_'. $tid] = array(
+        '#type' => 'radios',
+        '#options' => $sort_options,
+        '#title' => t('Group Sort order'),
+        '#default_value' => variable_get('weblinks_group_sort_'. $tid, ''),
+        '#description' => t('This determines how the blocks will sort the links.'),
+        '#required' => FALSE,
+        '#prefix' => '<div class="weblinks-radios">',
+        '#suffix' => '</div>',
+        );
+
+      // Taxonomy won't run our routine if after its.
+      array_unshift($form['#submit'], 'weblinks_blocks_form_term_submit');
+
+      break;
+  } // End switch form_id.
+}
+
+function weblinks_blocks_form_term_submit($form, &$form_state) {
+  foreach ($form_state['values'] as $var_name => $value) {
+    if (substr($var_name, 0, 9) == 'weblinks_') {
+      // If group_sort value is '' then we want the default, so delete the variable.
+      if (substr($var_name, 0, 19) == 'weblinks_group_sort' && $value == '') {
+        variable_del($var_name);
+      }
+      else {
+        variable_set($var_name, $value);
+      }
+    }
+  }
+}

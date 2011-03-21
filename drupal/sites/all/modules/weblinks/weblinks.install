@@ -1,0 +1,521 @@
+<?php
+// $Id: weblinks.install,v 1.15.2.17.2.15 2009/09/20 22:33:41 nancyw Exp $
+
+/**
+ * @file
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function weblinks_install() {
+  $result = drupal_install_schema('weblinks');
+
+  if ($result['0']['success']) {
+    drupal_set_message(t('weblinks module installed.'));
+  }
+  else {
+    drupal_set_message(t('weblinks table creation failed. Please "uninstall" the module and retry.'));
+    module_disable('weblinks');
+  }
+
+  // On a new install, mark it as though the latest update has run.
+  variable_set('weblinks_6113', TRUE);
+
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function weblinks_schema() {
+  $schema['weblinks'] = array(
+    'module' => 'Web Links',
+    'description' => 'Extra node information for the weblinks content type.',
+    'fields' => array(
+    'nid' => array(
+      'description' => 'Node identifier',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      ),
+    'vid' => array(
+      'description' => 'Version identifier',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      ),
+    'click_count' => array(
+      'description' => 'Click counter',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      ),
+    'last_click' => array(
+      'description' => 'Date/time of the last click',
+      'type' => 'datetime',
+      ),
+    'last_status' => array(
+      'description' => 'Status from the last validity check',
+      'type' => 'char',
+      'length' => 4,
+      'default' => '200',
+      ),
+    'last_status_info' => array(
+      'description' => 'When the status changed (either the date or number of cron runs ago)',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => FALSE,
+      'default' => NULL,
+      ),
+    'last_checked' => array(
+      'description' => 'Date/time of the last validity check',
+      'type' => 'datetime',
+      ),
+    'urlhash' => array(
+      'description' => 'The hashed value of the URL',
+      'type' => 'char',
+      'length' => 32,
+      'not null' => TRUE,
+      'default' => '',
+      ),
+    'url' => array(
+      'description' => 'The actual URL',
+      'type' => 'text',
+      'not null' => TRUE,
+      ),
+    'reciprocal' => array(
+      'description' => 'A reciprocal URL for matching referers',
+      'type' => 'text',
+      'not null' => FALSE,
+      ),
+    ),
+    'indexes' => array(
+      'last_checked' => array('last_checked'),
+      'urlhash' => array('urlhash'),
+      ),
+    'primary key' => array('nid', 'vid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Change url to text; add an index on it.
+ */
+function weblinks_update_6100() {
+  $ret = array();
+  db_change_field($ret, 'weblinks', 'url', 'url', array('type' => 'text', 'not null' => TRUE, 'default' => ''));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Delete variables that are no longer used.
+ */
+function weblinks_update_6101() {
+  $ret = array();
+
+  variable_del('weblinks_maxdisp_block_recent');
+  variable_del('weblinks_containers');
+  variable_del('weblinks_block_sort');
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Adding fields for link validity checking.
+ */
+function weblinks_update_6102() {
+  $ret = array();
+
+  if (!db_column_exists('weblinks', 'last_status')) {
+    db_add_field($ret, 'weblinks', 'last_status', array('type' => 'char', 'length' => 4, 'not null' => FALSE, 'default' => '200'));
+    db_add_field($ret, 'weblinks', 'last_checked', array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE, 'default' => 0));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Change link description variable.
+ */
+function weblinks_update_6103() {
+  $ret = array();
+
+  if (variable_get('weblinks_linkdesc', TRUE)) {
+    variable_set('weblinks_linkdesc', 'teaser');
+    $ret[] = array('success' => TRUE, 'query' => "variable_set('weblinks_linkdesc', 'teaser')");
+  }
+  else {
+    variable_set('weblinks_linkdesc', 'none');
+    $ret[] = array('success' => TRUE, 'query' => "variable_set('weblinks_linkdesc', 'none')");
+  }
+  
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Clear the caches because of menu/theme changes..
+ */
+function weblinks_update_6104() {
+  $ret = array();
+  drupal_flush_all_caches();
+  $ret[] = array('success' => TRUE, 'query' => t('Caches flushed.'));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Fix the index structure (http://drupal.org/node/293925).
+ */
+function weblinks_update_6105() {
+  $ret = array();
+  $table = 'weblinks';
+
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+    default:
+      $result = db_query("SHOW INDEX FROM {weblinks}");
+      while ($row = db_fetch_array($result)) {
+        if ($row['Key_name'] == 'nid') {
+          db_drop_index($ret, $table, 'nid');
+          db_drop_primary_key($ret, $table);
+          db_add_primary_key($ret, $table, array('nid', 'vid'));
+        }
+      }
+      break;
+
+    case 'pgsql':
+      $result = db_query("SELECT * FROM pg_indexes WHERE tablename = 'weblinks' and indexdef like '%(nid)'");
+      if (db_result($result)) {
+          db_drop_index($ret, $table, 'nid');
+          db_drop_primary_key($ret, $table);
+          db_add_primary_key($ret, $table, array('nid', 'vid'));
+      }
+      break;
+  }
+
+  if (db_column_exists('weblinks', 'tid')) {
+    db_drop_index($ret, $table, 'tid');
+    db_add_index($ret, $table, 'tid', array('tid'));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Remove tid, add click_count, last_click.
+ */
+function weblinks_update_6106() {
+  $ret = array();
+  $table = 'weblinks';
+
+  if (db_column_exists('weblinks', 'tid')) {
+    db_drop_field($ret, $table, 'tid');
+  }
+  if (!db_column_exists('weblinks', 'click_count')) {
+    db_add_field($ret, $table, 'click_count', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
+    db_add_field($ret, $table, 'last_click', array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE, 'default' => 0));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Update "Visit" variable.
+ */
+function weblinks_update_6107() {
+  $ret = array();
+
+  if (!$visit_text = variable_get('weblinks_visit_text', NULL)) {
+    return $ret;
+  }
+
+  $where = strpos($visit_text, '%title');
+  if ($where === FALSE) {
+    if (strpos($visit_text, '[title]') === FALSE) {
+      $visit_text .= ' [title]';
+    }
+  }
+  else {
+    $visit_text = str_replace('%title', '[title]', $visit_text);
+  }
+  variable_set('weblinks_visit_text', $visit_text);
+  $ret[] = array('success' => TRUE, 'query' => "variable_set('weblinks_visit_text', $visit_text)");
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Change module weight.
+ */
+function weblinks_update_6108() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight=-2 WHERE type='module' AND name='weblinks'");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Move blocks over to the new contrib.
+ */
+function weblinks_update_6109() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {blocks} SET module='weblinks_blocks' WHERE module='weblinks'");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Index changes.
+ */
+function weblinks_update_6110() {
+  $ret = array();
+
+  $table = 'weblinks';
+  db_add_field($ret, $table, 'urlhash', array('type' => 'char', 'length' => 32, 'not null' => TRUE, 'default' => ''));
+
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+    default:
+      $result = db_query("SHOW INDEX FROM {weblinks}");
+      while ($row = db_fetch_array($result)) {
+        if ($row['Key_name'] == 'url') {
+          db_drop_index($ret, $table, 'url');
+          $ret[] = update_sql("UPDATE {weblinks} SET urlhash=MD5(url)");
+        }
+      }
+      break;
+      
+    case 'pgsql':
+      $result = db_query("SELECT * FROM pg_indexes WHERE tablename = 'weblinks' and indexdef like '%(nid)'");
+      if (db_result($result)) {
+        db_drop_index($ret, $table, 'url');
+      }
+    }
+
+    db_add_index($ret, $table, 'urlhash', array('urlhash'));
+    db_add_index($ret, $table, 'last_checked', array('last_checked'));
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Settings change.
+ */
+function weblinks_update_6111() {
+  $ret = array();
+  if (variable_get('weblinks_url', 'url') == 'goto') {
+    variable_set('weblinks_redirect', TRUE);
+    $ret[] = array('success' => TRUE, 'query' => "variable_set('weblinks_redirect', TRUE)");
+  }
+  variable_del('weblinks_url');
+  $ret[] = array('success' => TRUE, 'query' => "variable_del('weblinks_url')");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * New column for referers.
+ */
+function weblinks_update_6112() {
+  $ret = array();
+
+  if (!db_column_exists('weblinks', 'reciprocal')) {
+    db_add_field($ret, 'weblinks', 'reciprocal', array('type' => 'text', 'not null' => FALSE));
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Change to DATETIME type.
+ */
+function weblinks_update_6113() {
+  $ret = array();
+
+  if (!variable_get('weblinks_6113', FALSE)) {
+    // Convert "last_click" date and time.
+    db_add_field($ret, 'weblinks', 'last_click_new', array('type' => 'datetime'));
+    switch ($GLOBALS['db_type']) {
+      case 'mysql':
+      case 'mysqli':
+      default:
+        $ret[] = $last = update_sql("UPDATE {weblinks} SET last_click_new = FROM_UNIXTIME(last_click) WHERE last_click <> 0");
+        break;
+
+      case 'pgsql':
+        $ret[] = $last = update_sql("UPDATE {weblinks} SET last_click_new = last_click::abstime::timestamp without time zone WHERE last_click <> 0");
+        break;
+    }  
+    if ($last['success']) {
+      db_drop_field($ret, 'weblinks', 'last_click');
+      db_change_field($ret, 'weblinks', 'last_click_new', 'last_click', array('type' => 'datetime'));
+    }
+
+    // Convert "last_checked" date and time.
+    db_add_field($ret, 'weblinks', 'last_checked_new', array('type' => 'datetime'));
+    switch ($GLOBALS['db_type']) {
+      case 'mysql':
+      case 'mysqli':
+      default:
+        $ret[] = $last = update_sql("UPDATE {weblinks} SET last_checked_new = FROM_UNIXTIME(last_checked) WHERE last_checked <> 0");
+        break;
+        
+      case 'pgsql':
+        $ret[] = $last = update_sql("UPDATE {weblinks} SET last_checked_new = last_checked::abstime::timestamp without time zone WHERE last_checked <> 0");
+        break;
+    }  
+    if ($last['success']) {
+      db_drop_index($ret, 'weblinks', 'last_checked');
+      db_drop_field($ret, 'weblinks', 'last_checked');
+      db_change_field($ret, 'weblinks', 'last_checked_new', 'last_checked', array('type' => 'datetime'));
+      db_add_index($ret, 'weblinks', 'last_checked', array('last_checked'));
+    }
+  }
+  variable_set('weblinks_6113', TRUE);
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Use sticky-encoded weighting (preferably by the Weight module).
+ */
+function weblinks_update_6114() {
+  $ret = array();
+
+  $types = variable_get('weight_node_types', array());
+  if (isset($types['weblinks'])) {
+    drupal_set_message(t('Cannot convert Web Links weights because the Weight module is already set for them.'), 'error');
+  }
+  else {
+    $types['weblinks'] = 'weblinks';
+    variable_set('weight_node_types', $types);
+    $ret[] = array('success' => TRUE, 'query' => "'weblinks' added to 'weight_node_types'.");
+
+    switch ($GLOBALS['db_type']) {
+      case 'mysql':
+      case 'mysqli':
+      default:
+        $ret[] = update_sql("UPDATE {node} n LEFT JOIN {weblinks} l USING(nid, vid) SET n.sticky = 100 - l.weight WHERE n.type='weblinks' AND n.sticky=1");
+        $ret[] = update_sql("UPDATE {node} n LEFT JOIN {weblinks} l USING(nid, vid) SET n.sticky = -100 - l.weight WHERE n.type='weblinks' AND n.sticky=0");
+        break;
+        
+      case 'pgsql':
+        $ret[] = update_sql("UPDATE {node} SET sticky = 100 - COALESCE(l.weight,0) FROM {node} n LEFT JOIN {weblinks} l USING(nid, vid) WHERE {node}.nid=n.nid and {node}.vid=n.vid and {node}.type='weblinks' and {node}.sticky=1");
+        $ret[] = update_sql("UPDATE {node} SET sticky = -100 - COALESCE(l.weight,0) FROM {node} n LEFT JOIN {weblinks} l USING(nid, vid) WHERE {node}.nid=n.nid and {node}.vid=n.vid and {node}.type='weblinks' and {node}.sticky=0");
+        break;
+    }
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * New column for last status change info.
+ * Delete weight column.
+ */
+function weblinks_update_6115() {
+  $ret = array();
+  if (!db_column_exists('weblinks', 'last_status_info')) {
+    db_add_field($ret, 'weblinks', 'last_status_info', array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE, 'default' => NULL));
+  }
+  db_drop_field($ret, 'weblinks', 'weight');
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Revert module weight. http://drupal.org/node/530082
+ */
+function weblinks_update_6116() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight=0 WHERE type='module' AND name='weblinks'");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function weblinks_uninstall() {
+  if (variable_get('weblinks_nav_vocabulary', '')!='') {
+    taxonomy_del_vocabulary(variable_get('weblinks_nav_vocabulary', ''));
+  }
+
+  // Remove all weblinks nodes.
+  $result = db_query("SELECT nid FROM {node} WHERE type='weblinks'");
+  while ($obj = db_fetch_object($result)) {
+    node_delete($obj->nid);
+  }
+
+  // Remove the node type.
+  node_type_delete('weblinks');
+
+  // Get the variables that have a tid at the end.
+  // @@@ I'm not crazy about this, but it works.
+  $result = db_query("SELECT v.name FROM {variable} v WHERE v.name LIKE ('weblinks_filter_%')");
+  while ($name = db_result($result)) {
+    variable_del($name);
+  }
+  variable_del('weblinks_6113');
+  variable_del('weblinks_body_stub');
+  variable_del('weblinks_block_urlnode');
+  variable_del('weblinks_catdesc');
+  variable_del('weblinks_clickthru');
+  variable_del('weblinks_collapsed');
+  variable_del('weblinks_collapsible');
+  variable_del('weblinks_comment_links');
+  variable_del('weblinks_empty_text');
+  variable_del('weblinks_external');
+  variable_del('weblinks_format');
+  variable_del('weblinks_linkdesc');
+  variable_del('weblinks_linkinfo');
+  variable_del('weblinks_linktitle');
+  variable_del('weblinks_maxdepth');
+  variable_del('weblinks_maxfrontdepth');
+  variable_del('weblinks_nav_vocabulary');
+  variable_del('weblinks_nofollow');
+  variable_del('weblinks_pagedesc');
+  variable_del('weblinks_page_sort');
+  variable_del('weblinks_popular_list_type');
+  variable_del('weblinks_redirect');
+  variable_del('weblinks_show_title');
+  variable_del('weblinks_show_url');
+  variable_del('weblinks_simplelinks');
+  variable_del('weblinks_sort');
+  variable_del('weblinks_strip');
+  variable_del('weblinks_subcatdesc');
+  variable_del('weblinks_title_link');
+  variable_del('weblinks_trim');
+  variable_del('weblinks_trim_block');
+  variable_del('weblinks_unclassified_desc');
+  variable_del('weblinks_unclassified_title');
+  variable_del('weblinks_unpublished_desc');
+  variable_del('weblinks_unpublished_title');
+  variable_del('weblinks_url_stub');
+  variable_del('weblinks_urlnode');
+  variable_del('weblinks_user_links');
+  variable_del('weblinks_view_as');
+  variable_del('weblinks_view_position');
+  variable_del('weblinks_visit_text');
+  // Remove our tables.
+  drupal_uninstall_schema('weblinks');
+
+  drupal_set_message(t('weblinks module uninstalled.'));
+}

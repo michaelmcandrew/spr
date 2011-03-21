@@ -1,0 +1,312 @@
+<?php
+// $Id: pralexa.module,v 1.1.2.5.2.20 2009/09/16 15:33:04 nancyw Exp $
+
+/**
+ * @file
+ * Weblinks add-on to fetch Google and Alexa pageranks.
+ */
+  if (module_exists('content')) {
+    module_load_include('inc', 'pralexa', 'pralexa.cck');
+  }
+
+/**
+ * Implementation of hook_weblinks_perm().
+ */
+function pralexa_weblinks_perm() {
+  return array('Access Pagerank and Alexa');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function pralexa_menu() {
+  $items = array();
+
+  $items['weblinks/rankings'] = array(
+    'title' => 'Page rankings',
+    'description' => 'Information about Google pagerank and Alexa Rank',
+    'page callback' => 'pralexa_data',
+    'access arguments' => array('Access Pagerank and Alexa'),
+    'type' => MENU_LOCAL_TASK,
+    ); /* */
+
+  $items['admin/settings/weblinks/pralexa'] = array(
+    'title' => 'Pralexa',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pralexa_admin_settings'),
+    'access arguments' => array('administer weblinks'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5,
+    'file' => 'pralexa.admin.inc',
+    );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function pralexa_help($path, $arg) {
+  $output = ''; 
+  switch ($path) {
+  case "admin/help#pralexa":
+    $output = t('This module will update the Google Page rank and the Alexa Traffic rank at every crontab, run cron.php to get the latest statistics.');
+    break;
+
+  case 'weblinks/rankings':
+  case 'pralexa':
+    $output .= '<p>'. t("Google's page ranks run from 0 to 10; higher is better. Alexa's traffic rank has no limit; lower is better.") .'</p>';
+    break;
+  }
+
+  return $output;
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function pralexa_cron() {
+  $now = isset($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : time();
+  // Is it time to run again?
+  $last = variable_get('pralexa_cron_last', $now);
+  $interval = variable_get('pralexa_cron_interval', 86400);
+  if ($now - $last < $interval) {
+    return;
+  }
+
+  $how_many = variable_get('pralexa_links_per_cron', 20);
+  $query = "SELECT n.nid, n.vid, w.url FROM {node} n "
+    ."LEFT JOIN {weblinks} w USING(vid, nid) "
+    ."LEFT JOIN {weblinks_pralexa} p on p.nid=n.nid "
+    ."WHERE n.type='weblinks' AND n.status=1 "
+    ."ORDER BY p.last_checked ASC ";
+  $url = db_query_range(db_rewrite_sql($query), $how_many);
+  $i = 0;
+  $fdate = date('Y-m-d H:i:s', $now);
+  
+  while ($result = db_fetch_object($url)) {
+    // Delete the existing row if it exists.
+    db_query("DELETE FROM {weblinks_pralexa} WHERE nid=%d", $result->nid);
+    $qargs = array(
+      $result->nid,
+      _pralexa_getpagerank($result->url),
+      _pralexa_getalexa($result->url),
+      $fdate,
+      );
+    $add = db_query("INSERT INTO {weblinks_pralexa} (nid, pagerank, alexa, last_checked) VALUES(%d, %d, %d, '%s')", $qargs);
+    if (!$add) {
+      drupal_set_message(t('Pralexa table insert failed.'));
+    }
+    ++$i;
+  }
+  variable_set('pralexa_cron_last', $now);
+  watchdog('Pralexa', 'Fetched rankings on !count links.', array('!count' => $i), WATCHDOG_NOTICE, l(t('Settings'), 'admin/settings/weblinks/pralexa'));
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function pralexa_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'load':
+      if ($node->type == 'weblinks') {
+        // Get the ranking data.
+        $result = db_query("SELECT pagerank, alexa, last_checked AS rank_checked FROM {weblinks_pralexa} WHERE nid = %d", $node->nid);
+        return db_fetch_array($result);
+      }
+  }
+}
+
+/**
+ * Rankings page.
+ */
+function pralexa_data() {
+  // Get our controlling settings.
+  $rows_per_page = variable_get('pralexa_rows_per_page', 20);
+  $trim = variable_get('pralexa_url_trim', variable_get('weblinks_trim_block', 50));
+  $show_title = variable_get('pralexa_show_title', FALSE);
+  $link_title = variable_get('pralexa_link_title', FALSE);
+  $show_when = variable_get('pralexa_show_when', FALSE);
+  $now = isset($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : time();
+  $taxo = module_exists('taxonomy');
+
+  // Initialize the table stuff.
+  $rows = array();
+  $header = array(
+    array('data' => t('Url'), 'field' => 'url'),
+    t('Groups'),
+    array('data' => t('Google Pagerank'), 'field' => 'pagerank'),
+    array('data' => t('Alexa Traffic Rank'), 'field' => 'alexa'),
+    );
+    if ($show_when) {
+      $header[] = array('data' => t('Last Checked'), 'field' => 'last_checked');
+    }
+
+  // Query for getting groups.
+  $term_query = "SELECT td.name FROM {term_node} tn "
+    ."LEFT JOIN {term_data} td ON td.tid=tn.tid "
+    ."WHERE tn.vid=%d AND tn.nid=%d ";
+
+  // Query for links.
+  $select = "SELECT n.nid, n.vid, n.title, w.url, p.pagerank, p.alexa, p.last_checked FROM {node} n "
+    ."LEFT JOIN {weblinks} w USING (vid, nid) "
+    ."LEFT JOIN {weblinks_pralexa} p USING (nid) "
+    ."WHERE n.type='weblinks' AND n.status=1";
+
+  // Allow column sorting on the table.
+  $select .= tablesort_sql($header);
+  $query1 = pager_query($select, $rows_per_page);
+
+  while ($links = db_fetch_object($query1)) {
+    // Get which groups this link belongs to.
+    $groups = array();
+    if ($taxo) {
+      $term_result = db_query($term_query, $links->vid, $links->nid);
+      while ($term = db_fetch_array($term_result)) {
+        $groups[] = $term['name'];
+      }
+    }
+    if (!$groups) {
+      $groups[] = variable_get('weblinks_unclassified_title', t('Unclassified'));
+    }
+    // Build the data.
+    if ($show_title) {
+      $title = _weblinks_trim($links->title, $trim);
+    }
+    else {
+      $title = _weblinks_trim($links->url, $trim);
+    }
+    $line = array(
+      $link_title ? l($title, 'node/'. $links->nid) : $title,
+      array('data' => implode(', ', $groups), 'align' => 'center'),
+      array('data' => $links->pagerank, 'align' => 'right'),
+      array('data' => ($links->alexa == 2147483647 ? t('none') : $links->alexa), 'align' => 'right'),
+      );
+
+    if ($show_when) {
+      if ($links->last_checked > 0) {
+        $line[] = format_interval($now - strtotime($links->last_checked), 1);
+      }
+      else {
+        $line[] = t('Never');
+      }
+    }
+
+    $rows[] = $line;
+  }
+
+  $output = theme('table', $header, $rows);
+  $output .= theme('pager', $rows_per_page);
+  return $output;
+}
+
+/**
+ * Get the Alexa traffic ranking.
+ */
+function _pralexa_getalexa($url) {
+  $request_url = "http://data.alexa.com/data?cli=10&dat=snbamz&url=". $url;
+  $answer = drupal_http_request($request_url);
+  if ($answer->code == '200') {
+    $xml = simplexml_load_string($answer->data);
+    return (int) $xml->SD->POPULARITY['TEXT'];
+  }
+  else {
+    watchdog('Pralexa', 'Bad Alexa response: @code', array('@code' => $answer->code), WATCHDOG-ERROR);
+    return NULL;
+  }
+}
+
+function _pralexa_strtonum($str, $check, $magic) {
+  $int32unit = 4294967296;
+
+  $length = strlen($str);
+  for ($i = 0; $i < $length; $i++) {
+    $check *= $magic;
+    if ($check >= $int32unit) {
+      $check = ($check - $int32unit * (int) ($check / $int32unit));
+      //if the check less than -2^31
+      $check = ($check < -2147483648) ? ($check + $int32unit) : $check;
+    }
+    $check += ord($str{$i});
+  }
+  return $check;
+}
+
+function _pralexa_hashurl($string) {
+  $check1 = _pralexa_strtonum($string, 0x1505, 0x21);
+  $check2 = _pralexa_strtonum($string, 0, 0x1003F);
+
+  $check1 >>= 2;
+  $check1 = (($check1 >> 4) & 0x3FFFFC0 ) | ($check1 & 0x3F);
+  $check1 = (($check1 >> 4) & 0x3FFC00 ) | ($check1 & 0x3FF);
+  $check1 = (($check1 >> 4) & 0x3C000 ) | ($check1 & 0x3FFF);
+
+  $T1 = (((($check1 & 0x3C0) << 4) | ($check1 & 0x3C)) <<2 ) | ($check2 & 0xF0F );
+  $T2 = (((($check1 & 0xFFFFC000) << 4) | ($check1 & 0x3C00)) << 0xA) | ($check2 & 0xF0F0000 );
+
+  return ($T1 | $T2);
+}
+
+function _pralexa_checkhash($hashnum) {
+  $checkbyte = 0;
+  $flag = 0;
+
+  $hashstr = sprintf('%u', $hashnum) ;
+  $length = strlen($hashstr);
+
+  for ($i = $length - 1;  $i >= 0;  $i --) {
+    $re = $hashstr{$i};
+    if (1 === ($flag % 2)) {
+      $re += $re;
+      $re = (int)($re / 10) + ($re % 10);
+    }
+    $checkbyte += $re;
+    $flag ++;
+  }
+
+  $checkbyte %= 10;
+  if (0 !== $checkbyte) {
+    $checkbyte = 10 - $checkbyte;
+    if (1 === ($flag % 2) ) {
+      if (1 === ($checkbyte % 2)) {
+        $checkbyte += 9;
+      }
+      $checkbyte >>= 1;
+    }
+  }
+
+  return '7'. $checkbyte . $hashstr;
+}
+
+/**
+ * Get the Google page rank.
+ */
+function _pralexa_getpagerank($url) {
+  $query ="http://toolbarqueries.google.com/search?client=navclient-auto&ch=". _pralexa_checkhash(_pralexa_hashurl($url)) ."&features=Rank&q=info:". $url ."&num=100&filter=0";
+  $answer = drupal_http_request($query);
+  if ($answer->code == '200') {
+    $pieces = explode(':', $answer->data);
+    return (int) $pieces[2];
+  }
+  else {
+    watchdog('Pralexa', 'Bad Google response: @code (url: @url)', array('@code' => $answer->code, '@url' => $url), WATCHDOG-ERROR);
+    return NULL;
+  }
+}
+
+/**
+ * Implementation of hook_weblinks_preprocess().
+ */
+function pralexa_weblinks_preprocess($node) {
+  if (variable_get('pralexa_show_rank', FALSE)) {
+    drupal_add_css(drupal_get_path('module', 'pralexa') .'/pralexa.css');
+    return array(
+      'pagerank' => $node->pagerank,
+      'alexa' => $node->alexa,
+      'rank_checked' => format_date(strtotime($node->rank_checked), 'small'),
+      );
+  }
+  else {
+    return array();
+  }
+}

@@ -1,0 +1,95 @@
+# $Id: de.po,v 1.1.2.1 2009/09/13 23:27:45 nancyw Exp $
+#
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  weblinks_convert_janode.module,v 1.1.2.4 2009/07/07 00:29:49 nancyw
+#  weblinks_convert_janode.info,v 1.1.2.1 2009/05/08 17:27:28 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal Weblinks V6.x-2.x\n"
+"POT-Creation-Date: 2009-09-07 20:49+0200\n"
+"PO-Revision-Date: 2009-09-07 20:54+0100\n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: weblinks_convert_janode.module:36
+msgid "The Janode package nodes will be used to create duplicate Web Links nodes and any taxonomy vocabularies will be updated to be used on the \"weblinks\" content type."
+msgstr "Die Beiträge des Janode-Pakets werden verwendet, um doppelte Web-Links-Beiträge zu erstellen, alle Taxonomievokabulare werden aktualisiert, so dass sie vom Inhaltstyp „Internet-Link“ verwendet werden."
+
+#: weblinks_convert_janode.module:42
+msgid "I have done a back up of my database."
+msgstr "Ich habe meine Datenbank gesichert."
+
+#: weblinks_convert_janode.module:47
+msgid "Number of Links to convert at a time"
+msgstr "Anzahl Links, die auf einmal konvertiert werden sollen"
+
+#: weblinks_convert_janode.module:50
+msgid "This minimizes the risk of timing out if you have a lot of links to convert."
+msgstr "Dies minimiert das Risiko einer Auszeit, wenn viele Links konvertiert werden müssen."
+
+#: weblinks_convert_janode.module:55
+msgid "Convert"
+msgstr "Konvertieren"
+
+#: weblinks_convert_janode.module:66
+msgid "You must check the box that says you backed up your database."
+msgstr "Das Ankreuzkästchen, mit dem Sie die Sicherung der Datenbank bestätigen, muss angekreuzt werden."
+
+#: weblinks_convert_janode.module:97
+msgid "Improper URL set by Links package in node #!nid."
+msgstr "Ungültige URL seitens ‚Links package‘ im Beitrag #!nid."
+
+#: weblinks_convert_janode.module:121
+msgid "!count links converted."
+msgstr "!count Links konvertiert."
+
+#: weblinks_convert_janode.module:121
+msgid "No"
+msgstr "Nein"
+
+#: weblinks_convert_janode.module:125
+msgid "Found !count vocabularies: (!vocs)"
+msgstr "!count Vokabulare gefunden: (!vocs)"
+
+#: weblinks_convert_janode.module:138
+msgid "Added \"Web Links\" content to the !voc vocabulary."
+msgstr "„Web Links“-Inhalt wurde dem Vokabular !voc hinzugefügt."
+
+#: weblinks_convert_janode.module:141
+msgid "Failed adding \"Web Links\" content to the !voc vocabulary."
+msgstr "Fehler beim Hinzufügen von „Web Links“-Inhalt zum Vokabular !voc."
+
+#: weblinks_convert_janode.module:147
+msgid "No vocabularies were used, so these links will be marked as \"%noclass\"."
+msgstr "Es wurden keine Vokabulare verwendet, daher werden diese Links als „%noclass“ markiert."
+
+#: weblinks_convert_janode.module:147
+msgid "Unclassified"
+msgstr "Nicht klassifiziert"
+
+#: weblinks_convert_janode.module:17
+msgid "Convert Janode package"
+msgstr "Janode-Paket konvertieren"
+
+#: weblinks_convert_janode.info:0
+msgid "Web Links Convert Janode Package"
+msgstr ""
+
+#: weblinks_convert_janode.info:0
+msgid "Allows users to convert Janode package to Web Links."
+msgstr "Ermöglicht Benutzern, das Janode-Paket nach Web Links zu konvertieren."
+
+#: weblinks_convert_janode.info:0
+msgid "Weblinks"
+msgstr "Internet-Links"
+

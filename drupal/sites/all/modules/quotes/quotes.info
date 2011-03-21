@@ -1,0 +1,11 @@
+; $Id: quotes.info,v 1.1.2.1.2.3 2008/08/14 15:27:27 nancyw Exp $
+name = "Quotes"
+description = "Allows users to maintain personal lists of quotations and display quotes in one or more blocks."
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-10-12
+version = "6.x-1.40"
+core = "6.x"
+project = "quotes"
+datestamp = "1255365114"
+

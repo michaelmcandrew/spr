@@ -1,0 +1,131 @@
+# $Id: de.po,v 1.1.2.1 2009/09/13 23:27:45 nancyw Exp $
+#
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  weblinks_filter.module,v 1.1.2.1.2.1 2009/05/14 15:19:50 nancyw
+#  weblinks_filter.info,v 1.1.2.1 2009/02/20 18:49:33 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal Weblinks V6.x-2.x\n"
+"POT-Creation-Date: 2009-09-07 20:49+0200\n"
+"PO-Revision-Date: 2009-09-07 20:52+0100\n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: weblinks_filter.module:41
+msgid "Weblinks filter"
+msgstr "Filter für Internet-Links"
+
+#: weblinks_filter.module:50
+msgid "Allows users to include links with [link: <em>title</em>]."
+msgstr "Erlaubt Benutzern, Links mit [link: <em>Titel</em>] einzufügen."
+
+#: weblinks_filter.module:53
+msgid "Unknown filter description requested from Weblinks."
+msgstr "Unbekannte Filter-Beschreibung von ‚Weblinks‘ angefordert."
+
+#: weblinks_filter.module:100
+msgid "No link found for @title."
+msgstr "Kein Link gefunden für @title."
+
+#: weblinks_filter.module:116
+msgid "Weblinks settings"
+msgstr "Einstellungen für Internet-Links"
+
+#: weblinks_filter.module:123
+msgid "Links lead to URL or Web Link node"
+msgstr "Links führen zur URL oder zum Beitrag des Internet-Links"
+
+#: weblinks_filter.module:125
+msgid "Most people will want to leave this as URL. Specifying \"node\" makes it easier to edit the links, but requires an additional click to follow the link."
+msgstr "Die meisten werden dies auf URL lassen. „Beitrag“ macht es einfacher, die Links zu bearbeiten, erfordert aber einen weiteren Mausklick, um dem Link zu folgen."
+
+#: weblinks_filter.module:126
+msgid "URL"
+msgstr "URL"
+
+#: weblinks_filter.module:126
+msgid "node"
+msgstr "Beitrag"
+
+#: weblinks_filter.module:133
+msgid "Open links in a new window"
+msgstr "Links in einem neuen Fenster öffnen"
+
+#: weblinks_filter.module:135
+msgid "Recommended to keep your vistors on your site. Should not be used when the \"Links lead...\" option is \"node.\""
+msgstr "Empfohlen, um Besucher auf dieser Website zu halten. Sollte nicht verwendet werden, wenn die Option „Links führen...“ auf „Beitrag“ steht."
+
+#: weblinks_filter.module:140
+msgid "Use link descriptions as title attribute"
+msgstr "Beschreibungen von Links als title-Attribut verwenden"
+
+#: weblinks_filter.module:142
+msgid "If checked the link description will be added as a \"title\" attribute for a hover tip."
+msgstr "Wenn aktiviert wird die Beschreibung des Links als Attribut „title“ als Hover Tip hinzugefügt"
+
+#: weblinks_filter.module:147
+msgid "Spam link deterrent"
+msgstr "Spam-Link-Abschreckung"
+
+#: weblinks_filter.module:149
+msgid "If enabled, Drupal will add rel=\"nofollow\" to all links, as a measure to reduce the effectiveness of spam links. Note: this will also prevent valid links from being followed by search engines, therefore it is likely most effective when enabled for anonymous users."
+msgstr "Wenn aktiviert, fügt Drupal allen Links rel=\"nofollow\" als Maßnahme hinzu, Spam-Links zu reduzieren."
+
+#: weblinks_filter.module:154
+msgid "No image"
+msgstr "Kein Bild"
+
+#: weblinks_filter.module:155
+msgid "Before the title"
+msgstr "Vor dem Titel"
+
+#: weblinks_filter.module:156
+msgid "After the title"
+msgstr "Nach dem Titel"
+
+#: weblinks_filter.module:161
+msgid "Use image in the link"
+msgstr "Bild im Link verwenden"
+
+#: weblinks_filter.module:163
+msgid "If checked the link will include an image attached to the link, if there is one."
+msgstr "Der Link beinhaltet ein an den Link angehängtes Bild, wenn es eines gibt."
+
+#: weblinks_filter.module:173
+msgid "Image size"
+msgstr "Bildgröße"
+
+#: weblinks_filter.module:175
+msgid "Which size image to use in the link. Requires \"Use image...\" above to be checked."
+msgstr "Welche Bildgröße im Link verwendet werden soll. Erfordert, dass oben „Bild im Link verwenden“ aktiviert ist."
+
+#: weblinks_filter.module:187
+msgid "To insert a link to a site known to the Weblinks module, you may insert in your content the pseudo-tag: [link: <em>title</em>]. The Weblinks module will insert the appropriate link at that spot in the content."
+msgstr "Um einen Link auf eine Website einzufügen, die dem Modul Weblinks bekannt ist, kann in eigenen Inhalt der Pseudo-Tag [link: <em>Titel</em>] eingefügt werden. Das Modul Weblinks fügt an dieser Stelle den passenden Link in den Inhalt ein."
+
+#: weblinks_filter.module:190
+msgid "You may insert a link to a defined site with [link: <em>title</em>]."
+msgstr "Ein Link auf eine bestimmte Seite kann auch eingefügt werden mit [link: <em>Titel</em>]."
+
+#: weblinks_filter.info:0
+msgid "Web Links Filter"
+msgstr "Filter für Internet-Links"
+
+#: weblinks_filter.info:0
+msgid "Allows users to include links with [link: title]."
+msgstr "Ermöglicht Benutzern, Links mit [link: Titel] zu integrieren"
+
+#: weblinks_filter.info:0
+msgid "Weblinks"
+msgstr "Internet-Links"
+

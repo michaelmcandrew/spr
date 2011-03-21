@@ -1,0 +1,75 @@
+# $Id: de.po,v 1.1.2.1 2009/09/13 23:27:45 nancyw Exp $
+#
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  weblinks_convert_linksdb.module,v 1.1.2.3 2009/07/07 00:29:49 nancyw
+#  weblinks_convert_linksdb.info,v 1.1.2.1 2009/05/10 00:42:11 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal Weblinks V6.x-2.x\n"
+"POT-Creation-Date: 2009-09-07 20:49+0200\n"
+"PO-Revision-Date: 2009-09-07 20:52+0100\n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: weblinks_convert_linksdb.module:36
+msgid "The LinksDB tables will be used to create Web Links nodes and taxonomy terms will be created from its categories."
+msgstr "Die LinkDB-Tabellen werden verwendet, um Web-Links-Beiträge zu erstellen, Taxonomiebegriffe werden von dessen Kategorien erstellt."
+
+#: weblinks_convert_linksdb.module:42
+msgid "I have done a back up of my database."
+msgstr "Ich habe meine Datenbank gesichert."
+
+#: weblinks_convert_linksdb.module:47
+msgid "Number of Links to convert at a time"
+msgstr "Anzahl Links, die auf einmal konvertiert werden sollen"
+
+#: weblinks_convert_linksdb.module:50
+msgid "This minimizes the risk of timing out if you have a lot of links to convert."
+msgstr "Dies minimiert das Risiko einer Auszeit, wenn viele Links konvertiert werden müssen."
+
+#: weblinks_convert_linksdb.module:55
+msgid "Convert"
+msgstr "Konvertieren"
+
+#: weblinks_convert_linksdb.module:63
+msgid "You must check the box that says you backed up your database."
+msgstr "Das Ankreuzkästchen, mit dem Sie die Sicherung der Datenbank bestätigen, muss angekreuzt werden."
+
+#: weblinks_convert_linksdb.module:93;118
+msgid "Converted from LinksDB"
+msgstr "Konvertiert von LinksDB"
+
+#: weblinks_convert_linksdb.module:125
+msgid "Dead by: %comment"
+msgstr ""
+
+#: weblinks_convert_linksdb.module:132
+msgid "%title saved as node/!nid"
+msgstr "%title gespeichert als node/!nid"
+
+#: weblinks_convert_linksdb.module:17
+msgid "Convert LinksDB package"
+msgstr "LinksDB-Paket konvertieren"
+
+#: weblinks_convert_linksdb.info:0
+msgid "Web Links Convert LinksDB"
+msgstr ""
+
+#: weblinks_convert_linksdb.info:0
+msgid "Allows users to convert LinksDB package to Web Links."
+msgstr "Ermöglicht Benutzern, das LinksDB-Paket nach Web Links zu konvertieren."
+
+#: weblinks_convert_linksdb.info:0
+msgid "Weblinks"
+msgstr "Internet-Links"
+

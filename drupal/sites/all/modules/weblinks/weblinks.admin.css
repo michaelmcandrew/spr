@@ -1,0 +1,74 @@
+/* $Id: weblinks.admin.css,v 1.1.2.1 2009/07/07 00:29:50 nancyw Exp $ */
+/**
+* @file
+*   Style sheet for the Weblinks module.
+*/
+
+.weblinks-settings input, .weblinks-settings select, .weblinks-settings .resizable-textarea {
+  margin-left: 2em;
+}
+
+.weblinks-settings .weblinks_checker_hide fieldset {
+  clear: both;
+  margin-top: 1em;
+}
+
+.weblinks-settings .form-checkboxes, .weblinks-settings .form-radios, .weblinks-settings .form-radios .form-item {
+  margin-top: -.25em;
+}
+
+#edit-weblinks-checker-interval-wrapper  select, #edit-pralexa-cron-interval-wrapper select {
+  float: left;
+  margin: 0 2em 1em 2em;
+}
+
+#edit-pralexa-show-when-wrapper {
+  clear: both;
+}
+
+.weblinks-radios {
+  clear: both;
+}
+
+.weblinks-radios .form-item label.option {
+  float: left;
+  white-space: normal;
+}
+
+.weblinks-radios .form-item .description {
+  clear: both;
+  margin-left: 1.5em;
+}
+
+.weblinks-checkboxes .form-item label.option {
+  float: left;
+  width: 49%;
+  white-space: normal;
+}
+
+.weblinks-checkboxes .form-item .description {
+  clear: both;
+}
+
+.weblinks_trim_hide, .weblinks_visit_hide {
+  margin-left: 1.5em;
+}
+
+#weblinks-group-settings .form-item label {
+  font-weight: bold;
+}
+
+#weblinks-group-settings .form-radios .form-item label {
+  font-weight: normal;
+}
+.weblinks-settings .form-item label {
+  font-weight: bold;
+}
+
+.weblinks-settings .form-item .form-item label {
+  font-weight: normal;
+}
+
+.weblinks-settings .form-item label.option {
+  font-weight: normal;
+}

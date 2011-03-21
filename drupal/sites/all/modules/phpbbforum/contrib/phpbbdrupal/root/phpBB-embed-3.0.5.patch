@@ -1,0 +1,1743 @@
+diff -uprbB ./faq.php ../phpBB3/faq.php
+--- ./faq.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/faq.php	2009-01-20 18:09:50.317224500 +0300
+@@ -11,10 +11,15 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+diff -uprbB ./includes/functions.php ../phpBB3/includes/functions.php
+--- ./includes/functions.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/functions.php	2009-06-02 16:49:28.980699000 +0400
+@@ -2158,6 +2158,13 @@ function redirect($url, $return = false,
+ 		return $url;
+ 	}
+ 
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    phpbbforum_redirect($url);
++  }
++  //***VB***
++  
+ 	// Redirect via an HTML form for PITA webservers
+ 	if (@preg_match('#Microsoft|WebSTAR|Xitami#', getenv('SERVER_SOFTWARE')))
+ 	{
+@@ -2290,8 +2297,25 @@ function meta_refresh($time, $url, $disa
+ 	global $template;
+ 
+ 	$url = redirect($url, true, $disable_cd_check);
++	
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    global $_phpbb_embed_mode;
++    if ($_phpbb_embed_mode['redirect'])
++      redirect($url);
++  }
++  //***VB***
++
+ 	$url = str_replace('&', '&amp;', $url);
+ 
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    $url = phpbbforum_redirect($url, $time);
++  }
++  //***VB***
++
+ 	// For XHTML compatibility we change back & to &amp;
+ 	$template->assign_vars(array(
+ 		'META' => '<meta http-equiv="refresh" content="' . $time . ';url=' . $url . '" />')
+@@ -2489,7 +2513,12 @@ function confirm_box($check, $title = ''
+ 	$use_page = ($u_action) ? $phpbb_root_path . $u_action : $phpbb_root_path . str_replace('&', '&amp;', $user->page['page']);
+ 	$u_action = reapply_sid($use_page);
+ 	$u_action .= ((strpos($u_action, '?') === false) ? '?' : '&amp;') . 'confirm_key=' . $confirm_key;
+-
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    $u_action = _phpbbforum_replace_urls($u_action, true);
++  }
++  //***VB***
+ 	$template->assign_vars(array(
+ 		'MESSAGE_TITLE'		=> (!isset($user->lang[$title])) ? $user->lang['CONFIRM'] : $user->lang[$title],
+ 		'MESSAGE_TEXT'		=> (!isset($user->lang[$title . '_CONFIRM'])) ? $title : $user->lang[$title . '_CONFIRM'],
+@@ -2603,6 +2632,13 @@ function login_box($redirect = '', $l_ex
+ 		if ($result['status'] == LOGIN_SUCCESS)
+ 		{
+ 			$redirect = request_var('redirect', "{$phpbb_root_path}index.$phpEx");
++      //***VB***
++      if (defined('PHPBB_API_EMBEDDED'))
++      {
++        if ($redirect == "index.$phpEx")
++          $redirect = "{$phpbb_root_path}index.$phpEx";
++      }
++      //***VB***
+ 			$message = ($l_success) ? $l_success : $user->lang['LOGIN_REDIRECT'];
+ 			$l_redirect = ($admin) ? $user->lang['PROCEED_TO_ACP'] : (($redirect === "{$phpbb_root_path}index.$phpEx" || $redirect === "index.$phpEx") ? $user->lang['RETURN_INDEX'] : $user->lang['RETURN_PAGE']);
+ 
+@@ -2614,7 +2650,12 @@ function login_box($redirect = '', $l_ex
+ 			{
+ 				return;
+ 			}
+-
++      //***VB***
++      if (defined('PHPBB_API_EMBEDDED'))
++      {
++        _phpbb_api_hook('login', array('username' => $username, 'password' => $password, 'redirect' => $redirect));
++      }
++      //***VB***
+ 			$redirect = meta_refresh(3, $redirect);
+ 			trigger_error($message . '<br /><br />' . sprintf($l_redirect, '<a href="' . $redirect . '">', '</a>'));
+ 		}
+@@ -3820,12 +3861,22 @@ function page_header($page_title = '', $
+ 		'A_COOKIE_SETTINGS'		=> addslashes('; path=' . $config['cookie_path'] . ((!$config['cookie_domain'] || $config['cookie_domain'] == 'localhost' || $config['cookie_domain'] == '127.0.0.1') ? '' : '; domain=' . $config['cookie_domain']) . ((!$config['cookie_secure']) ? '' : '; secure')),
+ 	));
+ 
++  //***VB***
++	if (!defined('PHPBB_API_EMBEDDED'))
++	{
+ 	// application/xhtml+xml not used because of IE
+ 	header('Content-type: text/html; charset=UTF-8');
+ 
+ 	header('Cache-Control: private, no-cache="set-cookie"');
+ 	header('Expires: 0');
+ 	header('Pragma: no-cache');
++	}
++  else
++  {
++    global $_phpbb_result;
++    $_phpbb_result['page_title'] = $page_title;
++  }
++  //***VB***
+ 
+ 	return;
+ }
+@@ -3915,6 +3966,11 @@ function page_footer($run_cron = true)
+ 		}
+ 	}
+ 
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++    ob_start();
++  //***VB***
++  
+ 	$template->display('body');
+ 
+ 	garbage_collection();
+@@ -3934,12 +3990,16 @@ function garbage_collection()
+ 	{
+ 		$cache->unload();
+ 	}
+-
++	//***VB***
++  if (!defined('PHPBB_API_EMBEDDED'))
++	{
+ 	// Close our DB connection.
+ 	if (!empty($db))
+ 	{
+ 		$db->sql_close();
+ 	}
++  }
++  //***VB***
+ }
+ 
+ /**
+diff -uprbB ./includes/functions_display.php ../phpBB3/includes/functions_display.php
+--- ./includes/functions_display.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/functions_display.php	2009-06-01 01:12:15.331494600 +0400
+@@ -238,6 +238,12 @@ function display_forums($root_data = '',
+ 	if ($mark_read == 'forums' || $mark_read == 'all')
+ 	{
+ 		$redirect = build_url(array('mark', 'hash'));
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      $redirect = _phpbbforum_replace_urls($redirect);
++    }
++    //***VB***
+ 		$token = request_var('hash', '');
+ 		if (check_link_hash($token, 'global'))
+ 		{
+diff -uprbB ./includes/functions_messenger.php ../phpBB3/includes/functions_messenger.php
+--- ./includes/functions_messenger.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/functions_messenger.php	2009-06-01 01:09:50.095494600 +0400
+@@ -258,6 +258,14 @@ class messenger
+ 			return true;
+ 		}
+ 
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      $this->subject = _phpbbforum_replace_msg_links($this->subject);
++      $this->msg = _phpbbforum_replace_msg_links($this->msg);
++    }
++    //***VB***
++    
+ 		switch ($method)
+ 		{
+ 			case NOTIFY_EMAIL:
+diff -uprbB ./includes/functions_module.php ../phpBB3/includes/functions_module.php
+--- ./includes/functions_module.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/functions_module.php	2009-02-26 15:06:58.009803200 +0300
+@@ -446,7 +446,16 @@ class p_master
+ 				trigger_error("Cannot find module $module_path/{$this->p_class}_$this->p_name.$phpEx", E_USER_ERROR);
+ 			}
+ 
++      //***VB***
++      if (!defined('PHPBB_API_EMBEDDED'))
++      {
+ 			include("$module_path/{$this->p_class}_$this->p_name.$phpEx");
++      }
++      else
++      {
++        include_once("$module_path/{$this->p_class}_$this->p_name.$phpEx");
++      }
++      //***VB***
+ 
+ 			if (!class_exists("{$this->p_class}_$this->p_name"))
+ 			{
+@@ -497,6 +506,15 @@ class p_master
+ 				$this->module->u_action .= $this->module_ary[$this->active_module_row_id]['url_extra'];
+ 			}
+ 
++      //***VB***
++      if (defined('PHPBB_API_EMBEDDED'))
++      {
++        //if ($this->p_class != 'acp') {
++          $this->module->u_action = _phpbbforum_replace_cp_action($this->p_class, $this->module->u_action);
++        //}
++      }
++      //***VB***
++            
+ 			// Assign the module path for re-usage
+ 			$this->module->module_path = $module_path . '/';
+ 
+diff -uprbB ./includes/functions_user.php ../phpBB3/includes/functions_user.php
+--- ./includes/functions_user.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/functions_user.php	2009-06-01 01:07:32.019894600 +0400
+@@ -295,6 +295,307 @@ function user_add($user_row, $cp_data = 
+ 	return $user_id;
+ }
+ 
++/***VB***/
++if (defined('PHPBB_DRUPAL_MODULE')) 
++{
++//function user_delete($mode, $user_id, $post_username = false)
++function phpbb_user_delete($mode, $user_id, $post_username = false)
++{
++	global $cache, $config, $db, $user, $auth;
++	global $phpbb_root_path, $phpEx;
++
++	$sql = 'SELECT *
++		FROM ' . USERS_TABLE . '
++		WHERE user_id = ' . $user_id;
++	$result = $db->sql_query($sql);
++	$user_row = $db->sql_fetchrow($result);
++	$db->sql_freeresult($result);
++
++	if (!$user_row)
++	{
++		return false;
++	}
++
++	// Before we begin, we will remove the reports the user issued.
++	$sql = 'SELECT r.post_id, p.topic_id
++		FROM ' . REPORTS_TABLE . ' r, ' . POSTS_TABLE . ' p
++		WHERE r.user_id = ' . $user_id . '
++			AND p.post_id = r.post_id';
++	$result = $db->sql_query($sql);
++
++	$report_posts = $report_topics = array();
++	while ($row = $db->sql_fetchrow($result))
++	{
++		$report_posts[] = $row['post_id'];
++		$report_topics[] = $row['topic_id'];
++	}
++	$db->sql_freeresult($result);
++
++	if (sizeof($report_posts))
++	{
++		$report_posts = array_unique($report_posts);
++		$report_topics = array_unique($report_topics);
++
++		// Get a list of topics that still contain reported posts
++		$sql = 'SELECT DISTINCT topic_id
++			FROM ' . POSTS_TABLE . '
++			WHERE ' . $db->sql_in_set('topic_id', $report_topics) . '
++				AND post_reported = 1
++				AND ' . $db->sql_in_set('post_id', $report_posts, true);
++		$result = $db->sql_query($sql);
++
++		$keep_report_topics = array();
++		while ($row = $db->sql_fetchrow($result))
++		{
++			$keep_report_topics[] = $row['topic_id'];
++		}
++		$db->sql_freeresult($result);
++
++		if (sizeof($keep_report_topics))
++		{
++			$report_topics = array_diff($report_topics, $keep_report_topics);
++		}
++		unset($keep_report_topics);
++
++		// Now set the flags back
++		$sql = 'UPDATE ' . POSTS_TABLE . '
++			SET post_reported = 0
++			WHERE ' . $db->sql_in_set('post_id', $report_posts);
++		$db->sql_query($sql);
++
++		if (sizeof($report_topics))
++		{
++			$sql = 'UPDATE ' . TOPICS_TABLE . '
++				SET topic_reported = 0
++				WHERE ' . $db->sql_in_set('topic_id', $report_topics);
++			$db->sql_query($sql);
++		}
++	}
++
++	// Remove reports
++	$db->sql_query('DELETE FROM ' . REPORTS_TABLE . ' WHERE user_id = ' . $user_id);
++
++	if ($user_row['user_avatar'] && $user_row['user_avatar_type'] == AVATAR_UPLOAD)
++	{
++		avatar_delete('user', $user_row);
++	}
++
++	switch ($mode)
++	{
++		case 'retain':
++
++			$db->sql_transaction('begin');
++
++			if ($post_username === false)
++			{
++				$post_username = $user->lang['GUEST'];
++			}
++
++			// If the user is inactive and newly registered we assume no posts from this user being there...
++			if ($user_row['user_type'] == USER_INACTIVE && $user_row['user_inactive_reason'] == INACTIVE_REGISTER && !$user_row['user_posts'])
++			{
++			}
++			else
++			{
++				$sql = 'UPDATE ' . FORUMS_TABLE . '
++					SET forum_last_poster_id = ' . ANONYMOUS . ", forum_last_poster_name = '" . $db->sql_escape($post_username) . "', forum_last_poster_colour = ''
++					WHERE forum_last_poster_id = $user_id";
++				$db->sql_query($sql);
++
++				$sql = 'UPDATE ' . POSTS_TABLE . '
++					SET poster_id = ' . ANONYMOUS . ", post_username = '" . $db->sql_escape($post_username) . "'
++					WHERE poster_id = $user_id";
++				$db->sql_query($sql);
++
++				$sql = 'UPDATE ' . POSTS_TABLE . '
++					SET post_edit_user = ' . ANONYMOUS . "
++					WHERE post_edit_user = $user_id";
++				$db->sql_query($sql);
++
++				$sql = 'UPDATE ' . TOPICS_TABLE . '
++					SET topic_poster = ' . ANONYMOUS . ", topic_first_poster_name = '" . $db->sql_escape($post_username) . "', topic_first_poster_colour = ''
++					WHERE topic_poster = $user_id";
++				$db->sql_query($sql);
++
++				$sql = 'UPDATE ' . TOPICS_TABLE . '
++					SET topic_last_poster_id = ' . ANONYMOUS . ", topic_last_poster_name = '" . $db->sql_escape($post_username) . "', topic_last_poster_colour = ''
++					WHERE topic_last_poster_id = $user_id";
++				$db->sql_query($sql);
++
++				// Since we change every post by this author, we need to count this amount towards the anonymous user
++
++				// Update the post count for the anonymous user
++				if ($user_row['user_posts'])
++				{
++					$sql = 'UPDATE ' . USERS_TABLE . '
++						SET user_posts = user_posts + ' . $user_row['user_posts'] . '
++						WHERE user_id = ' . ANONYMOUS;
++					$db->sql_query($sql);
++				}
++			}
++
++			$db->sql_transaction('commit');
++
++		break;
++
++		case 'remove':
++
++			if (!function_exists('delete_posts'))
++			{
++				/***VB***/
++        include_once($phpbb_root_path . 'includes/functions_admin.' . $phpEx);
++			}
++
++			$sql = 'SELECT topic_id, COUNT(post_id) AS total_posts
++				FROM ' . POSTS_TABLE . "
++				WHERE poster_id = $user_id
++				GROUP BY topic_id";
++			$result = $db->sql_query($sql);
++
++			$topic_id_ary = array();
++			while ($row = $db->sql_fetchrow($result))
++			{
++				$topic_id_ary[$row['topic_id']] = $row['total_posts'];
++			}
++			$db->sql_freeresult($result);
++
++			if (sizeof($topic_id_ary))
++			{
++				$sql = 'SELECT topic_id, topic_replies, topic_replies_real
++					FROM ' . TOPICS_TABLE . '
++					WHERE ' . $db->sql_in_set('topic_id', array_keys($topic_id_ary));
++				$result = $db->sql_query($sql);
++
++				$del_topic_ary = array();
++				while ($row = $db->sql_fetchrow($result))
++				{
++					if (max($row['topic_replies'], $row['topic_replies_real']) + 1 == $topic_id_ary[$row['topic_id']])
++					{
++						$del_topic_ary[] = $row['topic_id'];
++					}
++				}
++				$db->sql_freeresult($result);
++
++				if (sizeof($del_topic_ary))
++				{
++					$sql = 'DELETE FROM ' . TOPICS_TABLE . '
++						WHERE ' . $db->sql_in_set('topic_id', $del_topic_ary);
++					$db->sql_query($sql);
++				}
++			}
++
++			// Delete posts, attachments, etc.
++			delete_posts('poster_id', $user_id);
++
++		break;
++	}
++
++	$db->sql_transaction('begin');
++
++	$table_ary = array(USERS_TABLE, USER_GROUP_TABLE, TOPICS_WATCH_TABLE, FORUMS_WATCH_TABLE, ACL_USERS_TABLE, TOPICS_TRACK_TABLE, TOPICS_POSTED_TABLE, FORUMS_TRACK_TABLE, PROFILE_FIELDS_DATA_TABLE, MODERATOR_CACHE_TABLE, DRAFTS_TABLE, BOOKMARKS_TABLE, SESSIONS_KEYS_TABLE);
++
++	foreach ($table_ary as $table)
++	{
++		$sql = "DELETE FROM $table
++			WHERE user_id = $user_id";
++		$db->sql_query($sql);
++	}
++
++	$cache->destroy('sql', MODERATOR_CACHE_TABLE);
++
++	// Delete the user_id from the banlist
++	$sql = 'DELETE FROM ' . BANLIST_TABLE . '
++		WHERE ban_userid = ' . $user_id;
++	$db->sql_query($sql);
++
++	// Delete the user_id from the session table
++	$sql = 'DELETE FROM ' . SESSIONS_TABLE . '
++		WHERE session_user_id = ' . $user_id;
++	$db->sql_query($sql);
++
++	// Remove any undelivered mails...
++	$sql = 'SELECT msg_id, user_id
++		FROM ' . PRIVMSGS_TO_TABLE . '
++		WHERE author_id = ' . $user_id . '
++			AND folder_id = ' . PRIVMSGS_NO_BOX;
++	$result = $db->sql_query($sql);
++
++	$undelivered_msg = $undelivered_user = array();
++	while ($row = $db->sql_fetchrow($result))
++	{
++		$undelivered_msg[] = $row['msg_id'];
++		$undelivered_user[$row['user_id']][] = true;
++	}
++	$db->sql_freeresult($result);
++
++	if (sizeof($undelivered_msg))
++	{
++		$sql = 'DELETE FROM ' . PRIVMSGS_TABLE . '
++			WHERE ' . $db->sql_in_set('msg_id', $undelivered_msg);
++		$db->sql_query($sql);
++	}
++
++	$sql = 'DELETE FROM ' . PRIVMSGS_TO_TABLE . '
++		WHERE author_id = ' . $user_id . '
++			AND folder_id = ' . PRIVMSGS_NO_BOX;
++	$db->sql_query($sql);
++
++	// Delete all to-information
++	$sql = 'DELETE FROM ' . PRIVMSGS_TO_TABLE . '
++		WHERE user_id = ' . $user_id;
++	$db->sql_query($sql);
++
++	// Set the remaining author id to anonymous - this way users are still able to read messages from users being removed
++	$sql = 'UPDATE ' . PRIVMSGS_TO_TABLE . '
++		SET author_id = ' . ANONYMOUS . '
++		WHERE author_id = ' . $user_id;
++	$db->sql_query($sql);
++
++	$sql = 'UPDATE ' . PRIVMSGS_TABLE . '
++		SET author_id = ' . ANONYMOUS . '
++		WHERE author_id = ' . $user_id;
++	$db->sql_query($sql);
++
++	foreach ($undelivered_user as $_user_id => $ary)
++	{
++		if ($_user_id == $user_id)
++		{
++			continue;
++		}
++
++		$sql = 'UPDATE ' . USERS_TABLE . '
++			SET user_new_privmsg = user_new_privmsg - ' . sizeof($ary) . ',
++				user_unread_privmsg = user_unread_privmsg - ' . sizeof($ary) . '
++			WHERE user_id = ' . $_user_id;
++		$db->sql_query($sql);
++	}
++
++	$db->sql_transaction('commit');
++
++	// Reset newest user info if appropriate
++	if ($config['newest_user_id'] == $user_id)
++	{
++		update_last_username();
++	}
++
++	// Decrement number of users if this user is active
++	if ($user_row['user_type'] != USER_INACTIVE && $user_row['user_type'] != USER_IGNORE)
++	{
++		set_config_count('num_users', -1, true);
++	}
++  
++  //_phpbb_api_hook('user_delete', array('username' => $user_row['username'], 'user_id' => $user_id));
++  /***VB***/ 
++  // PHPBB_DRUPAL_MODULE needs true
++  // return false;
++	return true;
++
++}
++/***VB***/
++}
++else //if (!defined('PHPBB_DRUPAL_MODULE'))
++{
++/***VB***/
+ /**
+ * Remove User
+ */
+@@ -584,6 +885,9 @@ function user_delete($mode, $user_id, $p
+ 
+ 	return false;
+ }
++/***VB***/
++} // end if (defined('PHPBB_DRUPAL_MODULE'))
++/***VB***/
+ 
+ /**
+ * Flips user_type from active to inactive and vice versa, handles group membership updates
+diff -uprbB ./includes/mcp/mcp_ban.php ../phpBB3/includes/mcp/mcp_ban.php
+--- ./includes/mcp/mcp_ban.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_ban.php	2009-02-26 14:45:51.738755900 +0300
+@@ -28,10 +28,29 @@ class mcp_ban
+ 		global $config, $db, $user, $auth, $template, $cache;
+ 		global $phpbb_root_path, $phpEx;
+ 
++    //***VB***
++    if (!defined('PHPBB_API_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++    }
++    else
++    {
++      include_once($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++    }
++    //***VB***
+ 
+ 		// Include the admin banning interface...
++    
++    //***VB***
++    if (!defined('PHPBB_API_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/acp/acp_ban.' . $phpEx);
++    }
++    else
++    {
++      include_once($phpbb_root_path . 'includes/acp/acp_ban.' . $phpEx);
++    }
++    //***VB***
+ 
+ 		$bansubmit		= (isset($_POST['bansubmit'])) ? true : false;
+ 		$unbansubmit	= (isset($_POST['unbansubmit'])) ? true : false;
+diff -uprbB ./includes/mcp/mcp_forum.php ../phpBB3/includes/mcp/mcp_forum.php
+--- ./includes/mcp/mcp_forum.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_forum.php	2009-03-04 13:05:23.740108000 +0300
+@@ -23,7 +23,12 @@ function mcp_forum_view($id, $mode, $act
+ {
+ 	global $template, $db, $user, $auth, $cache, $module;
+ 	global $phpEx, $phpbb_root_path, $config;
+-
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    $action =_phpbbforum_get_cp_action_request($action);
++  }
++  //***VB***
+ 	$user->add_lang(array('viewtopic', 'viewforum'));
+ 
+ 	include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+diff -uprbB ./includes/mcp/mcp_main.php ../phpBB3/includes/mcp/mcp_main.php
+--- ./includes/mcp/mcp_main.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_main.php	2009-06-01 01:30:35.412294600 +0400
+@@ -35,7 +35,12 @@ class mcp_main
+ 	{
+ 		global $auth, $db, $user, $template, $action;
+ 		global $config, $phpbb_root_path, $phpEx;
+-
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      $action =_phpbbforum_get_cp_action_request($action);
++    }
++    //***VB***
+ 		$quickmod = ($mode == 'quickmod') ? true : false;
+ 
+ 		switch ($action)
+@@ -136,7 +141,16 @@ class mcp_main
+ 		switch ($mode)
+ 		{
+ 			case 'front':
++				//***VB***
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/mcp/mcp_front.' . $phpEx);
++        }
++        else
++        {
++          include_once($phpbb_root_path . 'includes/mcp/mcp_front.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$user->add_lang('acp/common');
+ 
+@@ -147,7 +161,16 @@ class mcp_main
+ 			break;
+ 
+ 			case 'forum_view':
++				//***VB***
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/mcp/mcp_forum.' . $phpEx);
++        }
++        else
++        {
++          include_once($phpbb_root_path . 'includes/mcp/mcp_forum.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$user->add_lang('viewforum');
+ 
+@@ -170,7 +193,16 @@ class mcp_main
+ 			break;
+ 
+ 			case 'topic_view':
++				//***VB***
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/mcp/mcp_topic.' . $phpEx);
++        }
++        else
++        {
++          include_once($phpbb_root_path . 'includes/mcp/mcp_topic.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				mcp_topic_view($id, $mode, $action);
+ 
+@@ -179,7 +211,16 @@ class mcp_main
+ 			break;
+ 
+ 			case 'post_details':
++				//***VB***
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/mcp/mcp_post.' . $phpEx);
++        }
++        else
++        {
++          include_once($phpbb_root_path . 'includes/mcp/mcp_post.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				mcp_post_details($id, $mode, $action);
+ 
+@@ -873,8 +914,17 @@ function mcp_delete_post($post_ids)
+ 	{
+ 		if (!function_exists('delete_posts'))
+ 		{
++      //***VB***
++      if (!defined('PHPBB_API_EMBEDDED'))
++      {
+ 			include($phpbb_root_path . 'includes/functions_admin.' . $phpEx);
+ 		}
++      else
++      {
++        include_once($phpbb_root_path . 'includes/functions_admin.' . $phpEx);
++      }
++      //***VB***
++		}
+ 
+ 		// Count the number of topics that are affected
+ 		// I did not use COUNT(DISTINCT ...) because I remember having problems
+diff -uprbB ./includes/mcp/mcp_notes.php ../phpBB3/includes/mcp/mcp_notes.php
+--- ./includes/mcp/mcp_notes.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_notes.php	2009-06-01 01:31:40.152294600 +0400
+@@ -176,8 +176,17 @@ class mcp_notes
+ 		// Generate the appropriate user information for the user we are looking at
+ 		if (!function_exists('get_user_avatar'))
+ 		{
++			//***VB***
++      if (!defined('PHPBB_API_EMBEDDED'))
++      {
+ 			include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ 		}
++      else
++      {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++      }
++      //***VB***
++		}
+ 
+ 		$rank_title = $rank_img = '';
+ 		$avatar_img = get_user_avatar($userrow['user_avatar'], $userrow['user_avatar_type'], $userrow['user_avatar_width'], $userrow['user_avatar_height']);
+diff -uprbB ./includes/mcp/mcp_post.php ../phpBB3/includes/mcp/mcp_post.php
+--- ./includes/mcp/mcp_post.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_post.php	2009-03-04 15:46:28.296429900 +0300
+@@ -23,7 +23,12 @@ function mcp_post_details($id, $mode, $a
+ {
+ 	global $phpEx, $phpbb_root_path, $config;
+ 	global $template, $db, $user, $auth, $cache;
+-
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    $action =_phpbbforum_get_cp_action_request($action);
++  }
++  //***VB***
+ 	$user->add_lang('posting');
+ 
+ 	$post_id = request_var('p', 0);
+@@ -49,7 +54,17 @@ function mcp_post_details($id, $mode, $a
+ 			if ($auth->acl_get('m_info', $post_info['forum_id']))
+ 			{
+ 				$ip = request_var('ip', '');
++
++        //***VB***
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++        }
++        else
++        {
++          include_once($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$template->assign_vars(array(
+ 					'RETURN_POST'	=> sprintf($user->lang['RETURN_POST'], '<a href="' . append_sid("{$phpbb_root_path}mcp.$phpEx", "i=$id&amp;mode=$mode&amp;p=$post_id") . '">', '</a>'),
+@@ -469,7 +484,16 @@ function change_poster(&$post_info, $use
+ 
+ 	if (file_exists($phpbb_root_path . 'includes/search/' . $search_type . '.' . $phpEx))
+ 	{
++    //***VB***
++    if (!defined('PHPBB_API_EMBEDDED'))
++    {
+ 		require("{$phpbb_root_path}includes/search/$search_type.$phpEx");
++    }
++    else
++    {
++      require_once("{$phpbb_root_path}includes/search/$search_type.$phpEx");
++    }
++    //***VB***
+ 
+ 		// We do some additional checks in the module to ensure it can actually be utilised
+ 		$error = false;
+diff -uprbB ./includes/mcp/mcp_queue.php ../phpBB3/includes/mcp/mcp_queue.php
+--- ./includes/mcp/mcp_queue.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_queue.php	2009-06-01 01:33:50.006694600 +0400
+@@ -35,7 +35,12 @@ class mcp_queue
+ 	{
+ 		global $auth, $db, $user, $template, $cache;
+ 		global $config, $phpbb_root_path, $phpEx, $action;
+-
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      $action =_phpbbforum_get_cp_action_request($action);
++    }
++    //***VB***
+ 		include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ 
+ 		$forum_id = request_var('f', 0);
+@@ -993,7 +998,16 @@ function disapprove_post($post_id_list, 
+ 						{
+ 							// Load up the language pack
+ 							$lang = array();
++              //***VB***
++              if (!defined('PHPBB_API_EMBEDDED'))
++              {
+ 							@include($phpbb_root_path . '/language/' . $post_data['user_lang'] . '/mcp.' . $phpEx);
++              }
++              else
++              {
++                @include_once($phpbb_root_path . '/language/' . $post_data['user_lang'] . '/mcp.' . $phpEx);
++              }
++              //***VB***
+ 
+ 							// If we find the reason in this language pack use it
+ 							if (isset($lang['report_reasons']['DESCRIPTION'][$disapprove_reason_lang]))
+diff -uprbB ./includes/mcp/mcp_reports.php ../phpBB3/includes/mcp/mcp_reports.php
+--- ./includes/mcp/mcp_reports.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_reports.php	2009-03-04 15:49:37.057055900 +0300
+@@ -35,7 +35,12 @@ class mcp_reports
+ 	{
+ 		global $auth, $db, $user, $template, $cache;
+ 		global $config, $phpbb_root_path, $phpEx, $action;
+-
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      $action =_phpbbforum_get_cp_action_request($action);
++    }
++    //***VB***
+ 		include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ 
+ 		$forum_id = request_var('f', 0);
+diff -uprbB ./includes/mcp/mcp_topic.php ../phpBB3/includes/mcp/mcp_topic.php
+--- ./includes/mcp/mcp_topic.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_topic.php	2009-06-01 01:35:20.751894600 +0400
+@@ -23,7 +23,12 @@ function mcp_topic_view($id, $mode, $act
+ {
+ 	global $phpEx, $phpbb_root_path, $config;
+ 	global $template, $db, $user, $auth, $cache;
+-
++  //***VB***
++  if (defined('PHPBB_API_EMBEDDED'))
++  {
++    $action =_phpbbforum_get_cp_action_request($action);
++  }
++  //***VB***
+ 	$url = append_sid("{$phpbb_root_path}mcp.$phpEx?" . extra_url());
+ 
+ 	$user->add_lang('viewtopic');
+@@ -78,7 +83,16 @@ function mcp_topic_view($id, $mode, $act
+ 	// Approve posts?
+ 	if ($action == 'approve' && $auth->acl_get('m_approve', $topic_info['forum_id']))
+ 	{
++		//***VB***
++    if (!defined('PHPBB_API_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/mcp/mcp_queue.' . $phpEx);
++    }
++    else
++    {
++      include_once($phpbb_root_path . 'includes/mcp/mcp_queue.' . $phpEx);
++    }
++    //***VB***
+ 		include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ 		include_once($phpbb_root_path . 'includes/functions_messenger.' . $phpEx);
+ 
+diff -uprbB ./includes/mcp/mcp_warn.php ../phpBB3/includes/mcp/mcp_warn.php
+--- ./includes/mcp/mcp_warn.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/mcp/mcp_warn.php	2009-06-01 01:39:00.165894600 +0400
+@@ -305,8 +305,17 @@ class mcp_warn
+ 		// Generate the appropriate user information for the user we are looking at
+ 		if (!function_exists('get_user_avatar'))
+ 		{
++			//***VB***
++      if (!defined('PHPBB_API_EMBEDDED'))
++      {
+ 			include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ 		}
++      else
++      {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++      }
++      //***VB***
++		}
+ 
+ 		$rank_title = $rank_img = '';
+ 		$avatar_img = get_user_avatar($user_row['user_avatar'], $user_row['user_avatar_type'], $user_row['user_avatar_width'], $user_row['user_avatar_height']);
+@@ -410,8 +419,17 @@ class mcp_warn
+ 		// Generate the appropriate user information for the user we are looking at
+ 		if (!function_exists('get_user_avatar'))
+ 		{
++			//***VB***
++      if (!defined('PHPBB_API_EMBEDDED'))
++      {
+ 			include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ 		}
++      else
++      {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++      }
++      //***VB***
++		}
+ 
+ 		$rank_title = $rank_img = '';
+ 		$avatar_img = get_user_avatar($user_row['user_avatar'], $user_row['user_avatar_type'], $user_row['user_avatar_width'], $user_row['user_avatar_height']);
+@@ -454,7 +472,16 @@ function add_warning($user_row, $warning
+ 		include_once($phpbb_root_path . 'includes/message_parser.' . $phpEx);
+ 
+ 		$user_row['user_lang'] = (file_exists($phpbb_root_path . 'language/' . $user_row['user_lang'] . "/mcp.$phpEx")) ? $user_row['user_lang'] : $config['default_lang'];
++		//***VB***
++    if (!defined('PHPBB_API_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'language/' . basename($user_row['user_lang']) . "/mcp.$phpEx");
++    }
++    else
++    {
++      include_once($phpbb_root_path . 'language/' . basename($user_row['user_lang']) . "/mcp.$phpEx");
++    }
++    //***VB***
+ 
+ 		$message_parser = new parse_message();
+ 
+diff -uprbB ./includes/session.php ../phpBB3/includes/session.php
+--- ./includes/session.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/session.php	2009-06-01 00:56:19.231094600 +0400
+@@ -1566,6 +1566,12 @@ class user extends session
+ 		{
+ 			// Set up style
+ 			$style = ($style) ? $style : ((!$config['override_user_style']) ? $this->data['user_style'] : $config['default_style']);
++      //***VB***
++      if (defined('PHPBB_API_EMBEDDED'))
++      {
++        $style = phpbb_get_embed_style($style);
++      }
++      //***VB***
+ 		}
+ 
+ 		$sql = 'SELECT s.style_id, t.template_storedb, t.template_path, t.template_id, t.bbcode_bitfield, t.template_inherits_id, t.template_inherit_path, c.theme_path, c.theme_name, c.theme_storedb, c.theme_id, i.imageset_path, i.imageset_id, i.imageset_name
+@@ -2173,7 +2179,17 @@ class user extends session
+ 	function img($img, $alt = '', $width = false, $suffix = '', $type = 'full_tag')
+ 	{
+ 		static $imgs;
++		//***VB***
++    if (defined('PHPBB_DRUPAL_MODULE')) 
++    {
++      global $phpbb_config;
++      $phpbb_root_path = $phpbb_config['forum_url'] .'/';
++    }
++    else
++    {
+ 		global $phpbb_root_path;
++    }
++    //***VB***
+ 
+ 		$img_data = &$imgs[$img];
+ 
+diff -uprbB ./includes/ucp/ucp_confirm.php ../phpBB3/includes/ucp/ucp_confirm.php
+--- ./includes/ucp/ucp_confirm.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_confirm.php	2009-02-26 14:50:16.352463300 +0300
+@@ -64,12 +64,30 @@ class ucp_confirm
+ 
+ 		if ($config['captcha_gd'])
+ 		{
++      //***VB***
++      if (!defined('PHPBB_EMBEDDED'))
++      {
+ 			include($phpbb_root_path . 'includes/captcha/captcha_gd.' . $phpEx);
+ 		}
+ 		else
+ 		{
++      include_once($phpbb_root_path . 'includes/captcha/captcha_gd.' . $phpEx);
++      }
++      //***VB***
++		}
++		else
++		{
++      //***VB***
++      if (!defined('PHPBB_EMBEDDED'))
++      {
+ 			include($phpbb_root_path . 'includes/captcha/captcha_non_gd.' . $phpEx);
+ 		}
++      else
++      {
++      include_once($phpbb_root_path . 'includes/captcha/captcha_non_gd.' . $phpEx);
++      }
++      //***VB***
++		}
+ 
+ 		$captcha = new captcha();
+ 		$captcha->execute($row['code'], $row['seed']);
+diff -uprbB ./includes/ucp/ucp_groups.php ../phpBB3/includes/ucp/ucp_groups.php
+--- ./includes/ucp/ucp_groups.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_groups.php	2009-06-01 01:40:57.649494600 +0400
+@@ -415,7 +415,16 @@ class ucp_groups
+ 				$action		= (isset($_POST['addusers'])) ? 'addusers' : request_var('action', '');
+ 				$group_id	= request_var('g', 0);
+ 				
++				//***VB***
++        if (!defined('PHPBB_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				add_form_key('ucp_groups');
+ 
+diff -uprbB ./includes/ucp/ucp_main.php ../phpBB3/includes/ucp/ucp_main.php
+--- ./includes/ucp/ucp_main.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_main.php	2009-06-01 01:42:21.530694600 +0400
+@@ -198,7 +198,16 @@ class ucp_main
+ 
+ 			case 'subscribed':
+ 
++				//***VB***			
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$user->add_lang('viewforum');
+ 
+@@ -383,7 +392,16 @@ class ucp_main
+ 					break;
+ 				}
+ 
++				//***VB***			
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$user->add_lang('viewforum');
+ 
+diff -uprbB ./includes/ucp/ucp_pm.php ../phpBB3/includes/ucp/ucp_pm.php
+--- ./includes/ucp/ucp_pm.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_pm.php	2009-02-26 14:51:56.241449500 +0300
+@@ -80,7 +80,16 @@ class ucp_pm
+ 			$mode = 'view';
+ 		}
+ 
++    //***VB***
++    if (!defined('PHPBB_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/functions_privmsgs.' . $phpEx);
++    }
++    else
++    {
++    include_once($phpbb_root_path . 'includes/functions_privmsgs.' . $phpEx);
++    }
++    //***VB***
+ 
+ 		switch ($mode)
+ 		{
+@@ -122,7 +131,16 @@ class ucp_pm
+ 					trigger_error('NO_AUTH_SEND_MESSAGE');
+ 				}
+ 
++        //***VB***
++        if (!defined('PHPBB_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/ucp/ucp_pm_compose.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/ucp/ucp_pm_compose.' . $phpEx);
++        }
++        //***VB***
+ 				compose_pm($id, $mode, $action);
+ 
+ 				$tpl_file = 'posting_body';
+@@ -132,7 +150,16 @@ class ucp_pm
+ 				set_user_message_limit();
+ 				get_folder($user->data['user_id']);
+ 
++        //***VB***
++        if (!defined('PHPBB_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/ucp/ucp_pm_options.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/ucp/ucp_pm_options.' . $phpEx);
++        }
++        //***VB***
+ 				message_options($id, $mode, $global_privmsgs_rules, $global_rule_conditions);
+ 
+ 				$tpl_file = 'ucp_pm_options';
+@@ -144,7 +171,17 @@ class ucp_pm
+ 				$this->p_name = 'pm';
+ 
+ 				// Call another module... please do not try this at home... Hoochie Coochie Man
++
++        //***VB***
++        if (!defined('PHPBB_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/ucp/ucp_main.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/ucp/ucp_main.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$module = new ucp_main($this);
+ 				$module->u_action = $this->u_action;
+@@ -365,7 +402,16 @@ class ucp_pm
+ 
+ 				if ($action == 'view_folder')
+ 				{
++          //***VB***
++          if (!defined('PHPBB_EMBEDDED'))
++          {
+ 					include($phpbb_root_path . 'includes/ucp/ucp_pm_viewfolder.' . $phpEx);
++          }
++          else
++          {
++          include_once($phpbb_root_path . 'includes/ucp/ucp_pm_viewfolder.' . $phpEx);
++          }
++          //***VB***
+ 					view_folder($id, $mode, $folder_id, $folder);
+ 
+ 					$tpl_file = 'ucp_pm_viewfolder';
+@@ -382,7 +428,16 @@ class ucp_pm
+ 						trigger_error('NO_MESSAGE');
+ 					}
+ 
++          //***VB***
++          if (!defined('PHPBB_EMBEDDED'))
++          {
+ 					include($phpbb_root_path . 'includes/ucp/ucp_pm_viewmessage.' . $phpEx);
++          }
++          else
++          {
++          include_once($phpbb_root_path . 'includes/ucp/ucp_pm_viewmessage.' . $phpEx);
++          }
++          //***VB***
+ 					view_message($id, $mode, $folder_id, $msg_id, $folder, $message_row);
+ 
+ 					$tpl_file = ($view == 'print') ? 'ucp_pm_viewmessage_print' : 'ucp_pm_viewmessage';
+diff -uprbB ./includes/ucp/ucp_pm_compose.php ../phpBB3/includes/ucp/ucp_pm_compose.php
+--- ./includes/ucp/ucp_pm_compose.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_pm_compose.php	2009-06-01 01:43:12.714294600 +0400
+@@ -29,9 +29,20 @@ function compose_pm($id, $mode, $action)
+ 	// Needed for handle_message_list_actions()
+ 	global $refresh, $submit, $preview;
+ 
++	//***VB***
++  if (!defined('PHPBB_EMBEDDED'))
++  {
+ 	include($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ 	include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ 	include($phpbb_root_path . 'includes/message_parser.' . $phpEx);
++  }
++  else
++  {
++  include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
++  include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++  include_once($phpbb_root_path . 'includes/message_parser.' . $phpEx);
++  }
++  //***VB***
+ 
+ 	if (!$action)
+ 	{
+diff -uprbB ./includes/ucp/ucp_pm_viewmessage.php ../phpBB3/includes/ucp/ucp_pm_viewmessage.php
+--- ./includes/ucp/ucp_pm_viewmessage.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_pm_viewmessage.php	2009-06-01 01:49:58.871894600 +0400
+@@ -54,7 +54,16 @@ function view_message($id, $mode, $folde
+ 	// Instantiate BBCode if need be
+ 	if ($message_row['bbcode_bitfield'])
+ 	{
++		//***VB***
++    if (!defined('PHPBB_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/bbcode.' . $phpEx);
++    }
++    else
++    {
++    include_once($phpbb_root_path . 'includes/bbcode.' . $phpEx);
++    }
++    //***VB***
+ 		$bbcode = new bbcode($message_row['bbcode_bitfield']);
+ 	}
+ 
+@@ -155,7 +164,16 @@ function view_message($id, $mode, $folde
+ 		{
+ 			if ($bbcode === false)
+ 			{
++				//***VB***
++        if (!defined('PHPBB_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/bbcode.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/bbcode.' . $phpEx);
++        }
++        //***VB***
+ 				$bbcode = new bbcode($user_info['user_sig_bbcode_bitfield']);
+ 			}
+ 
+@@ -292,8 +310,17 @@ function get_user_information($user_id, 
+ 
+ 	if (!function_exists('get_user_avatar'))
+ 	{
++		//***VB***
++    if (!defined('PHPBB_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ 	}
++    else
++    {
++    include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++    }
++    //***VB***
++	}
+ 
+ 	$user_row['avatar'] = ($user->optionget('viewavatars')) ? get_user_avatar($user_row['user_avatar'], $user_row['user_avatar_type'], $user_row['user_avatar_width'], $user_row['user_avatar_height']) : '';
+ 
+diff -uprbB ./includes/ucp/ucp_profile.php ../phpBB3/includes/ucp/ucp_profile.php
+--- ./includes/ucp/ucp_profile.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_profile.php	2009-06-01 01:52:32.719094600 +0400
+@@ -265,7 +265,16 @@ class ucp_profile
+ 
+ 			case 'profile_info':
+ 
++				//***VB***			
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$cp = new custom_profile();
+ 
+@@ -471,8 +480,18 @@ class ucp_profile
+ 					trigger_error('NO_AUTH_SIGNATURE');
+ 				}
+ 
++				//***VB***			
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ 				include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
++				include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$enable_bbcode	= ($config['allow_sig_bbcode']) ? ((request_var('disable_bbcode', !$user->optionget('bbcode'))) ? false : true) : false;
+ 				$enable_smilies	= ($config['allow_sig_smilies']) ? ((request_var('disable_smilies', !$user->optionget('smilies'))) ? false : true) : false;
+@@ -484,7 +503,16 @@ class ucp_profile
+ 
+ 				if ($submit || $preview)
+ 				{
++					//***VB***			
++          if (!defined('PHPBB_API_EMBEDDED'))
++          {
+ 					include($phpbb_root_path . 'includes/message_parser.' . $phpEx);
++          }
++          else
++          {
++          include_once($phpbb_root_path . 'includes/message_parser.' . $phpEx);
++          }
++          //***VB***
+ 
+ 					if (!sizeof($error))
+ 					{
+@@ -567,7 +595,16 @@ class ucp_profile
+ 
+ 			case 'avatar':
+ 
++				//***VB***			
++        if (!defined('PHPBB_API_EMBEDDED'))
++        {
+ 				include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        else
++        {
++        include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++        }
++        //***VB***
+ 
+ 				$display_gallery = request_var('display_gallery', '0');
+ 				$avatar_select = basename(request_var('avatar_select', ''));
+diff -uprbB ./includes/ucp/ucp_register.php ../phpBB3/includes/ucp/ucp_register.php
+--- ./includes/ucp/ucp_register.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/includes/ucp/ucp_register.php	2009-06-01 01:53:15.962294600 +0400
+@@ -35,7 +35,16 @@ class ucp_register
+ 			trigger_error('UCP_REGISTER_DISABLE');
+ 		}
+ 
++		//***VB***
++    if (!defined('PHPBB_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
++    }
++    else
++    {
++    include_once($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
++    }
++    //***VB***
+ 
+ 		$confirm_id			= request_var('confirm_id', '');
+ 		$confirm_refresh	= (isset($_POST['confirm_refresh']) && $config['confirm_refresh']) ? ((!empty($_POST['confirm_refresh'])) ? 1 : 0) : false;
+diff -uprbB ./index.php ../phpBB3/index.php
+--- ./index.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/index.php	2009-01-20 18:19:35.161627100 +0300
+@@ -14,11 +14,20 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
+ include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+diff -uprbB ./mcp.php ../phpBB3/mcp.php
+--- ./mcp.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/mcp.php	2009-06-01 00:23:43.195094600 +0400
+@@ -11,12 +11,22 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
+ include($phpbb_root_path . 'includes/functions_admin.' . $phpEx);
+ require($phpbb_root_path . 'includes/functions_module.' . $phpEx);
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_admin.' . $phpEx);
++require_once($phpbb_root_path . 'includes/functions_module.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+diff -uprbB ./memberlist.php ../phpBB3/memberlist.php
+--- ./memberlist.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/memberlist.php	2009-06-01 00:25:43.393094600 +0400
+@@ -11,11 +11,20 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
+ include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+@@ -72,7 +81,16 @@ switch ($mode)
+ {
+ 	case 'leaders':
+ 		// Display a listing of board admins, moderators
++		//***VB***
++    if (!defined('PHPBB_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++    }
++    else
++    {
++    include_once($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++    }
++    //***VB***
+ 
+ 		$page_title = $user->lang['THE_TEAM'];
+ 		$template_html = 'memberlist_leaders.html';
+Only in .: phpBB-embed-3.0.5.patch
+diff -uprbB ./posting.php ../phpBB3/posting.php
+--- ./posting.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/posting.php	2009-06-01 00:27:28.084694600 +0400
+@@ -11,6 +11,9 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+@@ -18,7 +21,14 @@ include($phpbb_root_path . 'common.' . $
+ include($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ include($phpbb_root_path . 'includes/message_parser.' . $phpEx);
+-
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
++include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++include_once($phpbb_root_path . 'includes/message_parser.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+diff -uprbB ./report.php ../phpBB3/report.php
+--- ./report.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/report.php	2009-01-20 18:21:37.627241900 +0300
+@@ -11,11 +11,20 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
+ include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+diff -uprbB ./search.php ../phpBB3/search.php
+--- ./search.php	2009-05-31 14:59:00.000000000 +0400
++++ ../phpBB3/search.php	2009-06-01 00:34:28.317494600 +0400
+@@ -11,10 +11,15 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+@@ -226,7 +231,16 @@ if ($keywords || $author || $author_id |
+ 		trigger_error('NO_SUCH_SEARCH_MODULE');
+ 	}
+ 
++  //***VB***
++  if (!defined('PHPBB_API_EMBEDDED'))
++  {
+ 	require("{$phpbb_root_path}includes/search/$search_type.$phpEx");
++  }
++  else
++  {
++    require_once("{$phpbb_root_path}includes/search/$search_type.$phpEx");
++  }
++  //***VB***
+ 
+ 	// We do some additional checks in the module to ensure it can actually be utilised
+ 	$error = false;
+@@ -454,12 +468,30 @@ if ($keywords || $author || $author_id |
+ 
+ 	if ($show_results == 'posts')
+ 	{
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      include_once($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
++    }
++    else
++    {
+ 		include($phpbb_root_path . 'includes/functions_posting.' . $phpEx);
+ 	}
++    //***VB***
++	}
++	else
++	{
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++    }
+ 	else
+ 	{
+ 		include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ 	}
++    //***VB***
++	}
+ 
+ 	$user->add_lang('viewtopic');
+ 
+diff -uprbB ./ucp.php ../phpBB3/ucp.php
+--- ./ucp.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/ucp.php	2009-03-21 19:28:53.625000000 +0300
+@@ -11,12 +11,22 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ require($phpbb_root_path . 'common.' . $phpEx);
+ require($phpbb_root_path . 'includes/functions_user.' . $phpEx);
+ require($phpbb_root_path . 'includes/functions_module.' . $phpEx);
++}
++else
++{
++require_once($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++require_once($phpbb_root_path . 'includes/functions_module.' . $phpEx);
++}
++//***VB***
+ 
+ // Basic parameter data
+ $id 	= request_var('i', '');
+@@ -92,6 +102,12 @@ switch ($mode)
+ 		{
+ 			$message = ($user->data['user_id'] == ANONYMOUS) ? $user->lang['LOGOUT_REDIRECT'] : $user->lang['LOGOUT_FAILED'];
+ 		}
++    //***VB***
++    if (defined('PHPBB_API_EMBEDDED'))
++    {
++      _phpbb_api_hook('logout', array('username' => $user->data['username'], 'user_id' => $user->data['user_id'], 'redirect' => append_sid("{$phpbb_root_path}index.$phpEx")));
++    }
++    //***VB***
+ 		meta_refresh(3, append_sid("{$phpbb_root_path}index.$phpEx"));
+ 
+ 		$message = $message . '<br /><br />' . sprintf($user->lang['RETURN_INDEX'], '<a href="' . append_sid("{$phpbb_root_path}index.$phpEx") . '">', '</a> ');
+@@ -191,7 +207,16 @@ switch ($mode)
+ 			redirect(append_sid("{$phpbb_root_path}index.$phpEx"));
+ 		}
+ 
++    //***VB***			
++    if (!defined('PHPBB_API_EMBEDDED'))
++    {
+ 		include($phpbb_root_path . 'includes/acp/auth.' . $phpEx);
++    }
++    else
++    {
++    include_once($phpbb_root_path . 'includes/acp/auth.' . $phpEx);
++    }
++    //***VB***	
+ 
+ 		$auth_admin = new auth_admin();
+ 		if (!$auth_admin->ghost_permissions($user_id, $user->data['user_id']))
+diff -uprbB ./viewforum.php ../phpBB3/viewforum.php
+--- ./viewforum.php	2009-05-31 14:59:00.000000000 +0400
++++ ../phpBB3/viewforum.php	2009-06-01 00:35:39.110294600 +0400
+@@ -11,11 +11,20 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+-include($phpbb_root_path . 'common.' . $phpEx);
++include($phpbb_root_path . 'common.'.$phpEx);
+ include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session
+ $user->session_begin();
+diff -uprbB ./viewonline.php ../phpBB3/viewonline.php
+--- ./viewonline.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/viewonline.php	2009-06-01 00:39:15.170294600 +0400
+@@ -11,10 +11,15 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+@@ -54,7 +59,16 @@ $order_by = $sort_key_sql[$sort_key] . '
+ // Whois requested
+ if ($mode == 'whois' && $auth->acl_get('a_') && $session_id)
+ {
++	//***VB***
++  if (!defined('PHPBB_API_EMBEDDED'))
++  {
+ 	include($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++  }
++  else
++  {
++  include_once($phpbb_root_path . 'includes/functions_user.' . $phpEx);
++  }
++  //***VB***
+ 
+ 	$sql = 'SELECT u.user_id, u.username, u.user_type, s.session_ip
+ 		FROM ' . USERS_TABLE . ' u, ' . SESSIONS_TABLE . " s
+@@ -409,8 +423,13 @@ while ($row = $db->sql_fetchrow($result)
+ }
+ $db->sql_freeresult($result);
+ 
+-// Refreshing the page every 60 seconds...
+-meta_refresh(60, append_sid("{$phpbb_root_path}viewonline.$phpEx", "sg=$show_guests&amp;sk=$sort_key&amp;sd=$sort_dir&amp;start=$start"));
++//***VB***
++if (!defined('PHPBB_API_EMBEDDED'))
++{
++  // Refreshing the page every 60 seconds...
++  meta_refresh(60, append_sid("{$phpbb_root_path}viewonline.$phpEx", "sg=$show_guests&amp;sk=$sort_key&amp;sd=$sort_dir&amp;start=$start"));
++}
++//***VB***
+ 
+ // Send data to template
+ $template->assign_vars(array(
+diff -uprbB ./viewtopic.php ../phpBB3/viewtopic.php
+--- ./viewtopic.php	2009-05-31 14:58:58.000000000 +0400
++++ ../phpBB3/viewtopic.php	2009-06-01 00:50:23.224694600 +0400
+@@ -11,12 +11,22 @@
+ /**
+ * @ignore
+ */
++//***VB***
++if (!defined('PHPBB_EMBEDDED'))
++{
+ define('IN_PHPBB', true);
+ $phpbb_root_path = (defined('PHPBB_ROOT_PATH')) ? PHPBB_ROOT_PATH : './';
+ $phpEx = substr(strrchr(__FILE__, '.'), 1);
+ include($phpbb_root_path . 'common.' . $phpEx);
+ include($phpbb_root_path . 'includes/functions_display.' . $phpEx);
+ include($phpbb_root_path . 'includes/bbcode.' . $phpEx);
++}
++else
++{
++include_once($phpbb_root_path . 'includes/functions_display.' . $phpEx);
++include_once($phpbb_root_path . 'includes/bbcode.' . $phpEx);
++}
++//***VB***
+ 
+ // Start session management
+ $user->session_begin();
+@@ -1143,10 +1153,23 @@ $db->sql_freeresult($result);
+ // Load custom profile fields
+ if ($config['load_cpf_viewtopic'])
+ {
++  //***VB***
++  if (!defined('PHPBB_API_EMBEDDED'))
++  {
+ 	if (!class_exists('custom_profile'))
+ 	{
+ 		include($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
+ 	}
++  }
++  else
++  {
++    if (!class_exists('custom_profile'))
++    {
++      include_once($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
++    }
++  }
++  //***VB***
++	
+ 	$cp = new custom_profile();
+ 
+ 	// Grab all profile fields from users in id cache for later use - similar to the poster cache
+@@ -1517,6 +1540,29 @@ for ($i = 0, $end = sizeof($post_list); 
+ unset($rowset, $user_cache);
+ 
+ // Update topic view and if necessary attachment view counters ... but only for humans and if this is the first 'page view'
++//***VB***
++if (defined('PHPBB_API_EMBEDDED'))
++{
++  global $_phpbb_embed_mode;
++  if (isset($user->data['session_page']) && !$user->data['is_bot'] && (strpos($user->data['session_page'], '&t=' . $topic_id) === false || isset($user->data['session_created']) || $_phpbb_embed_mode['update_topic_view']))
++  {
++    $sql = 'UPDATE ' . TOPICS_TABLE . '
++  		SET topic_views = topic_views + 1, topic_last_view_time = ' . time() . "
++  		WHERE topic_id = $topic_id";
++  	$db->sql_query($sql);
++
++  	// Update the attachment download counts
++  	if (sizeof($update_count))
++  	{
++  		$sql = 'UPDATE ' . ATTACHMENTS_TABLE . '
++  			SET download_count = download_count + 1
++  			WHERE ' . $db->sql_in_set('attach_id', array_unique($update_count));
++  		$db->sql_query($sql);
++  	}
++  }
++}
++else
++//***VB***
+ if (isset($user->data['session_page']) && !$user->data['is_bot'] && (strpos($user->data['session_page'], '&t=' . $topic_id) === false || isset($user->data['session_created'])))
+ {
+ 	$sql = 'UPDATE ' . TOPICS_TABLE . '

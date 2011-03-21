@@ -1,0 +1,12 @@
+drupal/sites/*/settings.php
+drupal/sites/*/civicrm.settings.php
+drupal/sites/*/files
+
+drupal/google*.html
+
+*~
+\#*\#
+*.sql
+*.tar
+*.gz
+*.zip

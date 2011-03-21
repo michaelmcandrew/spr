@@ -1,0 +1,208 @@
+<?php
+// $Id: phpass.module,v 1.1.4.4 2008/11/24 14:42:46 douggreen Exp $
+
+/**
+ * phpass Module
+ */
+
+/**
+ * hook_form_alter Implemenation.
+ * - Hooks the login form to authenticate the user login
+ * - Hooks user/$uid/edit form to save the password
+ * - Hooks admin/build/modules to prevent disabling this module
+ */
+function phpass_form_alter(&$form, $form_state, $form_id) {
+  // check for any login process
+  $validate = isset($form['#validate']) ? array_search('user_login_authenticate_validate', $form['#validate']) : FALSE;
+
+  // act as-if the module is not installed if SecurePass.php is not installed properly
+  if (($form_id == 'user_edit' || $form_id == 'system_modules' || $form_id == 'user_admin_settings' || $validate !== FALSE) && _phpass_is_passwordhash_php_missing()) {
+    return;
+  }
+
+  // Replace the login authentication validator.
+  if ($validate !== FALSE) {
+    $form['#validate'][$validate] = 'phpass_login_authenticate_validate';
+  }
+
+  // hook the change password form
+  switch ($form_id) {
+    case 'system_modules':
+      // don't allow the user to uninstall this module
+      if (db_result(db_query("SELECT COUNT(*) FROM {users} WHERE pass = 'phpass'"))) {
+        $form['disabled_modules']['#value']['phpass'] = 1;
+        $form['status']['#process']['system_modules_disable'][0][] = 'phpass';
+        $form['description']['phpass']['#value'] .= '.  '. t('Some users passwords have already been converted.  You can not disable this module.  Please visit the <a href="@url">user settings</a> page, and revert to "Standard Drupal (md5)" so that the user passwords can be converted back.', array('@url' => url('admin/user/settings')));
+      }
+      break;
+
+    case 'user_admin_settings':
+      // add phpass settings to the admin/user/settings page
+      $newform = array();
+      $newform['hash'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Secure Password Hashes (phpass)'),
+        '#collapsible' => FALSE,
+        '#collapsed' => FALSE,
+      );
+      $user_hash_method = variable_get('user_hash_method', 'phpass');
+      $newform['hash']['user_hash_method'] = array(
+        '#type' => 'radios',
+        '#title' => t('Password Hash Method'),
+        '#options' => array('md5' => t('Standard Drupal (md5)'), 'phpass' => t('Secure (phpass)')),
+        '#default_value' => $user_hash_method,
+        '#description' => t('Select the method to hash the user passwords.  "Secure" is recommended.'),
+        '#prefix' => '<div class="user-admin-hash-radios">',
+        '#suffix' => '</div>',
+      );
+
+      // If JS is enabled, and the radio is defaulting to off, hide all
+      // the settings on page load via .css using the js-hide class so
+      // that there's no flicker.
+      $path = drupal_get_path('module', 'phpass');
+      drupal_add_js($path .'/phpass.js');
+      $css_class = 'user-admin-hash-settings';
+      if ($user_hash_method != 'phpass') {
+        $css_class .= ' js-hide';
+        drupal_add_css($path .'/phpass.css');
+      }
+      $newform['hash']['settings'] = array(
+        '#prefix' => '<div class="'. $css_class .'">',
+        '#suffix' => '</div>',
+      );
+      $newform['hash']['settings']['user_hash_strength'] = array(
+        '#type' => 'select',
+        '#title' => t('Hash Strength'),
+        '#default_value' => variable_get('user_hash_strength', 8),
+        '#options' => drupal_map_assoc(range(4, 12)),
+        '#description' => t('Select a higher number for a more secure but slower password hash.'),
+      );
+      $newform['hash']['settings']['user_hash_portable'] = array(
+        '#type' => 'radios',
+        '#title' => t('Portable Hash'),
+        '#default_value' => variable_get('user_hash_portable', TRUE),
+        '#options' => array(FALSE => t('No'), TRUE => t('Yes')),
+        '#description' => t('Force the use of weaker hashes that are guaranteed to be portable across servers.'),
+      );
+
+      // add the option just before the buttons
+      $pos = array_search('buttons', array_keys($form));
+      $form = array_merge(array_slice($form, 0, $pos), $newform, array_slice($form, $pos));
+      break;
+  }
+}
+
+/**
+ * This is a copy of user_login_authenticate_validate, that calls our validate
+ * instead of the default user validation.
+ */
+function phpass_login_authenticate_validate($form, &$form_state) {
+  // Name and pass keys are required.
+  $form_values = $form_state['values'];
+  if (!empty($form_values['name']) && !empty($form_values['pass']) &&
+      $account = _phpass_user_authenticate($form_values['name'], trim($form_values['pass']))) {
+    global $user;
+    $user = $account;
+    user_authenticate_finalize($form_values);
+    return $user;
+  }
+}
+
+/**
+ * Authenticate the user
+ *
+ * If a phpass hash already exists, then only use that.
+ * If the phpass doesn't exist, then authenticate against the md5 hash,
+ *  and on success, remove the insecure md5 hash, and store the secure hash
+ */
+function _phpass_user_authenticate($user, $pass) {
+  // fetch the saved user pass and phpass hash
+  $userpass = db_fetch_object(db_query("SELECT u.*, p.hash FROM {users} u LEFT JOIN {user_phpass} p ON u.uid = p.uid WHERE u.name = '%s' AND u.status = 1", $user));
+  
+  if (variable_get('user_hash_method', 'phpass') == 'phpass') {
+    // check if the password matches the phpass hash
+    if ($userpass->hash) {
+      require_once(drupal_get_path('module', 'phpass') .'/PasswordHash.php');
+      $phpass = new PasswordHash(variable_get('user_hash_strength', 8), variable_get('user_hash_portable', TRUE));
+      if ($phpass->CheckPassword($pass, $userpass->hash)) {
+        _phpass_load($userpass);
+        return $userpass;
+      }
+    }
+
+    // check if the password matches the old md5 hash
+    if ($userpass->pass) {
+      if ($userpass->pass == md5($pass)) {
+        _phpass_save($userpass->uid, $pass);
+        _phpass_load($userpass);
+        return $userpass;
+      }
+    }
+  }
+  else {
+    if ($userpass->pass == 'phpass' && $userpass->hash) {
+      require_once(drupal_get_path('module', 'phpass') .'/PasswordHash.php');
+      $phpass = new PasswordHash(variable_get('user_hash_strength', 8), variable_get('user_hash_portable', TRUE));
+      if ($phpass->CheckPassword($pass, $userpass->hash)) {
+        // convert the phpass hashes back to md5 hashes
+        db_query("UPDATE {users} SET pass = '%s' WHERE uid = %d", md5($pass), $userpass->uid);
+        db_query("DELETE FROM {user_phpass} WHERE uid = %d", $userpass->uid);
+        _phpass_load($userpass);
+        return $userpass;
+      }
+    }
+  }
+
+  $form_state['values']['name'] = $user;
+  $form_state['values']['pass'] = $pass;
+
+  // authenticate the standard Drupal way
+  return user_authenticate($form_state['values']);
+}
+
+function _phpass_load(&$user) {
+  $user->roles = array();
+  if ($user->uid) {
+    $user->roles[DRUPAL_AUTHENTICATED_RID] = 'authenticated user';
+  }
+  else {
+    $user->roles[DRUPAL_ANONYMOUS_RID] = 'anonymous user';
+  }
+  $result = db_query('SELECT r.rid, r.name FROM {role} r INNER JOIN {users_roles} ur ON ur.rid = r.rid WHERE ur.uid = %d', $user->uid);
+  while ($role = db_fetch_object($result)) {
+    $user->roles[$role->rid] = $role->name;
+  }
+  $array = array();
+  user_module_invoke('load', $array, $user);
+}
+
+function _phpass_save($uid, $pass) {
+  // initialize phpass
+  require_once(drupal_get_path('module', 'phpass') .'/PasswordHash.php');
+  $phpass = new PasswordHash(variable_get('user_hash_strength', 8), variable_get('user_hash_portable', TRUE));
+
+  // get a new secure hash
+  $phpass_hash = $phpass->HashPassword($pass);
+
+  // save the hash values
+  if (db_result(db_query("SELECT hash FROM {user_phpass} WHERE uid = '%s'", $uid))) {
+    // update the secure phpass hash
+    db_query("UPDATE {user_phpass} SET hash = '%s' WHERE uid = %d", $phpass_hash, $uid);
+  }
+  else {
+    // store the secure phpass hash
+    db_query("INSERT INTO {user_phpass} (hash, uid) VALUES ('%s', %d)", $phpass_hash, $uid);
+  }
+
+  // lose the insecure md5 hash
+  db_query("UPDATE {users} SET pass = 'phpass' WHERE uid = %d", $uid);
+}
+
+function _phpass_is_passwordhash_php_missing() {
+  if (!file_exists(drupal_get_path('module', 'phpass') .'/PasswordHash.php')) {
+    if (arg(0) == 'admin') {
+      drupal_set_message(t('phpass is not properly installed, PasswordHash.php is missing'), 'error');
+    }
+    return TRUE;
+  }
+}

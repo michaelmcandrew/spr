@@ -1,0 +1,1999 @@
+# $Id: weblinks.pot,v 1.31.2.11 2009/07/11 17:37:33 nancyw Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  weblinks-link.tpl.php,v 1.1.2.12 2009/05/27 16:31:11 nancyw
+#  weblinks-link.tpl.php,v 1.1.2.13 2009/07/03 21:22:50 nancyw
+#  weblinks_node_view.tpl.php,v 1.5.2.7.2.4 2009/04/30 17:11:42 nancyw
+#  weblinks.admin.inc,v 1.34.2.43.2.28 2009/07/08 00:42:53 nancyw
+#  token_weblinks.inc,v 1.1.2.6 2008/10/03 15:22:44 nancyw
+#  pralexa.module,v 1.1.2.5.2.18 2009/07/07 01:05:30 nancyw
+#  views_handler_field_weblinks.inc,v 1.1.2.7.2.1 2009/04/11 18:10:35 nancyw
+#  pralexa.admin.inc,v 1.1.2.2.2.8 2009/07/08 00:42:53 nancyw
+#  weblinks_blocks.module,v 1.1.2.2.2.29 2009/07/11 02:35:34 nancyw
+#  weblinks_checker.admin.inc,v 1.1.2.6 2009/07/11 16:33:44 nancyw
+#  weblinks_convert_links.module,v 1.1.2.1.2.2 2009/07/07 00:29:49 nancyw
+#  weblinks_convert_janode.module,v 1.1.2.4 2009/07/07 00:29:49 nancyw
+#  weblinks_filter.module,v 1.1.2.1.2.1 2009/05/14 15:19:50 nancyw
+#  weblinks.module,v 1.86.2.85.2.30 2009/05/31 15:11:55 nancyw
+#  weblinks.module,v 1.86.2.85.2.54 2009/07/08 00:42:53 nancyw
+#  weblinks.views.inc,v 1.1.2.5 2009/02/14 23:35:14 nancyw
+#  weblinks.user.inc,v 1.2.2.13.2.2 2009/05/01 18:44:36 nancyw
+#  weblinks.info,v 1.5.2.1.2.4 2009/07/06 18:01:15 nancyw
+#  weblinks_errors.inc,v 1.1.2.2 2008/08/21 01:06:51 nancyw
+#  weblinks_checker.module,v 1.1.2.6 2009/07/11 16:33:44 nancyw
+#  weblinks.install,v 1.15.2.17.2.8 2009/05/24 20:03:39 nancyw
+#  weblinks.install,v 1.15.2.17.2.11 2009/07/11 16:33:44 nancyw
+#  pralexa.info,v 1.1.2.2 2009/02/27 21:58:27 nancyw
+#  weblinks_blocks.info,v 1.1.2.1.2.1 2009/05/02 14:42:47 nancyw
+#  weblinks_checker.info,v 1.1.2.1 2009/05/10 21:11:13 nancyw
+#  weblinks_collector.info,v 1.1.2.2 2008/07/28 17:29:15 nancyw
+#  weblinks_convert_links.info,v 1.1.2.1.2.1 2009/05/02 14:53:20 nancyw
+#  weblinks_convert_janode.info,v 1.1.2.1 2009/05/08 17:27:28 nancyw
+#  weblinks_convert_linksdb.info,v 1.1.2.1 2009/05/10 00:42:11 nancyw
+#  weblinks_embed.info,v 1.1.2.1 2009/07/04 15:49:32 nancyw
+#  weblinks_filter.info,v 1.1.2.1 2009/02/20 18:49:33 nancyw
+#  contribs/weblinks_opml/weblinks_opml.info: n/a
+#  contribs/wholikesme/wholikesme.info: n/a
+#  pralexa.install,v 1.1.2.2.2.4 2009/05/20 16:53:36 nancyw
+#  weblinks_blocks.install,v 1.1.2.3 2009/07/11 02:35:34 nancyw
+#  weblinks_collector.module,v 1.1.2.5 2008/08/27 13:10:07 nancyw
+#  weblinks_embed.module,v 1.1.2.2 2009/07/07 16:34:08 nancyw
+#  weblinks_convert_linksdb.module,v 1.1.2.3 2009/07/07 00:29:49 nancyw
+#  contribs/weblinks_opml/weblinks_opml.module: n/a
+#  contribs/wholikesme/wholikesme.module: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2009-07-11 13:35-0400\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: _weblinks-link.tpl.php:17
+msgid "Private"
+msgstr ""
+
+#: _weblinks-link.tpl.php:28 weblinks-link.tpl.php:25
+msgid "Google page rank: !pr, Alexa traffic rank: !alexa &nbsp; (as of !date)"
+msgstr ""
+
+#: _weblinks-link.tpl.php:34 weblinks-link.tpl.php:31
+msgid "Clicked !count times. Last clicked !last."
+msgstr ""
+
+#: weblinks_node_view.tpl.php:27 weblinks.admin.inc:316
+msgid "Visit [title]"
+msgstr ""
+
+#: token_weblinks.inc:14
+msgid "The weight of the node."
+msgstr ""
+
+#: token_weblinks.inc:15
+msgid "The URL of the Web Link."
+msgstr ""
+
+#: token_weblinks.inc:16
+msgid "Unfiltered URL of the Web Link.  WARNING - raw user input."
+msgstr ""
+
+#: token_weblinks.inc:17
+msgid "The title of the Web Link."
+msgstr ""
+
+#: token_weblinks.inc:18
+msgid "Unfiltered title of the Web Link.  WARNING - raw user input."
+msgstr ""
+
+#: token_weblinks.inc:19
+msgid "How many times the Web Link has been clicked."
+msgstr ""
+
+#: token_weblinks.inc:20
+msgid "When the Web Link was last clicked on."
+msgstr ""
+
+#: token_weblinks.inc:21
+msgid "The status of the Web Link when it was last checked."
+msgstr ""
+
+#: token_weblinks.inc:22
+msgid "The date/time when the Web Link was last checked."
+msgstr ""
+
+#: token_weblinks.inc:67 contribs/pralexa/pralexa.module:188
+msgid "Never"
+msgstr ""
+
+#: views_handler_field_weblinks.inc:37
+msgid "Show link as"
+msgstr ""
+
+#: weblinks.admin.inc:25 contribs/pralexa/pralexa.admin.inc:13 contribs/weblinks_blocks/weblinks_blocks.module:556;815 contribs/weblinks_checker/weblinks_checker.admin.inc:17
+msgid "Yes"
+msgstr ""
+
+#: weblinks.admin.inc:25 contribs/pralexa/pralexa.admin.inc:13 contribs/weblinks_blocks/weblinks_blocks.module:556;815 contribs/weblinks_checker/weblinks_checker.admin.inc:17 contribs/weblinks_convert/weblinks_convert_links.module:105 contribs/weblinks_convert_janode/weblinks_convert_janode.module:121
+msgid "No"
+msgstr ""
+
+#: weblinks.admin.inc:36
+msgid "Vocabulary to use for Weblinks"
+msgstr ""
+
+#: weblinks.admin.inc:48
+msgid "No vocabulary for the weblinks content type was found. A new vocabulary was created."
+msgstr ""
+
+#: weblinks.admin.inc:57
+msgid "Maximum block title length"
+msgstr ""
+
+#: weblinks.admin.inc:59
+msgid "This controls how much of a node title will be shown in a block to conserve space. Zero (0) means unlimited."
+msgstr ""
+
+#: weblinks.admin.inc:64
+msgid "Links page settings"
+msgstr ""
+
+#: weblinks.admin.inc:65
+msgid "These settings control the main links page display."
+msgstr ""
+
+#: weblinks.admin.inc:77
+msgid "Make groups collapsible"
+msgstr ""
+
+#: weblinks.admin.inc:79
+msgid "Enable this if you want the groups to be collapsible on the main links page. Note that if the \"Unclassified\" title is empty, that group will not be collapsed."
+msgstr ""
+
+#: weblinks.admin.inc:88
+msgid "Collapse all groups"
+msgstr ""
+
+#: weblinks.admin.inc:90
+msgid "Enable this if you want all the groups to be collapsed on the main links page."
+msgstr ""
+
+#: weblinks.admin.inc:99
+msgid "Link group title to group"
+msgstr ""
+
+#: weblinks.admin.inc:101
+msgid "Enable this if you want the group titles to be a link to show only that group."
+msgstr ""
+
+#: weblinks.admin.inc:108
+msgid "Normal Drupal - by weight, sticky, created date."
+msgstr ""
+
+#: weblinks.admin.inc:109
+msgid "Legacy - by weight, sticky, title."
+msgstr ""
+
+#: weblinks.admin.inc:114
+msgid "Page Sort order"
+msgstr ""
+
+#: weblinks.admin.inc:116
+msgid "This determines how the links page will sort the links."
+msgstr ""
+
+#: weblinks.admin.inc:124
+msgid "Page information"
+msgstr ""
+
+#: weblinks.admin.inc:127
+msgid "This description will appear at the top of the links page.  It will be filtered by your default input format."
+msgstr ""
+
+#: weblinks.admin.inc:138
+msgid "Maximum group depth (main links page)"
+msgstr ""
+
+#: weblinks.admin.inc:140
+msgid "This controls how many subgroups, if any, will display on the main links page. Blank, zero (0), and one (1) will all show only the top level."
+msgstr ""
+
+#: weblinks.admin.inc:151 contribs/weblinks_filter/weblinks_filter.module:147
+msgid "Spam link deterrent"
+msgstr ""
+
+#: weblinks.admin.inc:153 contribs/weblinks_filter/weblinks_filter.module:149
+msgid "If enabled, Drupal will add rel=\"nofollow\" to all links, as a measure to reduce the effectiveness of spam links. Note: this will also prevent valid links from being followed by search engines, therefore it is likely most effective when enabled for anonymous users."
+msgstr ""
+
+#: weblinks.admin.inc:161
+msgid "Group settings"
+msgstr ""
+
+#: weblinks.admin.inc:162
+msgid "These settings control the way the groups display on the main links page."
+msgstr ""
+
+#: weblinks.admin.inc:171
+msgid "Display group descriptions"
+msgstr ""
+
+#: weblinks.admin.inc:173
+msgid "Generally recommended."
+msgstr ""
+
+#: weblinks.admin.inc:180
+msgid "Empty container text"
+msgstr ""
+
+#: weblinks.admin.inc:183
+msgid "This text will appear when a container is empty. Leave it blank to not show the group at all. It will be filtered by your default input format."
+msgstr ""
+
+#: weblinks.admin.inc:188
+msgid "Title for unclassified links"
+msgstr ""
+
+#: weblinks.admin.inc:189 _weblinks.module:616 weblinks.module:639 contribs/pralexa/pralexa.module:167 contribs/weblinks_convert_janode/weblinks_convert_janode.module:147
+msgid "Unclassified"
+msgstr ""
+
+#: weblinks.admin.inc:190;205
+msgid "This will be used to describe the unclassified links. You may leave it blank for no title. It will not be translated."
+msgstr ""
+
+#: weblinks.admin.inc:195
+msgid "Description for unclassified links"
+msgstr ""
+
+#: weblinks.admin.inc:196 _weblinks.module:617 weblinks.module:640
+msgid "These links have not been assigned a group."
+msgstr ""
+
+#: weblinks.admin.inc:197
+msgid "This will be used as the description for the unclassified links group. If this group has no title, this text will not be shown either. It will not be translated."
+msgstr ""
+
+#: weblinks.admin.inc:203
+msgid "Title for unpublished links"
+msgstr ""
+
+#: weblinks.admin.inc:204 _weblinks.module:632 weblinks.module:655 contribs/weblinks_blocks/weblinks_blocks.module:25 contribs/weblinks_checker/weblinks_checker.admin.inc:262
+msgid "Unpublished"
+msgstr ""
+
+#: weblinks.admin.inc:210
+msgid "Description for unpublished links"
+msgstr ""
+
+#: weblinks.admin.inc:211 _weblinks.module:633 weblinks.module:656
+msgid "These links are not published and need to be reviewed."
+msgstr ""
+
+#: weblinks.admin.inc:212
+msgid "This will be used as the description for the unpublished links group. If this group has no title, this text will not be shown either. It will not be translated."
+msgstr ""
+
+#: weblinks.admin.inc:220
+msgid "Link settings"
+msgstr ""
+
+#: weblinks.admin.inc:221
+msgid "These settings control the way individual links display on the main links page."
+msgstr ""
+
+#: weblinks.admin.inc:232
+msgid "Show the node title"
+msgstr ""
+
+#: weblinks.admin.inc:234
+msgid "If your theme automatically provides a node title, set this to \"No.\" If you see duplicated titles, then set this to \"No\" and see if that resolves the problem."
+msgstr ""
+
+#: weblinks.admin.inc:242
+msgid "Link the title to the node"
+msgstr ""
+
+#: weblinks.admin.inc:244
+msgid "This makes the node title link to the node. For some themes, this may not work without also making some simple theme changes."
+msgstr ""
+
+#: weblinks.admin.inc:248 contribs/weblinks_blocks/weblinks_blocks.module:632
+msgid "No description"
+msgstr ""
+
+#: weblinks.admin.inc:249 contribs/weblinks_blocks/weblinks_blocks.module:633
+msgid "Teaser length"
+msgstr ""
+
+#: weblinks.admin.inc:250 contribs/weblinks_blocks/weblinks_blocks.module:634
+msgid "Full length"
+msgstr ""
+
+#: weblinks.admin.inc:255
+msgid "Link description display"
+msgstr ""
+
+#: weblinks.admin.inc:257
+msgid "This sets how the description will be displayed on the main links page."
+msgstr ""
+
+#: weblinks.admin.inc:267
+msgid "Enable click-tracking"
+msgstr ""
+
+#: weblinks.admin.inc:269
+msgid "This turns on the feature to record the number of times a link has been clicked upon. It is a requirement for the \"Popular\" block."
+msgstr ""
+
+#: weblinks.admin.inc:277 contribs/weblinks_filter/weblinks_filter.module:133
+msgid "Open links in a new window"
+msgstr ""
+
+#: weblinks.admin.inc:279
+msgid "Recommended to keep your vistors on your site. Note that this will cause HTML \"Strict\" validation errors if used."
+msgstr ""
+
+#: weblinks.admin.inc:287
+msgid "Display a link to other users' links"
+msgstr ""
+
+#: weblinks.admin.inc:289
+msgid "Shows a link to another user's links."
+msgstr ""
+
+#: weblinks.admin.inc:297
+msgid "Display URL/Visit on links page"
+msgstr ""
+
+#: weblinks.admin.inc:299
+msgid "Determines whether the URL or invitational link (next setting) will be used on the links page. It will always be shown on a node view page."
+msgstr ""
+
+#: weblinks.admin.inc:304
+msgid "Link displays as"
+msgstr ""
+
+#: weblinks.admin.inc:305 weblinks.views.inc:30 _weblinks.module:172 weblinks.module:131 contribs/pralexa/pralexa.admin.inc:18 contribs/weblinks_blocks/weblinks_blocks.module:685 contribs/weblinks_filter/weblinks_filter.module:126
+msgid "URL"
+msgstr ""
+
+#: weblinks.admin.inc:305
+msgid "Visit"
+msgstr ""
+
+#: weblinks.admin.inc:307
+msgid "This option sets whether the URL itself will be displayed or will hide behind an invitational link, such as \"Visit <em>title</em>\"."
+msgstr ""
+
+#: weblinks.admin.inc:315
+msgid "\"Visit\" text"
+msgstr ""
+
+#: weblinks.admin.inc:317
+msgid "This is the text that will be used with the node title (indicated by \"[title]\") to invite a click."
+msgstr ""
+
+#: weblinks.admin.inc:323
+msgid "Replacement patterns"
+msgstr ""
+
+#: weblinks.admin.inc:338
+msgid "Maximum link title length"
+msgstr ""
+
+#: weblinks.admin.inc:340
+msgid "This controls how much of long URLs will be shown in a link in full node view. Zero (0) means unlimited."
+msgstr ""
+
+#: weblinks.admin.inc:349
+msgid "Strip protocol and \"www\""
+msgstr ""
+
+#: weblinks.admin.inc:351
+msgid "If enabled, the protocol (e.g. \"http://\") and \"www\" (if present) will be removed before displaying the URL."
+msgstr ""
+
+#: weblinks.admin.inc:360
+msgid "Field defaults"
+msgstr ""
+
+#: weblinks.admin.inc:361
+msgid "These settings provide various defaults for fields that may be entered. Be careful when changing these as they can interfere with a user's input."
+msgstr ""
+
+#: weblinks.admin.inc:368
+msgid "Default for URL"
+msgstr ""
+
+#: weblinks.admin.inc:370
+msgid "This will be used as a stub in the URL field."
+msgstr ""
+
+#: weblinks.admin.inc:375
+msgid "Default for description"
+msgstr ""
+
+#: weblinks.admin.inc:377
+msgid "This will be used as a stub in the \"Link description\" field."
+msgstr ""
+
+#: weblinks.admin.inc:388
+msgid "Default input format"
+msgstr ""
+
+#: weblinks.admin.inc:390
+msgid "This will be used as the default input format."
+msgstr ""
+
+#: weblinks.user.inc:10 _weblinks.module:373 weblinks.module:332
+msgid "Home"
+msgstr ""
+
+#: weblinks.user.inc:41
+msgid "published"
+msgstr ""
+
+#: weblinks.user.inc:41
+msgid "not published"
+msgstr ""
+
+#: weblinks.user.inc:43
+msgid "promoted"
+msgstr ""
+
+#: weblinks.user.inc:46
+msgid "sticky"
+msgstr ""
+
+#: weblinks.user.inc:49
+msgid "moderated"
+msgstr ""
+
+#: weblinks.user.inc:65
+msgid "edit"
+msgstr ""
+
+#: weblinks.user.inc:66
+msgid "delete"
+msgstr ""
+
+#: weblinks.user.inc:79
+msgid "Title"
+msgstr ""
+
+#: weblinks.user.inc:79
+msgid "Status"
+msgstr ""
+
+#: weblinks.user.inc:79
+msgid "Group"
+msgstr ""
+
+#: weblinks.user.inc:79
+msgid "Last updated"
+msgstr ""
+
+#: weblinks.user.inc:79
+msgid "Operations"
+msgstr ""
+
+#: weblinks.user.inc:95
+msgid "No posts available."
+msgstr ""
+
+#: weblinks.views.inc:19 _weblinks.module:109 weblinks.module:68;504;555;564;573;584 weblinks.info:0 contribs/weblinks_blocks/weblinks_blocks.module:563
+msgid "Web Links"
+msgstr ""
+
+#: weblinks.views.inc:31
+msgid "The web address for the link."
+msgstr ""
+
+#: weblinks.views.inc:44
+msgid "Click count"
+msgstr ""
+
+#: weblinks.views.inc:45
+msgid "The total number of times the link has been clicked."
+msgstr ""
+
+#: weblinks.views.inc:61
+msgid "Last click"
+msgstr ""
+
+#: weblinks.views.inc:62
+msgid "The most recent time the link was clicked."
+msgstr ""
+
+#: weblinks.views.inc:75 _weblinks.module:182 weblinks.module:140
+msgid "Weight"
+msgstr ""
+
+#: weblinks.views.inc:76
+msgid "The node weight for the link's node."
+msgstr ""
+
+#: weblinks.views.inc:92
+msgid "Last status"
+msgstr ""
+
+#: weblinks.views.inc:93
+msgid "The status returned the last time the link was checked for validity."
+msgstr ""
+
+#: weblinks.views.inc:109
+msgid "Last checked"
+msgstr ""
+
+#: weblinks.views.inc:110
+msgid "The most recent time the link was checked to see if it works."
+msgstr ""
+
+#: weblinks_errors.inc:10
+msgid "100 - Continue"
+msgstr ""
+
+#: weblinks_errors.inc:11
+msgid "101 - Switching Protocols"
+msgstr ""
+
+#: weblinks_errors.inc:12
+msgid "200 - OK"
+msgstr ""
+
+#: weblinks_errors.inc:13
+msgid "201 - Created"
+msgstr ""
+
+#: weblinks_errors.inc:14
+msgid "202 - Accepted"
+msgstr ""
+
+#: weblinks_errors.inc:15
+msgid "203 - Non-Authoritative Information"
+msgstr ""
+
+#: weblinks_errors.inc:16
+msgid "204 - No Content"
+msgstr ""
+
+#: weblinks_errors.inc:17
+msgid "205 - Reset Content"
+msgstr ""
+
+#: weblinks_errors.inc:18
+msgid "206 - Partial Content"
+msgstr ""
+
+#: weblinks_errors.inc:19
+msgid "300 - Multiple Choices"
+msgstr ""
+
+#: weblinks_errors.inc:20
+msgid "301 - Moved Permanently"
+msgstr ""
+
+#: weblinks_errors.inc:21
+msgid "302 - Found"
+msgstr ""
+
+#: weblinks_errors.inc:22
+msgid "303 - See Other"
+msgstr ""
+
+#: weblinks_errors.inc:23
+msgid "304 - Not Modified"
+msgstr ""
+
+#: weblinks_errors.inc:24
+msgid "305 - Use Proxy"
+msgstr ""
+
+#: weblinks_errors.inc:25
+msgid "306 - (Unused)"
+msgstr ""
+
+#: weblinks_errors.inc:26
+msgid "307 - Temporary Redirect"
+msgstr ""
+
+#: weblinks_errors.inc:27
+msgid "400 - Bad Request"
+msgstr ""
+
+#: weblinks_errors.inc:28
+msgid "401 - Unauthorized"
+msgstr ""
+
+#: weblinks_errors.inc:29
+msgid "402 - Payment Required"
+msgstr ""
+
+#: weblinks_errors.inc:30
+msgid "403 - Forbidden"
+msgstr ""
+
+#: weblinks_errors.inc:31
+msgid "404 - Not Found"
+msgstr ""
+
+#: weblinks_errors.inc:32
+msgid "405 - Method Not Allowed"
+msgstr ""
+
+#: weblinks_errors.inc:33
+msgid "406 - Not Acceptable"
+msgstr ""
+
+#: weblinks_errors.inc:34
+msgid "407 - Proxy Authentication Required"
+msgstr ""
+
+#: weblinks_errors.inc:35
+msgid "408 - Request Timeout"
+msgstr ""
+
+#: weblinks_errors.inc:36
+msgid "409 - Conflict"
+msgstr ""
+
+#: weblinks_errors.inc:37
+msgid "410 - Gone"
+msgstr ""
+
+#: weblinks_errors.inc:38
+msgid "411 - Length Required"
+msgstr ""
+
+#: weblinks_errors.inc:39
+msgid "412 - Precondition Failed"
+msgstr ""
+
+#: weblinks_errors.inc:40
+msgid "413 - Request Entity Too Large"
+msgstr ""
+
+#: weblinks_errors.inc:41
+msgid "414 - Request-URI Too Long"
+msgstr ""
+
+#: weblinks_errors.inc:42
+msgid "415 - Unsupported Media Type"
+msgstr ""
+
+#: weblinks_errors.inc:43
+msgid "416 - Requested Range Not Satisfiable"
+msgstr ""
+
+#: weblinks_errors.inc:44
+msgid "417 - Expectation Failed"
+msgstr ""
+
+#: weblinks_errors.inc:45
+msgid "500 - Internal Server Error"
+msgstr ""
+
+#: weblinks_errors.inc:46
+msgid "501 - Not Implemented"
+msgstr ""
+
+#: weblinks_errors.inc:47
+msgid "502 - Bad Gateway"
+msgstr ""
+
+#: weblinks_errors.inc:48
+msgid "503 - Service Unavailable"
+msgstr ""
+
+#: weblinks_errors.inc:49
+msgid "504 - Gateway Timeout"
+msgstr ""
+
+#: weblinks_errors.inc:50
+msgid "505 - HTTP Version Not Supported"
+msgstr ""
+
+#: _weblinks.module:25 weblinks.module:24
+msgid "Enables the submission and display of categorized links to other web sites."
+msgstr ""
+
+#: _weblinks.module:47 weblinks.module:521
+msgid "Add a new link"
+msgstr ""
+
+#: _weblinks.module:55 weblinks.module:529
+msgid "Add a group"
+msgstr ""
+
+#: _weblinks.module:64 contribs/weblinks_filter/weblinks_filter.module:116
+msgid "Weblinks settings"
+msgstr ""
+
+#: _weblinks.module:72
+msgid "Weblinks Overview"
+msgstr ""
+
+#: _weblinks.module:110 weblinks.module:69
+msgid "Create a new web link."
+msgstr ""
+
+#: _weblinks.module:112 weblinks.module:71
+msgid "Link Name"
+msgstr ""
+
+#: _weblinks.module:114 weblinks.module:73
+msgid "Link Description"
+msgstr ""
+
+#: _weblinks.module:184 weblinks.module:142
+msgid "In listings, the heavier terms (with a larger weight) will sink and the lighter terms will be positioned nearer the top."
+msgstr ""
+
+#: _weblinks.module:502 weblinks.module:461
+msgid "!name's links"
+msgstr ""
+
+#: _weblinks.module:510 weblinks.module:469
+msgid "Edit link"
+msgstr ""
+
+#: _weblinks.module:516 weblinks.module:475
+msgid "Delete link"
+msgstr ""
+
+#: _weblinks.module:653;875 weblinks.module:869
+msgid "There are no weblinks to display yet."
+msgstr ""
+
+#: _weblinks.module:675 weblinks.module:680
+msgid "Edit group"
+msgstr ""
+
+#: _weblinks.module:849
+msgid "Invalid group requested."
+msgstr ""
+
+#: _weblinks.module:894 weblinks.module:889
+msgid "Group !op"
+msgstr ""
+
+#: _weblinks.module:935 weblinks.module:930
+msgid "Links submitted by !name"
+msgstr ""
+
+#: _weblinks.module:1034 weblinks.module:1020 contribs/weblinks_blocks/weblinks_blocks.module:144
+msgid "more&#8230;"
+msgstr ""
+
+#: _weblinks.module:1183 weblinks.module:1161
+msgid "Group name"
+msgstr ""
+
+#: _weblinks.module:1184 weblinks.module:1162
+msgid "The name of this group."
+msgstr ""
+
+#: _weblinks.module:1185 weblinks.module:1163
+msgid "Group description"
+msgstr ""
+
+#: _weblinks.module:1186 weblinks.module:1164
+msgid "A description of the group, to be displayed on web links pages and forms."
+msgstr ""
+
+#: _weblinks.module:1188 weblinks.module:1167
+msgid "Parent groups."
+msgstr ""
+
+#: _weblinks.module:1189 weblinks.module:1168
+msgid "Groups are displayed in ascending order by weight."
+msgstr ""
+
+#: _weblinks.module:1194 weblinks.module:1173
+msgid "Group image"
+msgstr ""
+
+#: _weblinks.module:1195 weblinks.module:1174
+msgid "The image file you wish to associate this group."
+msgstr ""
+
+#: _weblinks.module:1279
+msgid "Add comment"
+msgstr ""
+
+#: _weblinks.module:1286
+msgid "View comments"
+msgstr ""
+
+#: _weblinks.module:0
+msgid "_weblinks"
+msgstr ""
+
+#: weblinks.module:843
+msgid "Invalid group requested (%tid)."
+msgstr ""
+
+#: weblinks.module:44
+msgid "weblinks_perm"
+msgstr ""
+
+#: weblinks.module:512;603
+msgid "Links page"
+msgstr ""
+
+#: weblinks.module:537
+msgid "Edit a group"
+msgstr ""
+
+#: weblinks.module:546 contribs/pralexa/pralexa.module:100 contribs/weblinks_checker/weblinks_checker.module:414;424
+msgid "Settings"
+msgstr ""
+
+#: weblinks.module:547;585
+msgid "Set a variety of options for web link display and categorization."
+msgstr ""
+
+#: weblinks.module:593
+msgid "General"
+msgstr ""
+
+#: weblinks.module:0
+msgid "weblinks"
+msgstr ""
+
+#: _weblinks.install:15 weblinks.install:15
+msgid "weblinks module installed."
+msgstr ""
+
+#: _weblinks.install:18 weblinks.install:18
+msgid "weblinks table creation failed. Please \"uninstall\" the module and retry."
+msgstr ""
+
+#: _weblinks.install:191 weblinks.install:176
+msgid "Caches flushed."
+msgstr ""
+
+#: _weblinks.install:377 weblinks.install:362
+msgid "Cannot convert Web Links weights because the Weight module is already set for them."
+msgstr ""
+
+#: _weblinks.install:472 weblinks.install:462
+msgid "weblinks module uninstalled."
+msgstr ""
+
+#: weblinks.info:0
+msgid "Web Links provides a comprehensive way to post weblinks to your site. All links are nodes, which can be put into taxonomies/categories and administered."
+msgstr ""
+
+#: weblinks.info:0 contribs/pralexa/pralexa.info:0 contribs/weblinks_blocks/weblinks_blocks.info:0 contribs/weblinks_checker/weblinks_checker.module:128;326;330;339;355;356;371;380;385;396;412;422 contribs/weblinks_checker/weblinks_checker.info:0 contribs/weblinks_collector/weblinks_collector.info:0 contribs/weblinks_convert/weblinks_convert_links.info:0 contribs/weblinks_convert_janode/weblinks_convert_janode.info:0 contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.info:0 contribs/weblinks_embed/weblinks_embed.info:0 contribs/weblinks_filter/weblinks_filter.info:0 contribs/weblinks_opml/weblinks_opml.info:0 contribs/wholikesme/wholikesme.info:0
+msgid "Weblinks"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:18
+msgid "Link title"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:19
+msgid "Show title as"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:21
+msgid "This option determines how the link's title will be shown in the rankings page."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:29
+msgid "Link title to node"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:31
+msgid "If this option is selected, the row title will be linked to the node."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:39
+msgid "Show ranking information"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:41
+msgid "If this option is selected, the rankings will be displayed when the node is viewed."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:48
+msgid "Rows per page"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:51
+msgid "This sets the number of links per page that will be shown on the Pralexa page."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:56
+msgid "Title length shown"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:59
+msgid "This is the maximum length of the row title shown on the ranking page."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:64
+msgid "Links per cron"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:67
+msgid "This sets the number of links that will be checked per Cron run. Checking too many may cause Cron to time out."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:74 contribs/weblinks_checker/weblinks_checker.admin.inc:103
+msgid "Cron interval"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:75
+msgid "This sets the frequency of checking. If you run Cron frequently, you may wish to set this higher than your Cron frequency so that you don't overload the ranking sites. Note that those sites do not update more than once a day. The check will be run at the next scheduled Cron run after this interval expires. An interval of 0 means every cron run."
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:83
+msgid "Include \"Last checked\" in list"
+msgstr ""
+
+#: contribs/pralexa/pralexa.admin.inc:85
+msgid "If this option is selected, the time since the link was last checked will be included in the display."
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:50
+msgid "This module will update the Google Page rank and the Alexa Traffic rank at every crontab, run cron.php to get the latest statistics"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:55
+msgid "Google's page ranks run from 0 to 10; higher is better. Alexa's traffic rank has no limit; lower is better."
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:95
+msgid "Pralexa table insert failed."
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:133
+msgid "Url"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:134
+msgid "Groups"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:135
+msgid "Google Pagerank"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:136
+msgid "Alexa Traffic Rank"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:139
+msgid "Last Checked"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:180
+msgid "none"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:100;211;289;31
+msgid "Pralexa"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:100
+msgid "Fetched rankings on !count links."
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:211
+msgid "Bad Alexa response: @code"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:289
+msgid "Bad Google response: @code (url: @url)"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:23
+msgid "Page rankings"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:24
+msgid "Information about Google pagerank and Alexa Rank"
+msgstr ""
+
+#: contribs/pralexa/pralexa.module:0
+msgid "pralexa"
+msgstr ""
+
+#: contribs/pralexa/pralexa.install:16
+msgid "Pralexa module installed."
+msgstr ""
+
+#: contribs/pralexa/pralexa.install:19
+msgid "Pralexa table creation failed. Please \"uninstall\" the module and retry."
+msgstr ""
+
+#: contribs/pralexa/pralexa.install:116
+msgid "pralexa module uninstalled."
+msgstr ""
+
+#: contribs/pralexa/pralexa.info:0
+msgid "Google and Alexa Rank"
+msgstr ""
+
+#: contribs/pralexa/pralexa.info:0
+msgid "Module for fetching Google and Alexa rankings from their database"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:20
+msgid "Random"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:21
+msgid "Recent"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:22
+msgid "Popular"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:23
+msgid "Related"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:24
+msgid "Contributors"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:36
+msgid "Enables the display of categorized links in blocks."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:272
+msgid "more"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:452
+msgid "My Links"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:516
+msgid "Unpublished Links"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:533
+msgid "Web Links Contributors"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:571
+msgid "Maximum users to display"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:574
+msgid "The number of users to show in this block."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:583
+msgid "Maximum weblinks to display"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:586
+msgid "The number of links to show in each group in this block."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:586
+msgid "The number of links to show in this block."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:596
+msgid "\"More...\" link"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:598
+msgid "If there are more links than the limit above, do you want a \"more...\" link?"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:608
+msgid "Show click count"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:610
+msgid "If this is selected, the number of times the link has been clicked will be shown."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:619
+msgid "Show last click date"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:621
+msgid "If this is selected, the last date/time the link was clicked will be shown in the site short date format (\"%fmt\")."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:639
+msgid "Show description"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:641
+msgid "If checked, the link's description will be shown."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:649
+msgid "Show image"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:651
+msgid "If checked, the link's attached image will be shown."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:664
+msgid "Don't show block"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:665
+msgid "Show block without current link"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:666
+msgid "Show block with current link highlighted"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:671
+msgid "Block contains related"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:672
+msgid "What would you like to do if the currently viewed node is included in the block. \"Highlighted\" means the item will have the \"weblinks-related-current\" class added."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:682 contribs/weblinks_filter/weblinks_filter.module:123
+msgid "Links lead to URL or Web Link node"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:684 contribs/weblinks_filter/weblinks_filter.module:125
+msgid "Most people will want to leave this as URL. Specifying \"node\" makes it easier to edit the links, but requires an additional click to follow the link."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:685 contribs/weblinks_filter/weblinks_filter.module:126
+msgid "node"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:694
+msgid "List type"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:695
+msgid "Simple list"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:695
+msgid "Numbered list"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:697
+msgid "This sets the way the list will be displayed."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:705;818
+msgid "Normal Drupal - by sticky, weight, created date."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:706;819
+msgid "Legacy - by sticky, weight, title."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:711
+msgid "Sort order"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:713
+msgid "This determines how the links blocks will sort the links."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:725
+msgid "Update every"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:733
+msgid "seconds"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:734
+msgid "minutes"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:735
+msgid "hours"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:736
+msgid "days"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:737
+msgid "weeks"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:744
+msgid "If set, the link displayed in this block will get updated based on the interval specified (requires cron if page cache is enabled). Leave this value blank to have the link updated every time the block is viewed."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:817
+msgid "Default."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:825
+msgid "Web Links group settings"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:826
+msgid "These settings control the blocks and the main links group display."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:838
+msgid "Show %name"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:840
+msgid "Select to display this group on the main links page."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:850
+msgid "Collapse by default"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:852
+msgid "Check to collapse this group on the main links page by default."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:858
+msgid "Maximum links to display"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:861
+msgid "Leave blank if you would not like to limit the number of links displayed"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:867
+msgid "Create block"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:869
+msgid "Check to allow a block for this group to be created."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:877
+msgid "Blocks by group"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:879
+msgid "Create Random, Recent, and Popular blocks for this group. Requires \"Create block\" above. Child groups will inherit this setting."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:887
+msgid "Group Sort order"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:889
+msgid "This determines how the blocks will sort the links."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.module:0
+msgid "weblinks_blocks"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.install:28
+msgid "Block flags cleared for unclassified and unpublished."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.install:50
+msgid "Variable %name changed from %old to %value."
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.info:0
+msgid "Weblinks Blocks"
+msgstr ""
+
+#: contribs/weblinks_blocks/weblinks_blocks.info:0
+msgid "Module for adding blocks into weblinks"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:23
+msgid "Allow duplicate URLs"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:25
+msgid "yes"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:25
+msgid "no"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:25
+msgid "warn"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:26
+msgid "This check is performed at link creation time. Most users will not want to allow duplicate URLs."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:36
+msgid "Check if link is valid when entered"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:38
+msgid "If enabled, the module will attempt to use the URL to contact the site when the link is created or updated. If the link returns any error, the add/update will fail."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:46
+msgid "Enable link validity checker"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:47
+msgid "Do you want to check the links on a schedule?"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:53
+msgid "Links to include"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:54
+msgid "This sets the number of links to be checked on each Cron run. The maximum value is 50 but Cron may time out if the workload is high. You may wish to experiment with different numbers as this will vary between sites and hosts."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:66
+msgid "Show error status"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:67
+msgid "If this is selected and the link is returning an error, the status will be displayed with the link."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:74
+msgid "Every URL that was checked"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:75
+msgid "Only if the http status has changed"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:76;91
+msgid "None"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:80
+msgid "Show URLs checked"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:81
+msgid "This option controls what messages are written to the dblog for each URL that is tested. The log will always show links which get published or unpublished during the run."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:87
+msgid "Summary log message"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:89
+msgid "Short"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:90
+msgid "Long"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:93
+msgid "The short message just says how many links were checked. The long message also gives the link titles."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:104
+msgid "This sets the frequency of checking. If you run Cron frequently, you may wish to set this higher than your Cron frequency so that you don't overload the linked site. The check will be run at the next scheduled Cron run after this interval expires. An interval of 0 means every cron run."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:111
+msgid "Handling links that have errors"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:119
+msgid "Update link on permanent redirect?"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:120
+msgid "If a link is marked as a permanent redirect (\"301\"), do you want the link url updated?"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:128
+msgid "Checking sequence"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:130
+msgid "Check links in strict rotation"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:131
+msgid "Give priority to links in error"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:133
+msgid "Using strict rotation will make sure each link is checked in turn before any are re-checked. Giving priority to links which are in error ensures that their status is monitored closely so that they can be re-published as soon as they return a good status."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:141
+msgid "Unpublish bad links"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:143
+msgid "Unpublish after N cron runs"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:144
+msgid "Unpublish after N days"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:145
+msgid "Do not unpublish"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:147
+msgid "Weblinks can be unpublished after being in the same error state for a number of consecutive cron runs or days."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:155
+msgid "Unpublish after N"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:156
+msgid "This is the number of the day or cron run on which a link in error will be unpublished. Eg, enter 2 to unpublish a bad link on the second cron run or the day after it is discovered. Use 1 to unpublish a bad link immediately, ie. on the first run or first day that it is found to be in error. The maximum value is 99."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:165
+msgid "Action on unpublished links"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:167
+msgid "Include in checking"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:168
+msgid "Include and re-publish if OK"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:169
+msgid "Exclude from checking"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:171
+msgid "Do you want to re-check and get an up-to-date status for links which have been unpublished because they were in error?  These links can also be re-published if they are now reporting a good status code."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:192
+msgid "Ignore error codes"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:193
+msgid "The validity checker will treat all the selected codes as OK.\r\n      For more information, see <a href=\"!url\" target=\"_blank\">this page</a>."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:206
+msgid "0 - Not Connected"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:223
+msgid "User Deletion Action"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:224
+msgid "This section determines what you want to do with links submitted by a user who is subsequently deleted."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:248 contribs/weblinks_collector/weblinks_collector.module:151
+msgid "Anonymous"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:253
+msgid "Move to user"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:254
+msgid "Select the user to whom the links will be moved."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:262
+msgid "Published"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:263
+msgid "Status after the move"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:264
+msgid "When moving the link to the other user, should the link be published or unpublished?"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:281
+msgid "You entered @limit for 'links to include'. Please use a number in the range 1 to 50."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:281;287
+msgid "nothing"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:287
+msgid "You entered @unpublish_after for 'unpublish after'. Please use a number in the range 1 to 99."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.admin.inc:298
+msgid "The stored information on when links in error changed status has been cleared because you altered the criteria for unpublishing."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:16 contribs/weblinks_checker/weblinks_checker.info:0
+msgid "Checks validity of submitted links and handles user deletion."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:71
+msgid "Invalid code"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:87
+msgid "As of !date, this link is reporting !text."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:122;128
+msgid "Weblinks moved !links from user !from to user !to."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:164
+msgid "Delete"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:173
+msgid "\"@url\" does not look like a valid URL."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:183;186
+msgid "A link with that URL already exists."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:206
+msgid "This link is returning an error code of @err (@text)."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:311
+msgid "unknown"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:372;371
+msgid "@title @url unpublished."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:397;396
+msgid "@title @url re-published."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:326
+msgid "!url reports !status !extra."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:330
+msgid "Status changed from @last_status to @status for @title @url @extra."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:339
+msgid "Status @status unchanged for @title @url @extra."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:355
+msgid "!url updated to !new."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:356
+msgid "@title @url returned 301, updated to @new"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:380
+msgid "Status changed from @last_status to @status for @title @url"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:385
+msgid "Status @status unchanged for @title @url"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:412
+msgid "Weblinks checked !links @titles"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:422
+msgid "!links_in_error and the maximum number being checked per run is !limit. Other links will not get checked because priority is given to links in error, so you may wish to change your settings."
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:124;130;413
+msgid "1 link"
+msgid_plural "@count links"
+msgstr[0] ""
+msgstr[1] ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:423
+msgid "There is 1 link in error"
+msgid_plural "There are @count links in error"
+msgstr[0] ""
+msgstr[1] ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:27
+msgid "Checker settings"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.module:0
+msgid "weblinks_checker"
+msgstr ""
+
+#: contribs/weblinks_checker/weblinks_checker.info:0
+msgid "Web Links Checker"
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:41;177
+msgid "Weblinks collector"
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:50
+msgid "Extracts links from content and makes a Web Links node."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:53 contribs/weblinks_embed/weblinks_embed.module:53 contribs/weblinks_filter/weblinks_filter.module:53
+msgid "Unknown filter description requested from Weblinks."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:69
+msgid "Link collected on !date."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:165
+msgid "Created Web Links: %link."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:184
+msgid "Mark new Web Links as unpublished?"
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:186
+msgid "If checked, the new Web Links node will be marked as unpublished for moderation."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:191
+msgid "Convert to Web Links filter request?"
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:193
+msgid "If checked, the link will be replaced with a Web Links filter request."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:204
+msgid "The content will be scanned for links and those links will be submitted as Web Links nodes. The URL filter must run before this one. The Weblinks module may insert a filter request at that spot in the content."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:207
+msgid "The content will be scanned for links and those links will be submitted as Web Links nodes."
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.module:0
+msgid "weblinks_collector"
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.info:0
+msgid "Web Links Collector"
+msgstr ""
+
+#: contribs/weblinks_collector/weblinks_collector.info:0
+msgid "Extracts links from content."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:37
+msgid "<strong>Warning</strong>: This is a <strong>DESTRUCTIVE</strong> process. The Links package nodes will be changed to Web Links nodes and any taxonomy vocabularies will be updated to be used on the \"weblinks\" content type."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:43 contribs/weblinks_convert_janode/weblinks_convert_janode.module:42 contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:42
+msgid "I have done a back up of my database."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:48 contribs/weblinks_convert_janode/weblinks_convert_janode.module:47 contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:47
+msgid "Number of Links to convert at a time"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:51 contribs/weblinks_convert_janode/weblinks_convert_janode.module:50 contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:50
+msgid "This minimizes the risk of timing out if you have a lot of links to convert."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:56 contribs/weblinks_convert_janode/weblinks_convert_janode.module:55 contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:55
+msgid "Convert"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:67 contribs/weblinks_convert_janode/weblinks_convert_janode.module:66 contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:63
+msgid "You must check the box that says you backed up your database."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:77
+msgid "nid"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:77
+msgid "url"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:77
+msgid "weight"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:77
+msgid "tids"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:77
+msgid "last check"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:86 contribs/weblinks_convert_janode/weblinks_convert_janode.module:97
+msgid "Improper URL set by Links package in node #!nid."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:105 contribs/weblinks_convert_janode/weblinks_convert_janode.module:121
+msgid "!count links converted."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:108 contribs/weblinks_convert_janode/weblinks_convert_janode.module:125
+msgid "Found !count vocabularies: (!vocs)"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:121 contribs/weblinks_convert_janode/weblinks_convert_janode.module:138
+msgid "Added \"Web Links\" content to the !voc vocabulary."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:124 contribs/weblinks_convert_janode/weblinks_convert_janode.module:141
+msgid "Failed adding \"Web Links\" content to the !voc vocabulary."
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:17
+msgid "Convert Links package"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.module:0
+msgid "weblinks_convert_links"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.info:0
+msgid "Web Links Convert Links Package"
+msgstr ""
+
+#: contribs/weblinks_convert/weblinks_convert_links.info:0
+msgid "Allows users to convert Links package to Web Links."
+msgstr ""
+
+#: contribs/weblinks_convert_janode/weblinks_convert_janode.module:36
+msgid "The Janode package nodes will be used to create duplicate Web Links nodes and any taxonomy vocabularies will be updated to be used on the \"weblinks\" content type."
+msgstr ""
+
+#: contribs/weblinks_convert_janode/weblinks_convert_janode.module:147
+msgid "No vocabularies were used, so these links will be marked as \"%noclass\"."
+msgstr ""
+
+#: contribs/weblinks_convert_janode/weblinks_convert_janode.module:17
+msgid "Convert Janode package"
+msgstr ""
+
+#: contribs/weblinks_convert_janode/weblinks_convert_janode.module:0
+msgid "weblinks_convert_janode"
+msgstr ""
+
+#: contribs/weblinks_convert_janode/weblinks_convert_janode.info:0
+msgid "Web Links Convert Janode Package"
+msgstr ""
+
+#: contribs/weblinks_convert_janode/weblinks_convert_janode.info:0
+msgid "Allows users to convert Janode package to Web Links."
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:36
+msgid "The LinksDB tables will be used to create Web Links nodes and taxonomy terms will be created from its categories."
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:93;118
+msgid "Converted from LinksDB"
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:125
+msgid "Dead by: %comment"
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:132
+msgid "%title saved as node/!nid"
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:17
+msgid "Convert LinksDB package"
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.module:0
+msgid "weblinks_convert_linksdb"
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.info:0
+msgid "Web Links Convert LinksDB"
+msgstr ""
+
+#: contribs/weblinks_convert_linksdb/weblinks_convert_linksdb.info:0
+msgid "Allows users to convert LinksDB package to Web Links."
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.module:41
+msgid "Weblinks embed"
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.module:50
+msgid "Allows users to include a link group in a node with [links-embed: <em>id | name</em>]."
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.module:98
+msgid "There are no weblinks in group \"@id\"."
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.module:141
+msgid "To insert a Weblinks group into your content, you may use the pseudo-tag: [links-embed: <em>id | name</em>]. The Weblinks module will insert the appropriate links at that spot in the content."
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.module:144
+msgid "You may insert a links group with [links-embed: <em>id | name</em>]."
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.module:0
+msgid "weblinks_embed"
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.info:0
+msgid "Web Links Embed"
+msgstr ""
+
+#: contribs/weblinks_embed/weblinks_embed.info:0
+msgid "Allows users to include a link group in a node with [links-embed: id]."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:41
+msgid "Weblinks filter"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:50
+msgid "Allows users to include links with [link: <em>title</em>]."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:100
+msgid "No link found for @title."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:135
+msgid "Recommended to keep your vistors on your site. Should not be used when the \"Links lead...\" option is \"node.\""
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:140
+msgid "Use link descriptions as title attribute"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:142
+msgid "If checked the link description will be added as a \"title\" attribute for a hover tip."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:154
+msgid "No image"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:155
+msgid "Before the title"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:156
+msgid "After the title"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:161
+msgid "Use image in the link"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:163
+msgid "If checked the link will include an image attached to the link, if there is one."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:173
+msgid "Image size"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:175
+msgid "Which size image to use in the link. Requires \"Use image...\" above to be checked."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:187
+msgid "To insert a link to a site known to the Weblinks module, you may insert in your content the pseudo-tag: [link: <em>title</em>]. The Weblinks module will insert the appropriate link at that spot in the content."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:190
+msgid "You may insert a link to a defined site with [link: <em>title</em>]."
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.module:0
+msgid "weblinks_filter"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.info:0
+msgid "Web Links Filter"
+msgstr ""
+
+#: contribs/weblinks_filter/weblinks_filter.info:0
+msgid "Allows users to include links with [link: title]."
+msgstr ""
+
+#: contribs/weblinks_opml/weblinks_opml.module:15
+msgid "Export OPML"
+msgstr ""
+
+#: contribs/weblinks_opml/weblinks_opml.module:16
+msgid "Export links in OPML format"
+msgstr ""
+
+#: contribs/weblinks_opml/weblinks_opml.module:0
+msgid "weblinks_opml"
+msgstr ""
+
+#: contribs/weblinks_opml/weblinks_opml.info:0
+msgid "Web Links OPML Export/Import"
+msgstr ""
+
+#: contribs/weblinks_opml/weblinks_opml.info:0
+msgid "Allows exporting and importing Web Links in OPML format."
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:51
+msgid "Who Likes %me"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:129
+msgid "Counts by host"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:131
+msgid "Site"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:131;140;146
+msgid "Hits"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:138
+msgid "References"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:140
+msgid "Page"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:145
+msgid "Search Engine Activity"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:146
+msgid "Search on"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:151
+msgid "No search strings found."
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:16 contribs/wholikesme/wholikesme.info:0
+msgid "Who Likes Me"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.module:0
+msgid "wholikesme"
+msgstr ""
+
+#: contribs/wholikesme/wholikesme.info:0
+msgid "Snap shot of the accesslog table."
+msgstr ""
+

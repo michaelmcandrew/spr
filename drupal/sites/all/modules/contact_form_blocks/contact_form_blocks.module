@@ -1,0 +1,263 @@
+<?php
+// $Id: contact_form_blocks.module,v 1.1.4.2 2009/08/19 22:22:29 fuerst Exp $
+
+/**
+ * @file
+ * Show the site-wide contact forms in blocks.
+ */
+
+/**
+ * Implementation of hook_block().
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_block($op = 'list', $delta = 0, $edit = array()) {
+  // Check if the user has access to the site-wide contact form and if the contact.module is loaded
+  if (!user_access('access site-wide contact form') && !module_exists('contact')) {
+    return FALSE;
+  }
+
+  // The $op parameter determines what piece of information is being requested.
+  switch ($op) {
+    case 'configure':
+    case 'save':
+      break;
+    case 'list':
+      return contact_form_blocks_get_blocks();
+    case 'view':
+    default:
+      return contact_form_blocks_content($delta);
+  }
+}
+
+
+/**
+ * Implementation of hook_menu().
+ *
+ * Provide the Settings page
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_menu() {
+  $items = array();
+
+  $items['admin/settings/contact_form_blocks'] = array(
+    'title' => 'Contact blocks',
+    'description' => 'Contact blocks settings',
+    'page arguments' => array('contact_form_blocks_settings'),
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site-wide contact form'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implementation of hook_forms().
+ *
+ * Reset the submit handler of forms with contact_mail_page<number>
+ * form_id to the original handler of the contact_mail_page form.
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_forms($form_id, $args) {
+  // Only handle contact_mail_page<number> forms
+  if (0 == preg_match('/^contact_mail_page\d+$/', $form_id)) {
+    return array();
+  }
+
+  // Reset the submit handler
+  return array($form_id => array('callback' => 'contact_mail_page'));
+}
+
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Modify the contact form: remove the category popup field and re-insert it as hidden field or modified popup menu
+ * Only modify the contact_mail_page form by using hook_form_$form-id_alter()
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_form_alter(&$form, $form_state, $form_id) {
+
+  // Handle contact_mail_page and contact_mail_page<number> form_id's only
+  if (0 == preg_match('/^contact_mail_page\d*$/', $form_id)) {
+    return;
+  }
+
+  // Set the submit handler to the original handler of the contact_mail_page form
+  $form['#submit'] = array(
+    'contact_mail_page_submit',
+  );
+
+  // Set the validate handler to the original handler of the contact_mail_page form
+  $form['#validate'] = array(
+    'contact_mail_page_validate',
+  );
+
+  // For contact form in a block: Build a new cid form field
+  if (isset($_SESSION['contact_form_blocks_form_category'])) {
+
+    // Store cid as value instead of form field for contact form blocks
+    $form['cid'] = array(
+      '#type' => 'value',
+      '#value' => $_SESSION['contact_form_blocks_form_category'],
+    );
+
+    // Avoid default redirection of site-wide contact form to home page
+    $form['#redirect'] = FALSE;
+
+    // Forget the category so we don't modify the form next time with a wrong category
+    // or modify the site-wide contact form at the /contact path
+    unset($_SESSION['contact_form_blocks_form_category']);
+
+    return;
+  }
+
+  /* Now handle the site-wide contact form */
+
+  // Get categories which should be shown at the site wide contact form
+  $categories = contact_form_blocks_get_categories(variable_get('contact_form_blocks_site_wide_categories', array_keys(contact_form_blocks_get_categories())));
+
+  // If there is only 1 category, store its cid as value instead of the select field
+  if (1 == count($categories)) {
+    $form['cid'] = array(
+      '#type' => 'value',
+      '#value' => key($categories),
+    );
+    return;
+  }
+
+  // Popup menu for site wide contact form
+  // Add -- menu item if no default is set
+  if (empty($form['cid']['#default_value'])) {
+    $categories = array(t('--')) + $categories;
+  }
+  $form['cid']['#options'] = $categories;
+}
+
+
+/**
+ * Get the HTML code for the contact form
+ *
+ * @param int $category The contact.cid of the contact form category from the database
+ * @return array Content/title array for Blocks
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_content($category) {
+  // Get data about existing contact categories (formatted in block array)
+  $categories = contact_form_blocks_get_categories();
+
+  // Extract block title
+  $content['subject'] = $categories[$category];
+
+  // Don't allow misuse by using the contact form too often
+  if (!flood_is_allowed('contact', variable_get('contact_hourly_threshold', 3))) {
+    $content['content'] = t("You cannot send more than %number messages per hour. Please try again later.", array('%number' => variable_get('contact_hourly_threshold', 3)));
+    return $content;
+  }
+
+  // Need to know about the category in contact_form_blocks_form_contact_mail_page_alter()
+  $_SESSION['contact_form_blocks_form_category'] = $category;
+
+  // Load the contact module's code to get the contact form
+  module_load_include('inc', 'contact', 'contact.pages');
+
+  // Append the category to the original "contact_mail_page" form_id to be able
+  // to handle multiple contact forms on one page
+  $content['content'] = drupal_get_form('contact_mail_page'. $category);
+
+  // Add some modifications to the CSS
+  drupal_add_css(drupal_get_path('module', 'contact_form_blocks') .'/contact_form_blocks.css');
+
+  return $content;
+}
+
+/**
+ * Get the contact form categories
+ *
+ * @return array Contact form categories formatted as block array
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_get_categories($cids = NULL) {
+  $categories = array();
+  $result = db_query('SELECT cid, category FROM {contact} ORDER BY weight, category');
+  while ($row = db_fetch_object($result)) {
+    if (!empty($cids) AND !in_array($row->cid, $cids)) {
+      continue;
+    }
+    $categories[$row->cid] = $row->category;
+  }
+  return $categories;
+}
+
+
+/**
+ * Format the contact form categories as block array
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_get_blocks() {
+  $categories = contact_form_blocks_get_categories();
+
+  $blocks = array();
+  foreach ($categories as $cid => $info) {
+    $blocks[$cid]['info'] = sprintf('%s: %s', t('Contact form'), $info);
+  }
+  return $blocks;
+}
+
+
+/**
+ * Build the settings form
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+function contact_form_blocks_settings() {
+
+  $categories = contact_form_blocks_get_categories();
+
+  // Warning if no contact category being set
+  if (empty($categories)) {
+    drupal_set_message(t("You need to !link first before being able to set them here.", array('!link' => l("create contact form categories", "admin/build/contact/add"))));
+    return array();
+  }
+
+  $form = array();
+
+  $form['contact_form_blocks_categories'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Categories to be shown in the site wide contact form'),
+    '#default_value' => variable_get('contact_form_blocks_site_wide_categories', array_keys($categories)),
+    '#options' => $categories,
+  );
+
+  $form['submit'] = array(
+  '#type' => 'submit',
+  '#value' => t('Save configuration'),
+  );
+
+  return $form;
+}
+
+
+/**
+ * Save the settings
+ *
+ * @return void
+ * @author Bernhard Fürst
+ */
+
+function contact_form_blocks_settings_submit($form, &$form_state) {
+  variable_set('contact_form_blocks_site_wide_categories', $form_state['values']['contact_form_blocks_categories']);
+  drupal_set_message(t('The settings have been saved'));
+}

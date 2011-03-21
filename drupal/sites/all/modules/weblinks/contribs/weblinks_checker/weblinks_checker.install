@@ -1,0 +1,70 @@
+<?php
+// $Id: weblinks_checker.install,v 1.1.2.7 2009/09/20 22:33:40 nancyw Exp $
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Weblinks_Checker module.
+ * Drupal 6 Version
+ */
+
+/**
+ * Implementation of hook_enable().
+ * Set our module weight.
+ */
+function weblinks_checker_enable() {
+  db_query("UPDATE {system} SET weight=-2 WHERE type='module' AND name='weblinks_checker'");
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Change module weight. http://drupal.org/node/530082
+ */
+function weblinks_checker_update_6000() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight=-2 WHERE type='module' AND name='weblinks_checker'");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ * Fix url. http://drupal.org/node/575512
+ */
+function weblinks_checker_update_6001() {
+  $ret = array();
+
+  $result = db_query("SELECT nid, vid, url FROM {weblinks} GROUP BY nid ORDER BY nid ASC, vid DESC");
+  while ($row = db_fetch_object($result)) {
+    $new = rawurldecode(_weblinks_checker_fix_url($row->url));
+    if ($new != $row->url) {
+      $urlhash = md5($new);
+      $ret[] = update_sql("UPDATE {weblinks} SET url='$new', urlhash='$urlhash' WHERE nid=$row->nid AND vid=$row->vid");
+    }
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function weblinks_checker_uninstall() {
+  variable_del('weblinks_allow_dupes');
+  variable_del('weblinks_checker_action_on_unpublished');
+  variable_del('weblinks_checker_detail_log');
+  variable_del('weblinks_checker_enabled');
+  variable_del('weblinks_checker_ignore');
+  variable_del('weblinks_checker_ignore_zero');
+  variable_del('weblinks_checker_interval');
+  variable_del('weblinks_checker_last');
+  variable_del('weblinks_checker_limit');
+  variable_del('weblinks_checker_order');
+  variable_del('weblinks_checker_redirect');
+  variable_del('weblinks_checker_show_status');
+  variable_del('weblinks_checker_summary_msg');
+  variable_del('weblinks_checker_unpublish');
+  variable_del('weblinks_checker_unpublish_after');
+  variable_del('weblinks_rescue_move');
+  variable_del('weblinks_rescue_unpub');
+  variable_del('weblinks_user_rescue');
+  variable_del('weblinks_validate_check');
+}

@@ -1,0 +1,139 @@
+<?php
+// $Id: weblinks.test,v 1.1.2.8 2009/09/20 22:33:41 nancyw Exp $
+/**
+ * @file
+ * Define test cases for the Web Links module
+ */
+class WeblinksTestCase extends DrupalWebTestCase {
+  /**
+   * Implementation of getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      // 'name' should start with what is being tested (menu item) followed by what
+      // about it is being tested (creation/deletion).
+      'name' => t('Weblinks tests'),
+      // 'description' should be one or more complete sentences
+      // explaining the test.
+      'description' => t('Test Weblinks module.'),
+      // 'group' should be a logical grouping of test cases, like a category.
+      // Suggestion: Use the name of the module to be tested.
+      'group' => t('Weblinks'),
+    );
+  }
+  
+  /**
+   * Implementation of setUp().
+   */
+  function setUp() {
+    // This installs the Weblinks module, which is the module this suite is testing.
+    parent::setUp('weblinks', 'node', 'menu');
+//    module_disable(array('taxonomy'));
+
+    // Make sure "Powered by" and "Navigation" blocks are turned off for performance.
+    db_query("UPDATE {blocks} SET status=0 WHERE (module='system' AND delta=0) OR (module='user' AND delta=1)");
+
+    // Turn off "submitted by."
+    $theme_settings = variable_get('theme_settings', array());
+    $theme_settings['toggle_node_info_weblinks'] = 0;
+    variable_set('theme_settings', $theme_settings);
+  }
+  
+  /**
+   * Implementation of tearDown().
+   */
+  function tearDown() {
+    // Perform any clean-up tasks.
+
+    // The last thing a tearDown() method should always do is call its parent tearDown() method.
+    parent::tearDown();
+  }
+
+  /**
+   * One-sentence description of test.
+   */
+  function testWeblinksCreate() {
+    // @TODO: add a test for "user's links"
+    // Prepare a user to do the stuff.
+    $user = $this->drupalCreateUser(array('access content', 'access web links', 'create weblinks', 'edit own weblinks'));
+    $this->drupalLogin($user);
+
+    $settings = array(
+      'type' => 'weblinks',
+      'title' => 'A sample link',
+      'url' => 'http://www.example.com',
+      'weight' => 0,
+      'promote' => 1,
+      'status' => 1,
+      );
+    $link1 = $this->drupalCreateNode($settings);
+    $settings = array(
+      'type' => 'weblinks',
+      'title' => 'Drupal Community',
+      'url' => 'http://drupal.org',
+      'weight' => 0,
+      'promote' => 0,
+      'status' => 0,
+      );
+    $link2 = $this->drupalCreateNode($settings);
+    $count_nodes = db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='weblinks'"));
+    $this->assertEqual($count_nodes, 2, t('Nodes found in the database.'), 'Basic');
+    $count_links = db_result(db_query("SELECT COUNT(nid) FROM {weblinks}"));
+    $this->assertEqual($count_links, 2, t('Links found in the database.'), 'Basic');
+    $count_unpub = db_result(db_query("SELECT COUNT(nid) FROM {node} WHERE type='weblinks' AND status=0"));
+    $this->assertEqual($count_unpub, 1, t('Unpublished links found in the database.'), 'Basic');
+
+    // Now do a list.
+    $content = $this->drupalGet('node');
+//    $this->pass(check_plain($content));
+    $this->assertText($link1->title, t('Node is promoted to the home page.'), 'Basic');
+
+    // Now do a list.
+    $content = $this->drupalGet('weblinks');
+//    $this->pass(check_plain($content));
+    $this->assertEqual($link1->is_new, 1, t('Link node created.'), 'Basic');
+    $this->assertText($link1->title, t('Node title appears on the list.'), 'Basic');
+    $this->assertNoText($link2->title, t('Unpublished node does not appear on the list.'), 'Basic');
+    $this->assertNoText(t('There are no weblinks to display yet.'), t('No empty list message.'), 'Basic');
+    $this->assertNoText(t('Weblinks settings'), t('Settings link not displayed.'), 'Basic');
+    $this->assertText(t('Add a new link'), t('"Add new" link displayed.'), 'Basic');
+    $this->assertText(t('Unclassified'), t('Unclassified group displayed.'), 'Basic');
+    $this->assertText($user->name, t('User name displayed.'), 'Basic');
+    $link1_shouldbe = '<a href="http://www.example.com" target="_blank" title="A sample link">http://www.example.com</a>';
+    $this->assertRaw($link1_shouldbe, t('URL displayed in URL mode.'), 'Basic');
+
+    // Switch mode to "redirect."
+    variable_set('weblinks_redirect', TRUE);
+    $link1_shouldbe = '<a href="/weblinks/goto/'. $link1->nid .'" target="_blank" title="A sample link">http://www.example.com</a>';
+    $content = $this->drupalGet('weblinks');
+//    $this->pass(check_plain($content));
+    $this->assertRaw($link1_shouldbe, t('URL displayed in Redirect mode.'), 'Basic');
+
+    $check = db_result(db_query("SELECT url FROM {weblinks} WHERE nid=%d", $link1->nid));
+    $this->assertEqual($link1->url, $check, t('URL successfully stored.'), 'Basic');
+    
+    // Let's look at the settings.
+    // First let's make sure the current user can't admin.
+    $this->drupalGet('admin/settings/weblinks');
+    $this->assertResponse(403, t('Access is denied on the administration page.'), 'Basic');
+
+    // Prepare a user to do the stuff.
+    $user = $this->drupalCreateUser(array('access content', 'access web links', 'administer weblinks'));
+    $this->drupalLogin($user);
+
+    // Make sure the settings link shows up now. 
+    $this->drupalGet('weblinks');
+    $this->assertText(t('Weblinks settings'), t('Settings link available.'), 'Basic');
+
+    // Group settings need to show at least unclassified and unpublished.
+    $this->drupalGet('admin/settings/weblinks/group');
+    $this->assertResponse(200, t('Access is granted on the administration page.'), 'Settings');
+    $this->assertText('Show Unclassified', t('Group settings includes "Unclassified".'), 'Settings');
+    $this->assertText('Show Unpublished', t('Group settings includes "Unpublished".'), 'Settings');
+
+    // Check settings should be turned off.
+    $this->drupalGet('admin/settings/weblinks/checker');
+    $this->assertFieldByName('weblinks_checker_enabled', 0, t('Checker disabled.'), 'Settings');
+  }
+
+}

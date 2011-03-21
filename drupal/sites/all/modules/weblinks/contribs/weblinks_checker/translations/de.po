@@ -1,0 +1,364 @@
+# $Id: de.po,v 1.1.2.1 2009/09/13 23:27:45 nancyw Exp $
+#
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  weblinks_checker.admin.inc,v 1.1.2.13 2009/08/31 18:57:03 nancyw
+#  weblinks_checker.module,v 1.1.2.14 2009/08/30 18:02:00 nancyw
+#  weblinks_checker.info,v 1.1.2.1 2009/05/10 21:11:13 nancyw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal Weblinks V6.x-2.x\n"
+"POT-Creation-Date: 2009-09-07 20:48+0200\n"
+"PO-Revision-Date: 2009-09-07 20:51+0100\n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: weblinks_checker.admin.inc:17;25
+msgid "Yes"
+msgstr "Ja"
+
+#: weblinks_checker.admin.inc:17;25
+msgid "No"
+msgstr "Nein"
+
+#: weblinks_checker.admin.inc:23
+msgid "Allow duplicate URLs"
+msgstr "Doppelte URLs erlauben"
+
+#: weblinks_checker.admin.inc:25
+msgid "Warn"
+msgstr "Warnen"
+
+#: weblinks_checker.admin.inc:26
+msgid "This check is performed at link creation time. Most users will not want to allow duplicate URLs."
+msgstr "Diese Prüfung wird beim Erstellen des Links durchgeführt. Die meisten Anwender werden keine doppelten URLs erlauben wollen."
+
+#: weblinks_checker.admin.inc:36
+msgid "Check if link is valid when entered"
+msgstr "Bei Eingabe prüfen, ob der Link gültig ist"
+
+#: weblinks_checker.admin.inc:38
+msgid "If enabled, the module will attempt to use the URL to contact the site when the link is created or updated. If the link returns any error, the add/update will fail."
+msgstr "Wenn aktiviert wird das Modul versuchen, mittels der URL die Website zu kontaktieren, wenn der Link erstellt oder aktualisiert wird. Wenn der Link einen Fehler zurückliefert, schlägt das Hinzufügen/Aktualisieren fehl."
+
+#: weblinks_checker.admin.inc:46
+msgid "Enable link validity checker"
+msgstr "Gültigkeitsprüfung von Links aktivieren"
+
+#: weblinks_checker.admin.inc:47
+msgid "Do you want to check the links on a schedule?"
+msgstr "Sollen die Links zeitgesteuert geprüft werden?"
+
+#: weblinks_checker.admin.inc:53
+msgid "Basic settings"
+msgstr "Grundeinstellungen"
+
+#: weblinks_checker.admin.inc:61
+msgid "Links to include"
+msgstr "Einzubeziehende Links"
+
+#: weblinks_checker.admin.inc:62
+msgid "This sets the number of links to be checked on each Cron run. The maximum value is 150 but Cron may time out if the workload is high. You may wish to experiment with different numbers as this will vary between sites and hosts."
+msgstr "Dies stellt die Anzahl der je Cron-Lauf zu prüfenden Links ein. Der Maximalwert ist 150, aber Cron kann eine Auszeit verursachen, wenn die Last hoch ist. Es ist sinnvoll mit unterschiedlichen Werten zu experimentieren, da dies je nach Website und Rechner variiert."
+
+#: weblinks_checker.admin.inc:69
+msgid "There are currently !count links defined."
+msgstr "Momentan sind !count Links definiert."
+
+#: weblinks_checker.admin.inc:76
+msgid "Show error status"
+msgstr "Fehlerstatus zeigen"
+
+#: weblinks_checker.admin.inc:77
+msgid "If this is selected and the link is returning an error, the status will be displayed with the link."
+msgstr "Wenn dies ausgewählt wird und der Link einen Fehler zurückgibt, wird beim Link auch der Status angezeigt."
+
+#: weblinks_checker.admin.inc:84
+msgid "Every URL that was checked"
+msgstr "Jede geprüfte URL"
+
+#: weblinks_checker.admin.inc:85
+msgid "Only if the http status has changed"
+msgstr "Nur wenn sicht der HTTP-Status geändert hat."
+
+#: weblinks_checker.admin.inc:86;101
+msgid "None"
+msgstr "Keine"
+
+#: weblinks_checker.admin.inc:90
+msgid "Show URLs checked"
+msgstr "Geprüfte URLs anzeigen"
+
+#: weblinks_checker.admin.inc:91
+msgid "This option controls what messages are written to the dblog for each URL that is tested. The log will always show links which get published or unpublished during the run."
+msgstr "Diese Option legt fest, welche Nachrichten für jede getestete URL in das Dblog geschrieben werden. Das Protokoll zeigt immer Links die während des Laufs veröffentlicht werden oder deren Veröffentlichung zurückgenommen wird."
+
+#: weblinks_checker.admin.inc:97
+msgid "Summary log message"
+msgstr "Zusammenfassungs-Protokollnachricht"
+
+#: weblinks_checker.admin.inc:99
+msgid "Short"
+msgstr "Kurz"
+
+#: weblinks_checker.admin.inc:100
+msgid "Long"
+msgstr "Lang"
+
+#: weblinks_checker.admin.inc:103
+msgid "The short message just says how many links were checked. The long message also gives the link titles."
+msgstr "Die kurze Nachricht sagt nur, wie viele Links geprüft wurden. Die lange Nachricht zeigt auf die Link-Titel."
+
+#: weblinks_checker.admin.inc:116
+msgid "Cron interval"
+msgstr "Cron-Intervall"
+
+#: weblinks_checker.admin.inc:117
+msgid "This sets the frequency of checking. If you run Cron frequently, you may wish to set this higher than your Cron frequency so that you don't overload the linked site. The check will be run at the next scheduled Cron run after this interval expires. An interval of 0 means every cron run."
+msgstr "Dies stellt die Häufigkeit der Prüfung ein. Wenn Cron häufig läuft, muss dieser Wert möglicherweise höher als die Cron-Häufigkeit sein, damit die Website, auf die verwiesen wird, nicht überlastet wird. Die Prüfung läuft beim nächsten Cron-Lauf nach Ablauf des Intervalls. Ein Intervall von 0 bedeutet jeder Cron-Lauf"
+
+#: weblinks_checker.admin.inc:124
+msgid "Handling links that have errors"
+msgstr "Umgang mit Links die Fehler zeigen"
+
+#: weblinks_checker.admin.inc:132
+msgid "Update link on permanent redirect?"
+msgstr "Link bei permanenter Umleitung aktualisieren?"
+
+#: weblinks_checker.admin.inc:133
+msgid "If a link is marked as a permanent redirect (\"301\"), do you want the link url updated?"
+msgstr "Soll die Link-URL aktualisiert werden, wenn der Link als permanente Weiterleitung markiert ist („301“)?"
+
+#: weblinks_checker.admin.inc:141
+msgid "Checking sequence"
+msgstr "Prüfreihenfolge"
+
+#: weblinks_checker.admin.inc:143
+msgid "Check links in strict rotation"
+msgstr "Links strikt rotierend prüfen"
+
+#: weblinks_checker.admin.inc:144
+msgid "Give priority to links in error"
+msgstr "Fehlerhafte Links haben Priorität"
+
+#: weblinks_checker.admin.inc:146
+msgid "Using strict rotation will make sure each link is checked in turn before any are re-checked. Giving priority to links which are in error ensures that their status is monitored closely so that they can be re-published as soon as they return a good status."
+msgstr "Bei strikter Rotation wird sichergestellt, dass jeder Link geprüft wird, bevor welche errneut geprüft werden. Bei Priorität für fehlerhafte Links wird sichergestellt, dass deren Status zeitnah geprüft wird, so dass sie so früh wie mögliich wieder veröffentlicht werden können, wenn sie einen guten Status zurückgeben."
+
+#: weblinks_checker.admin.inc:154
+msgid "Unpublish bad links"
+msgstr "Unveröffentlichung fehlerhafter Links zurücknehmen."
+
+#: weblinks_checker.admin.inc:156
+msgid "Unpublish after N cron runs"
+msgstr "Veröffentlichung zurücknehmen nach n Cron-Läufen"
+
+#: weblinks_checker.admin.inc:157
+msgid "Unpublish after N days"
+msgstr "Veröffentlichung nach n Tagen zurücknehmen"
+
+#: weblinks_checker.admin.inc:158
+msgid "Do not unpublish"
+msgstr "Veröffentlichung nicht zurücknehmen"
+
+#: weblinks_checker.admin.inc:160
+msgid "Weblinks can be unpublished after being in the same error state for a number of consecutive cron runs or days."
+msgstr "Die Veröffentlichung von Internet-Links kann zurückgenommen werden, wenn sie für eine bestimmte Anzahl von Cron-Läufen nacheinander den gleichen Fehlerstatus anzeigen."
+
+#: weblinks_checker.admin.inc:168
+msgid "Unpublish after N"
+msgstr "Veröffentlichung zurücknehmen nach n"
+
+#: weblinks_checker.admin.inc:169
+msgid "This is the number of the days or cron runs on which a link in error will be unpublished. For example, enter 2 to unpublish a bad link on the second cron run or the day after it is discovered. Use 1 to unpublish a bad link immediately, i.e. on the first run or first day that it is found to be in error. The maximum value is 99."
+msgstr "DIes ist die Anzahl Tage oder Cron-Läufe, nach denen die Veröffentlichung eines Links mit Fehlerstatus zurückgenommen wird. Wenn eine 2 eingegeben wird, wird die Veröffentlichung eines fehlerhaften Links z.B. nach den zweiten Cron-Lauf oder dem Tag nach der Feststellung zurückgenommmen. 1 kann verwendet werden, um die Veröffentlichung eines fehlerhaften Links sofort, sprich nach dem ersten Lauf oder ersten Tag des Fehlers, zurückzunehmen. Der Maximalwert ist 99."
+
+#: weblinks_checker.admin.inc:178
+msgid "Action on unpublished links"
+msgstr "Unveröffentlichte Links"
+
+#: weblinks_checker.admin.inc:180
+msgid "Include in checking"
+msgstr "In Prüfung einschließen"
+
+#: weblinks_checker.admin.inc:181
+msgid "Include and re-publish if OK"
+msgstr "Einschließen und wieder veröffentlichen, wenn in Ordnung"
+
+#: weblinks_checker.admin.inc:182
+msgid "Exclude from checking"
+msgstr "Von Prüfung ausschließen"
+
+#: weblinks_checker.admin.inc:184
+msgid "Do you want to re-check and get an up-to-date status for links which have been unpublished because they were in error? These links can also be re-published if they are now reporting a good status code."
+msgstr "Sollen Links, deren Veröffentlichung wegen eines Fehlers zurückgenommen wurde, erneut geprüft und so ein aktueller Status eingeholt werden? Diese Links können wieder veröffentlicht werden, wenn sie jetzt einen guten Status-Code zurückgeben."
+
+#: weblinks_checker.admin.inc:205
+msgid "Ignore error codes"
+msgstr "Fehler-Codes ignorieren"
+
+#: weblinks_checker.admin.inc:206
+msgid "The validity checker will treat all the selected codes as OK. For more information, see <a href=\"!url\" target=\"_blank\">this page</a>."
+msgstr "Die Gültigkeitsprüfung wird alle ausgewählten Codes als OK behandeln. <a href=\"!url\" target=\"_blank\">Dieser Seite</a> enthält weitere Informationen."
+
+#: weblinks_checker.admin.inc:218
+msgid "0 - Not Connected"
+msgstr "0 - Nicht verbunden"
+
+#: weblinks_checker.admin.inc:235
+msgid "User Deletion Action"
+msgstr "Aktion beim Löschen eines Benutzers"
+
+#: weblinks_checker.admin.inc:236
+msgid "This section determines what you want to do with links submitted by a user who is subsequently deleted."
+msgstr "Dieser Abschnitt legt fest, das mit Links eines Benutzers passieren soll, der später gelöscht wird."
+
+#: weblinks_checker.admin.inc:260
+msgid "Anonymous"
+msgstr "Gast"
+
+#: weblinks_checker.admin.inc:265
+msgid "Move to user"
+msgstr "Verschieben zum Benutzer"
+
+#: weblinks_checker.admin.inc:266
+msgid "Select the user to whom the links will be moved."
+msgstr "Auswahl des Benutzers, zu dem die Links verschoben werden."
+
+#: weblinks_checker.admin.inc:274
+msgid "Unpublished"
+msgstr "Nicht veröffentlicht"
+
+#: weblinks_checker.admin.inc:274
+msgid "Published"
+msgstr "Veröffentlicht"
+
+#: weblinks_checker.admin.inc:275
+msgid "Status after the move"
+msgstr "Status nach dem Verschieben"
+
+#: weblinks_checker.admin.inc:276
+msgid "When moving the link to the other user, should the link be published or unpublished?"
+msgstr "Soll der Link veröffentlich sein oder nicht, wenn er zu einem anderen Benutzer verschoben wird?"
+
+#: weblinks_checker.admin.inc:293
+msgid "You entered an invalid value for 'links to include'. Please use a number in the range 1 to 150."
+msgstr "Es wurde ein ungültiger Wert für ‚auszuschließende Links‘ eingegeben. Bitte eine Zahl im Bereich von 1 bis 150 verwenden."
+
+#: weblinks_checker.admin.inc:299
+msgid "You entered an invalid value for 'unpublish after'. Please use a number in the range 1 to 99."
+msgstr "Es wurde ein ungültiger Werrt für ‚Veröffentlichung zurücknehmen nach‘ eingegeben. Bitte eine Zahl im Bereich von 1 bis 99 verwenden."
+
+#: weblinks_checker.admin.inc:311
+msgid "The stored information on when links in error changed status has been cleared because you altered the criteria for unpublishing."
+msgstr "Die gespeicherten Informationen, wann fehlerhafte Links den Status geändert haben, wurden gelöscht, da die Kriterien für die Rücknahme der Veröffentlichung geändert wurden."
+
+#: weblinks_checker.module:16
+#: weblinks_checker.info:0
+msgid "Checks validity of submitted links and handles user deletion."
+msgstr "Prüft die Gültigkeit bereitgestellter Links und verarbeitet das Löschen von Benutzern."
+
+#: weblinks_checker.module:71
+msgid "Invalid status code"
+msgstr "Ungültiger Statuscode"
+
+#: weblinks_checker.module:87
+msgid "As of !date, this link is reporting @text."
+msgstr "Dieser Link zeigt seit !date @text."
+
+#: weblinks_checker.module:154
+msgid "Delete"
+msgstr "Löschen"
+
+#: weblinks_checker.module:163
+msgid "\"@url\" does not look like a valid URL."
+msgstr "„@url“ scheint keine gültige URL zu sein."
+
+#: weblinks_checker.module:173;176
+msgid "A link with that URL already exists."
+msgstr "Ein Link mit dieser URL existiert bereits."
+
+#: weblinks_checker.module:196
+msgid "This link is returning an error code of @err (@text)."
+msgstr "Dieser Link gibt einen Fehlercode @err zurück (@text)."
+
+#: weblinks_checker.module:301
+msgid "Unknown"
+msgstr "Unbekannt"
+
+#: weblinks_checker.module:360;359
+msgid "@title @url unpublished."
+msgstr "Veröffentlichung von @title @url zurückgenommen."
+
+#: weblinks_checker.module:385;384
+msgid "@title @url re-published."
+msgstr "@title @url wieder veröffentlicht."
+
+#: weblinks_checker.module:402;416
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: weblinks_checker.module:319;328;344;359;368;373;384;400
+#: weblinks_checker.info:0
+msgid "Weblinks"
+msgstr "Internet-Links"
+
+#: weblinks_checker.module:319
+msgid "Status changed from @last_status to @status for @title @url @extra."
+msgstr "Der Status für @title @url @extra hat sich von @last_status in @status geändert."
+
+#: weblinks_checker.module:328
+msgid "Status @status unchanged for @title @url @extra."
+msgstr "Der Status @status für @title @url @extra hat sich nicht geändert."
+
+#: weblinks_checker.module:344
+msgid "@title @url returned 301, updated to @new"
+msgstr "@title @url hat 301 zurückgegeben, wurde aktualisiert in @new"
+
+#: weblinks_checker.module:368
+msgid "Status changed from @last_status to @status for @title @url"
+msgstr "Der Status für @title @url hat sich von @last_status in @status geändert."
+
+#: weblinks_checker.module:373
+msgid "Status @status unchanged for @title @url"
+msgstr "Der Status @status für @title @url hat sich nicht geändert"
+
+#: weblinks_checker.module:400
+msgid "Weblinks checked !links @titles"
+msgstr "Weblinks hat !links @titles geprüft."
+
+#: weblinks_checker.module:122;123
+msgid "Weblinks moved 1 link from user !source_uid to user !target_uid."
+msgid_plural "Weblinks moved @count links from user !source_uid to user !target_uid."
+msgstr[0] "Weblinks hat 1 Link vom Benutzer !source_uid zum Benutzer !target_uid verschoben."
+msgstr[1] "Weblinks hat @count Links vom Benutzer !source_uid zum Benutzer !target_uid verschoben."
+
+#: weblinks_checker.module:401
+msgid "1 link"
+msgid_plural "@count links"
+msgstr[0] "1 Link"
+msgstr[1] "@count Links"
+
+#: weblinks_checker.module:411
+msgid "There is one link in error and the maximum number being checked per run is !limit. Other links will not get checked because priority is given to links in error, so you may wish to change your settings."
+msgid_plural "There are @count links in error and the maximum number being checked per run is !limit. Other links will not get checked because priority is given to links in error, so you may wish to change your settings."
+msgstr[0] "Es gibt einen fehlerhaften Link und die maximale Anzahl Prüfungen pro Con-Lauf ist !limit. Andere Links werden nicht geprüft, weil fehlerhafte Links Priorität haben. Möglicherweise müssen Einstellungen geändert werden."
+msgstr[1] "Es gibt @count fehlerhafte Links und die maximale Anzahl Prüfungen pro Con-Lauf ist !limit. Andere Links werden nicht geprüft, weil fehlerhafte Links Priorität haben. Möglicherweise müssen Einstellungen geändert werden."
+
+#: weblinks_checker.module:27
+msgid "Checker settings"
+msgstr "Prüf-Einstellungen"
+
+#: weblinks_checker.info:0
+msgid "Web Links Checker"
+msgstr "Internet-Links-Überprüfung"
+

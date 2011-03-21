@@ -1,0 +1,446 @@
+<?php
+// $Id: weblinks_checker.module,v 1.1.2.17 2009/09/19 16:01:49 nancyw Exp $
+
+/**
+ * @file
+ * Checks validity of submitted links and handles user deletion.
+ * Drupal 6 Version
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function weblinks_checker_help($path, $args) {
+  switch ($path) {
+    case 'admin/settings/weblinks/checker':
+      return t('Checks validity of submitted links and handles user deletion.');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function weblinks_checker_menu() {
+  $items = array();
+
+  $items['admin/settings/weblinks/checker'] = array(
+    'title' => 'Checker settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('weblinks_checker_settings'),
+    'file' => 'weblinks_checker.admin.inc',
+    'access arguments' => array('administer weblinks'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+    );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function weblinks_checker_theme() {
+  return array(
+    'weblinks_status' => array(
+      'arguments' => array('node'),
+      ),
+    );
+}
+
+/**
+ *  Theme the link status.
+ *
+ *  @param $node
+ *    Object containing the node information.
+ *  @return
+ *    String containing the formatted status or NULL if status is okay.
+ */
+function theme_weblinks_status($node) {
+  $output = NULL;
+  if (!function_exists('weblinks_error_codes')) {
+    include(drupal_get_path('module', 'weblinks') .'/weblinks_errors.inc');
+  }
+  $errors = weblinks_error_codes();
+
+  // Are we checking?
+  if (!variable_get('weblinks_checker_enabled', FALSE)) {
+    return NULL;
+  }
+
+  // Check the validity of the link.
+  $error_text = array_key_exists($node->last_status, $errors) ? $errors[$node->last_status] : t('Invalid status code');
+  switch ($node->last_status) {
+    case '200':
+    case '0':
+    case '':
+      return NULL;
+
+    case '301':
+    case '302':
+      $output = '<div class="weblinks-status-notice">';
+      break;
+
+    default:
+      $output = '<div class="weblinks-status-warning">';
+  }
+  $node->last_checked = strtotime($node->last_checked);
+  $output .= t('As of !date, this link is reporting @text.',
+    array('!date' => format_date($node->last_checked, 'small'), '@text' => $error_text))
+    .'</div>';
+
+  return $output;
+}
+
+/**
+ * Implementation of hook_weblinks_preprocess().
+ */
+function weblinks_checker_weblinks_preprocess($node) {
+  if (variable_get('weblinks_checker_show_status', TRUE)) {
+    return array('link_status' => theme('weblinks_status', $node));
+  }
+  else {
+    return array();
+  }
+}
+
+/**
+ * Implementation of hook_user().
+ * If a user is deleted, move their weblinks to another user.
+ * Note: There is an open issue against the user module for not calling us
+ * until it's too late to do much. Hopefully this will be fixed in D7.
+ */
+function weblinks_checker_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'delete':
+      $action = variable_get('weblinks_user_rescue', 'move');
+      switch ($action) {
+        case 'move':
+          $move_to = variable_get('weblinks_rescue_move', 1);
+          $status = variable_get('weblinks_rescue_unpub', 0);
+          $move = db_query("UPDATE {node} SET uid=%d, status=%d WHERE type='weblinks' AND uid=%d", $move_to, $status, $account->uid);
+          $count = db_affected_rows();
+          drupal_set_message(format_plural($count, 'Weblinks moved 1 link from user !source_uid to user !target_uid.', 'Weblinks moved @count links from user !source_uid to user !target_uid.', array('!source_uid' => $account->uid, '!target_uid' => $move_to)));
+          watchdog('Weblinks', format_plural($count, 'Weblinks moved 1 link from user !source_uid to user !target_uid.', 'Weblinks moved @count links from user !source_uid to user !target_uid.', array('!source_uid' => $account->uid, '!target_uid' => $move_to)));
+          break;
+
+        case 'delete':
+          $result = db_query("SELECT n.nid FROM {node} n WHERE n.type='weblinks' AND n.uid=%d", $account->uid);
+          while ($row = db_fetch_array($result)) {
+            // Node_delete records its actions for us.
+            node_delete($row['nid']);
+          }
+          break;
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ * Adds validation and submit to the node add/edit form.
+ */
+function weblinks_checker_form_alter(&$form, $form_state, $form_id) {
+  if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    if ($form['type']['#value'] == 'weblinks') {
+      $form['#validate'][] = 'weblinks_checker_validate';
+      $form['#submit'][] = 'weblinks_checker_submit';
+    }
+  }
+}
+
+/**
+ * Implementation of hook_validate().
+ */
+function weblinks_checker_validate($form, &$form_state) {
+  if ($form['#post']['op'] == t('Delete')) {
+    return '';
+  }
+
+  $new = _weblinks_checker_fix_url($form_state['values']['url']);
+  if (!valid_url($new, TRUE)) {
+    form_set_error('url', t('"@url" does not look like a valid URL.', array('@url' => $new)));
+  }
+
+  $allow_dupes = variable_get('weblinks_allow_dupes', FALSE);
+  if ($allow_dupes != 1) {
+    // See if this url is already in the database.
+    $urlhash = md5($new);
+    $url_exists_nid = db_result(db_query("SELECT nid FROM {weblinks} l WHERE l.urlhash='%s' AND l.url='%s'", $urlhash, $new));
+    if ($url_exists_nid) {
+      if ($form['#node']->nid != $url_exists_nid) {
+        if (!$allow_dupes) {
+          form_set_error('url', t('A link with that URL already exists.'));
+        }
+        else {
+          drupal_set_message(t('A link with that URL already exists.'), 'warning');
+        }
+      }
+    }
+  }
+
+  if (variable_get('weblinks_validate_check', FALSE)) {
+    // Verify that the link is working.
+    $response = drupal_http_request($url, array(), 'HEAD', NULL, 0);
+    $status = $response->code;
+
+    $ignore = variable_get('weblinks_checker_ignore', array());
+    // Force ignoring 200 OK status.
+    $ignore['200'] = '200';
+    // Create a value for $ignore['0'] from the separate variable behind the '0' checkbox.
+    // See admin.inc for details.
+    $ignore['0'] = current(variable_get('weblinks_checker_ignore_zero', array(0)));
+
+    // Did it work?
+    if (!$ignore[$status]) {
+      form_set_error('url', t('This link is returning an error code of @err (@text).', array('@err' => $status, '@text' => $response->error)));
+    }
+  }
+}
+
+/**
+ * Helper function for URLs.
+ */
+function _weblinks_checker_fix_url($url) {
+  // This is needed for WYSIWYG editors.
+  $url = strip_tags(trim($url));
+
+  // Note that we have to try to bypass a core bug in valid_url(). See http://drupal.org/node/295021.
+  $y = parse_url($url);
+  return ($y['scheme'] ? $y['scheme'] .'://' : NULL)
+    . $y['host']
+    . ($y['port'] ? (':'. $y['port']) : '')
+    . ($y['path'] ? '' : '/')
+    . $y['path']
+    . ($y['query'] ? '?'. rawurlencode($y['query']) : NULL);
+}
+
+/**
+ * Implementation of hook_submit().
+ * This function corrects the URL before it gets saved.
+ */
+function weblinks_checker_submit($form, &$form_state) {
+  $form_state['values']['url'] = rawurldecode(_weblinks_checker_fix_url($form_state['values']['url']));
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function weblinks_checker_nodeapi(&$node, $op, $a3, $a4) {
+  if ($node->type == 'weblinks') {
+    switch ($op) {
+      case 'presave':
+        $previous = db_fetch_object(db_query("SELECT l.url, n.status FROM {weblinks} l "
+          ."INNER JOIN {node} n ON n.vid=l.vid AND n.nid=l.nid "
+          ."WHERE l.nid=%d and l.vid=%d", $node->nid, $node->vid));
+        if ($node->status != $previous->status || $node->url != $previous->url) {
+          // The link url has been changed, or the node has been published or unpublished manually,
+          // so erase last_status, last_status_info and last_checked values.
+          db_query("UPDATE {weblinks} SET last_status='', last_status_info=NULL, last_checked=NULL WHERE nid=%d", $node->nid);
+        }
+        break;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_cron().
+ * Checks if the links are still valid.
+ */
+function weblinks_checker_cron() {
+  if (!variable_get('weblinks_checker_enabled', FALSE)) {
+    // Checker is turned off, so finish here.
+    return '';
+  }
+
+  $interval = variable_get('weblinks_checker_interval', 86400);
+  $last_run = variable_get('weblinks_checker_last', 0);
+  $now = isset($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : time();
+
+  // Is it time to check yet?
+  if ($last_run + $interval > $now) {
+    return '';
+  }
+
+  $limit = variable_get('weblinks_checker_limit', 5);
+  // $unpublish: 1=Unpublish after N cron runs, 2=Unpublish after N days, 0=Do not unpublish.
+  $unpublish = variable_get('weblinks_checker_unpublish', 0);
+  // $action_on_unpublished: 1=Include in checking, 2=Include and re-publish if OK, 0=Exclude from checking.
+  $action_on_unpublished = variable_get('weblinks_checker_action_on_unpublished', 0);
+  $redir_update = variable_get('weblinks_checker_redirect', FALSE);
+  $detail_log = variable_get('weblinks_checker_detail_log', FALSE);
+  // $checker_order: 1=Give priority to links in error, 0=Check links in strict rotation.
+  $checker_order = variable_get('weblinks_checker_order', 0);
+  $checked = array();
+  // $errors_found: Count how many links are reporting errors on this run.
+  $errors_found = 0;
+
+  $ignore = variable_get('weblinks_checker_ignore', array());
+  $ignore_zero = variable_get('weblinks_checker_ignore_zero', array(0));
+  // Force ignoring 200 OK status.
+  $ignore['200'] = '200';
+  // Ignore ignoring 301.
+  unset($ignore['301']);
+  // Create a value for $ignore['0'] from the separate variable behind the '0' checkbox.
+  // See admin.inc for details.
+  $ignore['0'] = current($ignore_zero);
+
+  // Select which weblinks to check.
+  // The node's status field is renamed to node_published to improve the readability of the code
+  // because 'status' is used as the link's status.
+  // The meanings of values in last_status_info are as follows:
+  //   NULL - checker has/is not actively monitoring this yet. The default is NULL so that
+  //     if a new link is manually unpublished then it wont be picked up by checker until
+  //     it is manually published.
+  //   0 - checker has monitored this link, and either it is OK or the method of counting
+  //    (days/crons) has been changed by admin.
+  //    > 0 means that the link is reporting an error and the date of change or number of crons
+  //      since the change is being monitored by checker.
+  // If including unpublished links then we must only include ones which weblinks_checker_cron
+  // has previously checked and set to unpublished. This is done by selecting where last_status
+  // has a value and last_status_info is not NULL. Otherwise weblinks_cron would pick up and publish
+  // new nodes which have been manually set to unpublished.
+
+  $sql = "SELECT l.vid, l.nid, l.url, l.last_checked, l.last_status, l.last_status_info, n.title, n.status as node_published "
+    ."FROM {weblinks} l "
+    ."INNER JOIN {node} n ON n.vid=l.vid AND n.nid=l.nid "
+    ."WHERE n.status=1 ". ($action_on_unpublished ? " or (last_status <> '' and !ISNULL(last_status_info)) " : '')
+    ."ORDER BY";
+  if ($checker_order) {
+    // The admin has selected to give priority to links which are unchecked, unpublished or currently
+    // reporting an error status, so we need to insert extra fields into the ORDER BY statement.
+    // First create a list of the codes that we are considering to be 'good', by removing all
+    // values of 0 from the ignore array.
+    $good_status_list = array_diff($ignore, array(0));
+    // If we need to ignore zero as a status code then add this to the array.
+    if (current($ignore_zero)) {
+      $good_status_list[] = '0';
+      // The value in key '0' will not be a status code so remove it.
+      unset($good_status_list['0']);
+    }
+    $sql .=  " node_published ASC, (case when (l.last_status in (". db_placeholders($good_status_list, 'text') .")) then ' ' else l.last_status end) DESC,";
+  }
+  $sql .= ' l.last_checked ASC';
+  $result = db_query_range($sql, 0, $limit);
+  while ($link = db_fetch_object($result)) {
+    $url = $newurl = $link->url;
+    $last_status = $link->last_status != '' ? $link->last_status : t('Unknown');
+    $last_status_info = $link->last_status_info;
+    $status = 'dead';
+    $extra = NULL;
+
+    // Hit the site. Don't follow redirects.
+    $response = drupal_http_request($url, array(), 'HEAD', NULL, 0);
+    $status = $response->code;
+
+    // Log site with errors.
+    // Define a reset value for last_status_info. For Unpublish after N crons runs, reset to 1. For Unpublish after N days reset to the current datetime.
+    $reset_value = ($unpublish == 1 ? 1 : ($unpublish == 2 ? $now : NULL));
+    if (!$ignore[$status]) {
+      ++$errors_found;
+      $extra = $response->error;
+      if ($last_status != $status) {
+        if ($detail_log != 0) {
+          // The http status has changed and the 'none' reporting option is not selected, so report it to the log.
+          watchdog('Weblinks', 'Status changed from @last_status to @status for @title @url @extra.', array('@title' => $link->title, '@url' => $url, '@status' => $status,  '@last_status' => $last_status, '@extra' => $extra), WATCHDOG_WARNING);
+        }
+        // Reset the last_status_info.
+        $last_status_info = $reset_value;
+      }
+      else {
+        // The site is in error and has not changed status from the last time it was checked.
+        if ($detail_log == 1) {
+          // Reporting every link checked.
+          watchdog('Weblinks', 'Status @status unchanged for @title @url @extra.', array('@title' => $link->title, '@url' => $url, '@status' => $status, '@extra' => $extra), WATCHDOG_WARNING);
+        }
+
+        if ($last_status_info == 0 || $last_status_info == NULL) {
+          // The stored last_status_info has been previously cleared, so put in the reset value.
+          $last_status_info = $reset_value;
+        }
+        elseif ($unpublish == 1) {
+          // The option for unpublishing by number of cron runs is selected, so increment the counter.
+          $last_status_info++;
+        }
+      }
+
+      if ($status == '301' && $redir_update) {
+        // Update the link because of redirect.
+        $newurl = substr($response->redirect_url, 0, 1) == '/' ? $url . $response->redirect_url : $response->redirect_url;
+        watchdog('Weblinks', '@title @url returned 301, updated to @new', array('@title' => $link->title, '@url' => $url, '@new' => $newurl));
+        $status = '200';
+        $last_status_info = 0;
+       }
+
+      if ($unpublish) {
+        // The option to unpublish links in error is selected. Get the number of days or cron runs
+        // after which to unpublish.
+        $unpublish_after = variable_get('weblinks_checker_unpublish_after', 0);
+        // Get the number of days or cron runs that this link has been in this error state.
+        $n_in_error = $unpublish == 2 ? (($now - $last_status_info)/86400) + 1 : $last_status_info;
+        if ($link->node_published == 1 && $n_in_error >= $unpublish_after)  {
+          // The link is currently published but the number of cron runs or days in error has reached
+          // the level where the link must be unpublished.
+          db_query("UPDATE {node} n SET n.status=0 WHERE n.nid=%d AND n.vid=%d", $link->nid, $link->vid);
+          watchdog('Weblinks', '@title @url unpublished.', array('@title' => $link->title, '@url' => $url), WATCHDOG_WARNING);
+          drupal_set_message(t('@title @url unpublished.', array('@title' => $link->title, '@url' => $url)));
+        }
+      }
+    }
+    else {
+      // It's either OK or we want to ignore it.
+      if ($detail_log == 1 || $status != $last_status) {
+        if ($status != $last_status) {
+          watchdog('Weblinks',
+            'Status changed from @last_status to @status for @title @url',
+            array('@title' => $link->title, '@url' => $url, '@status' => $status, '@last_status' => $last_status));
+        }
+        else {
+          watchdog('Weblinks',
+            'Status @status unchanged for @title @url',
+            array('@title' => $link->title, '@url' => $url, '@status' => $status, '@last_status' => $last_status));
+        }
+      }
+      // Clear the last_status_info as the link is not in error.
+      $last_status_info = 0;
+      if ($link->node_published == 0 && $action_on_unpublished == 2) {
+        // The link is not reporting errors anymore but it is currently unpublished and we want
+        // to republish good links.
+        db_query("UPDATE {node} n SET n.status=1 WHERE n.nid=%d AND n.vid=%d", $link->nid, $link->vid);
+        watchdog('Weblinks', '@title @url re-published.', array('@title' => $link->title, '@url' => $url));
+        drupal_set_message(t('@title @url re-published.', array('@title' => $link->title, '@url' => $url)));
+      }
+    }
+
+    $link->last_status = $status;
+    $link->last_status_info = $last_status_info;
+    $link->last_checked = date('Y-m-d H:i:s', $now); // datetime format
+    $link->url = $newurl;
+    $link->urlhash = md5($newurl);
+    drupal_write_record('weblinks', $link, array('nid', 'vid'));
+    $checked[$link->nid] = $link->title;
+  }
+
+  $summary_msg = variable_get('weblinks_checker_summary_msg', 0);
+  if ($summary_msg) {
+    watchdog('Weblinks', 'Weblinks checked !links @titles',
+      array('!links' => format_plural(count($checked), '1 link', '@count links'), '@titles' => ($summary_msg == 2 && count($checked)) ? '('. implode(', ', $checked) .')' : ''),
+      WATCHDOG_NOTICE, l(t('Settings'), 'admin/settings/weblinks/checker'));
+  }
+
+  // If priority is being given to links in error and the number of links returning an error is equal
+  // to the max number being checked on a run then other links will never get checked until some of
+  // the bad links return to a good status or the URLs are fixed. Give a warning in the log to alert
+  // the admin, who may wish to increase the number of links tested or change the priority of checking.
+  if ($errors_found >= $limit && $checker_order) {
+    watchdog('Weblinks',
+      format_plural($errors_found,
+        'There is one link in error and the maximum number being checked per run is !limit. Other links will not get checked because priority is given to links in error, so you may wish to change your settings.',
+        'There are @count links in error and the maximum number being checked per run is !limit. Other links will not get checked because priority is given to links in error, so you may wish to change your settings.'),
+      array('!limit' => $limit),
+      WATCHDOG_WARNING,
+      l(t('Settings'), 'admin/settings/weblinks/checker')
+    );
+  }
+
+  variable_set('weblinks_checker_last', $now);
+}

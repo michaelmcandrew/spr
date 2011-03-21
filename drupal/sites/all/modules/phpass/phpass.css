@@ -1,0 +1,6 @@
+// $Id: phpass.css,v 1.1.4.2 2007/12/24 01:28:41 douggreen Exp $
+
+// hide on page load when JS is enabled, taken from 6.x system.css
+html.js .js-hide {
+  display: none;
+}

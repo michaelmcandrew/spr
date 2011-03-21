@@ -1,0 +1,14 @@
+/* $Id: phpbbforum-prosilver.css,v 1.4 2009/06/02 15:56:09 vb Exp $ */
+
+/* put your custom CSS in here */
+
+#phpbbforum-page {
+}
+
+#phpbbforum-page #wrap {
+  padding: 0;
+}
+
+#phpbbforum-page td.active {
+  background: transparent;
+}

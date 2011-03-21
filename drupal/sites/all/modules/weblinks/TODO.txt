@@ -1,0 +1,10 @@
+TODO List for Web Links Module
+
+* Add click tracking.
+   - Add setting to auto-create URL alias for "goto"?
+       5.x: path_set_alias($path, $alias, NULL);
+       6.x: global $language; path_set_alias($path, $alias, NULL, $language['language']);
+   - Update node counter on click?
+       statistics_exit('node', $nid, '');
+* (Ongoing) Update documentation.
+* Drupal 7.

@@ -1,0 +1,14 @@
+; $Id: weblinks_blocks.info,v 1.1.2.1.2.1 2009/05/02 14:42:47 nancyw Exp $
+name = Weblinks Blocks
+description = Module for adding blocks into weblinks
+core = 6.x
+dependencies[]= block
+dependencies[]= weblinks
+package = Weblinks
+
+; Information added by drupal.org packaging script on 2009-09-26
+version = "6.x-2.3"
+core = "6.x"
+project = "weblinks"
+datestamp = "1254007580"
+

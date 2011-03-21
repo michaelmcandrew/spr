@@ -1,0 +1,12 @@
+; $Id: pralexa.info,v 1.1.2.2 2009/02/27 21:58:27 nancyw Exp $
+name = Google and Alexa Rank
+description = Module for fetching Google and Alexa rankings from their database
+core = 6.x
+dependencies[]= weblinks
+package = Weblinks
+; Information added by drupal.org packaging script on 2009-09-26
+version = "6.x-2.3"
+core = "6.x"
+project = "weblinks"
+datestamp = "1254007580"
+
