@@ -39,7 +39,7 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
 	
 	//is there already a Drupal account with this email address?
 	$params=array( 1 => array( $email, 'String'));
-	$query="SELECT uid FROM users WHERE mail=%1";
+	$query="SELECT uid FROM drupal_users WHERE mail=%1";
 	$result = CRM_Core_DAO::executeQuery( $query, $params );
 	if($result->N){
 		$result->fetch();
@@ -67,7 +67,7 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
 	// $new_user=user_save(null, $user_data); // save user
 	// $new_user->password=$pass; // unscramble password
 	// _user_mail_notify('register_admin_created', $new_user); // send email
-	echo "Notified $email of new account.\n";
+	echo "Notified $email (civicrm id: $ContactID) of new account.\n";
 	return;
 	
 }
@@ -87,7 +87,7 @@ function civicrm_member_drupaluser_sync_suggest_name($clean_name) {
 //finds out if $name has already been registered as a Drupal user name
 function civicrm_member_drupaluser_sync_name_taken($name) {
 	$params=array();
-	$query="SELECT uid FROM users WHERE name='$name'";
+	$query="SELECT uid FROM drupal_users WHERE name='$name'";
 	$result = CRM_Core_DAO::executeQuery( $query, $params );
 	return $result->N;
 }
