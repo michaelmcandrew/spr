@@ -1,6 +1,6 @@
 <?php
 //define a nice root
-$druproot='/var/www/drupal.green';
+$druproot='/home/spradmin/public_html/main';
 
 //bootstrap Drupal
 chdir($druproot);
