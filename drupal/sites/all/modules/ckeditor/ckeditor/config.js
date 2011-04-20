@@ -25,5 +25,5 @@ CKEDITOR.editorConfig = function( config )
     ['Maximize', 'ShowBlocks']
    ];
    config.toolbar = 'DrupalFiltered';
-   //config.width = '100%';
+   config.width = '100%';
 };
