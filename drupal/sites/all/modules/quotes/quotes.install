@@ -1,5 +1,5 @@
 <?php
-// $Id: quotes.install,v 1.4.2.2.2.19 2009/05/11 17:10:44 nancyw Exp $
+// $Id: quotes.install,v 1.4.2.2.2.23 2010/10/28 15:39:55 nancyw Exp $
 
 /**
  * @file
@@ -17,7 +17,7 @@
  * Implementation of hook_schema().
  */
 function quotes_schema() {
-  $schema = array(); 
+  $schema = array();
   $schema['quotes'] = array(
     'module' => 'Quotes',
     'description' => t('Extra node data.'),
@@ -53,7 +53,7 @@ function quotes_schema() {
         'type' => 'int',
         'size' => 'tiny',
         'unsigned' => TRUE,
-        'not null' => TRUE,  
+        'not null' => TRUE,
         'default' => 0,
         ),
       ),
@@ -63,7 +63,7 @@ function quotes_schema() {
       'quotes_promote' => array('promote'),
       'quotes_aid' => array('aid'),
       ),
-    ); 
+    );
 
   $schema['quotes_blocks'] = array(
     'module' => 'Quotes',
@@ -134,13 +134,14 @@ function quotes_schema() {
         'not null' => TRUE,
         'default' => 100,
         ),
+      /* Removed by http://drupal.org/node/601434.
       'view_weight' => array(
         'description' => t('Weight for the view link.'),
         'type' => 'int',
         'size' => 'small',
         'not null' => FALSE,
         'default' => 1,
-        ),
+        ), /* */
       'name' => array(
         'description' => t('Name of this block'),
         'type' => 'varchar',
@@ -187,10 +188,10 @@ function quotes_schema() {
       ),
     'primary key' => array('bid'),
     'unique keys' => array(
-         'name' => array('name')),
-    ); 
+      'name' => array('name')),
+    );
 
-  $schema['quotes_authors'] = array(  
+  $schema['quotes_authors'] = array(
     'module' => 'Quotes',
     'description' => t('Quotes authors data.'),
     'fields' => array(
@@ -213,10 +214,8 @@ function quotes_schema() {
         ),
       ),
     'primary key' => array('aid'),
-    'unique keys' => array(
-      'name' => array(array('name', 255)),
-      ),
-    ); 
+    'unique keys' => array('name' => array(array('name', 255))),
+    );
 
   return $schema;
 }
@@ -289,7 +288,7 @@ function quotes_update_6102() {
     return $items;
   }
 
-  $schema['quotes_authors'] = array(  
+  $schema['quotes_authors'] = array(
     'module' => 'Quotes',
     'description' => t('Quotes authors data.'),
     'fields' => array(
@@ -315,7 +314,7 @@ function quotes_update_6102() {
     'primary key' => array('aid'),
     'unique keys' => array(
       'name' => array('name')),
-    ); 
+    );
 
   db_create_table($items, 'quotes_authors', $schema['quotes_authors']);
 
@@ -373,7 +372,7 @@ function quotes_update_6102() {
   $del = $items[count($items) - 1]['success'];
   if (!$del) {
     drupal_set_message(t('Drop column "author" failed.'), 'error');
-  } 
+  }
 
   drupal_set_message(t('Update 6102 for Quotes complete.'), 'status');
   return $items;
@@ -402,47 +401,46 @@ function quotes_update_6104() {
   $ret = array();
 
   db_change_field($ret, 'quotes_blocks', 'show_titles', 'show_titles', array('type' => 'int', 'size' => 'small'));
-  db_add_field($ret, 'quotes_blocks', 'show_citation',
-    array(
+
+  // 5.x-1.2 added 'citation'.
+  if (!db_column_exists('quotes_blocks', 'show_citation')) {
+    db_add_field($ret, 'quotes_blocks', 'show_citation', array(
       'description' => t('Show citation.'),
       'type' => 'int',
       'size' => 'small',
       'not null' => FALSE,
       'default' => 0,
       ));
-  db_add_field($ret, 'quotes_blocks', 'max_length',
-    array(
+    db_add_field($ret, 'quotes_blocks', 'max_length', array(
         'description' => t('Maximum length of quote in block.'),
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-      ));
-  db_add_field($ret, 'quotes_blocks', 'view_weight',
-    array(
+        ));
+    db_add_field($ret, 'quotes_blocks', 'view_weight', array(
       'description' => t('Weight for the view link.'),
       'type' => 'int',
       'size' => 'small',
       'not null' => FALSE,
       'default' => 1,
       ));
-  db_add_field($ret, 'quotes_blocks', 'more_text',
-    array(
+    db_add_field($ret, 'quotes_blocks', 'more_text', array(
       'description' => t('Text for the "more" link.'),
       'type' => 'varchar',
       'length' => 64,
       'not null' => FALSE,
       ));
-  db_add_field($ret, 'quotes_blocks', 'view_text',
-    array(
+    db_add_field($ret, 'quotes_blocks', 'view_text', array(
       'description' => t('Text for the "view" link.'),
       'type' => 'varchar',
       'length' => 64,
       'not null' => FALSE,
       ));
+  }
 
   // Incorrectly set per block.
   $max_len = variable_get('quotes_block_max_length', 0);
-  
+
   // Set globally in admin page.
   $view_text = variable_get('quotes_block_view_text', t('View'));
   $view_weight = variable_get('quotes_block_view_weight', 1);
@@ -509,6 +507,29 @@ function quotes_update_6106() {
 }
 
 /**
+ * Implementation of hook_update_N.
+ * See http://drupal.org/node/601434.
+ */
+function quotes_update_6107() {
+  $ret = array();
+
+  if (db_column_exists('quotes_blocks', 'view_weight')) {
+    db_drop_field($ret, 'quotes_blocks', 'view_weight');
+  }
+
+  // Let's see if any blocks use "plain" title.
+  $result = db_query('SELECT bid, name, show_titles FROM {quotes_blocks} WHERE show_titles = 2');
+  while ($row = db_fetch_object($result)) {
+    if ($row->show_titles == 2) {
+      drupal_set_message(t("The @block_name block will be changed to show titles linked to the node.", array('@block_name' => $row->name)));
+    }
+  }
+  $ret[] = update_sql("UPDATE {quotes_blocks} SET show_titles = 1 WHERE show_titles = 2");
+
+  return $ret;
+}
+
+/**
  * Implementation of hook_uninstall().
  */
 function quotes_uninstall() {
@@ -538,7 +559,7 @@ function quotes_uninstall() {
 
   // Delete all our blocks.
   db_query("DELETE FROM {blocks} WHERE module='quotes'");
-  
+
   // Clear the cache.
   cache_clear_all;
 }

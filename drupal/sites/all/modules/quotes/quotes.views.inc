@@ -1,5 +1,5 @@
 <?php
-// $Id: quotes.views.inc,v 1.1.2.2 2009/10/01 04:26:30 nancyw Exp $
+// $Id: quotes.views.inc,v 1.1.2.3 2010/10/27 16:04:15 nancyw Exp $
 
 /**
  * @file
@@ -42,6 +42,7 @@ function quotes_views_data() {
 //      'handler' => 'views_handler_field_quotes',
       'click sortable' => TRUE,
       ),
+    'filter' => array('handler' => 'views_handler_filter_string'),
     'sort' => array('handler' => 'views_handler_sort'),
   );
 
@@ -53,6 +54,7 @@ function quotes_views_data() {
       'handler' => 'views_handler_field_quotes',
       'click sortable' => TRUE,
       ),
+    'filter' => array('handler' => 'views_handler_filter_string'),
     'sort' => array('handler' => 'views_handler_sort'),
     'skip base' => 'quotes',
   );
@@ -65,6 +67,7 @@ function quotes_views_data() {
 //      'handler' => 'views_handler_field_quotes',
       'click sortable' => TRUE,
       ),
+    'filter' => array('handler' => 'views_handler_filter_string'),
     'sort' => array('handler' => 'views_handler_sort'),
     'skip base' => 'quotes',
   );

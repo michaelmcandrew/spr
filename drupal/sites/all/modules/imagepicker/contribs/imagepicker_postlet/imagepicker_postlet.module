@@ -1,7 +1,5 @@
 <?php
-// $Id: imagepicker_postlet.module,v 1.1.2.3 2009/11/26 15:10:43 hutch Exp $
-// $Name: DRUPAL-6--2-8 $
-// for D6. Version 2
+
 /**
  * @file
  * Enables upload of images using Postlet java applet.
@@ -26,7 +24,7 @@ function imagepicker_postlet_help($path, $arg) {
 function imagepicker_postlet_menu() {
   $items = array();
   // admin
-  $items['admin/settings/imagepicker/images/user/%imagepicker_id/upload_postlet'] = array(
+  $items[IMAGEPICKER_ADMIN_PATH .'/images/user/%imagepicker_id/upload_postlet'] = array(
     'title'            => 'Multi Upload',
     'description'      => 'Browse user images.',
     'access arguments' => array('administer imagepicker'),
@@ -68,7 +66,8 @@ function imagepicker_postlet_menu() {
     // iframe
     $items['imagepicker/upload_postlet'] = array(
       'title'            => 'Multi Upload',
-      'page callback'    => 'imagepicker_postlet_page',
+      #'page callback'    => 'imagepicker_postlet_page',
+      'page callback'    => 'imagepicker_box',
       'access arguments' => array('use imagepicker'),
       'type'             => MENU_LOCAL_TASK,
       'weight'           => 1,
@@ -97,7 +96,7 @@ function imagepicker_postlet_user_page() {
  * callback from iframe
  */
 function imagepicker_postlet_page() {
-  $content = theme('imagepicker', imagepicker_postlet_upload('iframe'));
+  $content = theme('imagepicker_iframe', imagepicker_postlet_upload('iframe'));
   return $content;
 }
 
@@ -108,7 +107,7 @@ function imagepicker_postlet_admin_page($account) {
   if ($account) {
     $user = user_load(array('uid' => $account));
   }
-  include_once(drupal_get_path('module', 'imagepicker') .'/imagepicker.admin.inc');
+  module_load_include('inc', 'imagepicker', 'imagepicker.admin');
   $content .= drupal_get_form('imagepicker_user_search_form', 'images');
   $content .= '<p>'. t('Managing images for ') . ($user->name ? l($user->name, "user/". $user->uid) : 'All') .'</p>';
   $content .= imagepicker_postlet_upload('admin', $user);
@@ -137,7 +136,7 @@ function imagepicker_postlet_upload($path, $account = FALSE) {
       else {
         global $user;
       }
-      $endpage = "$base_url/admin/settings/imagepicker/images/user/". $user->uid ."/browse";
+      $endpage = "$base_url/". IMAGEPICKER_ADMIN_PATH ."/images/user/". $user->uid ."/browse";
       $destination = "$base_url/imagepicker_postlet/admin/". $user->uid ."/process";
       $label = t('Upload files for %name', array('%name' => $user->name));
       break;
@@ -175,7 +174,7 @@ function imagepicker_postlet_upload($path, $account = FALSE) {
     $width = variable_get('imagepicker_postlet_width', "600");
     $height = variable_get('imagepicker_postlet_height', "175");
     $url = url(drupal_get_path('module', 'imagepicker_postlet') .'/postlet/postlet.jar', array('absolute' => TRUE));
-    drupal_add_css(drupal_get_path('module', 'imagepicker') .'/imagepicker.css');
+    drupal_add_css(IMAGEPICKER_PATH .'/imagepicker.css');
     drupal_add_css(drupal_get_path('module', 'imagepicker_postlet') .'/imagepicker_postlet.css');
     $form = theme('imagepicker_postlet_view', $url, $destination, $endpage, $maxthumbsize, $scaleto, $watermark, $width, $height);
   }
@@ -201,7 +200,7 @@ function imagepicker_postlet_process($path, $account = FALSE) {
     global $user;
     $userdir = TRUE;
   }
-  include_once(drupal_get_path('module', 'imagepicker') .'/imagepicker.upload.inc');
+  module_load_include('inc', 'imagepicker', 'imagepicker.upload');
 
   $destdir = imagepicker_get_path(FALSE, $userdir);
   $thumbsdir = $destdir . IMAGEPICKER_THUMBS_DIR;

@@ -1,9 +1,118 @@
-// $Id: CHANGELOG.txt,v 1.17.2.41 2010/05/15 18:30:28 hutch Exp $
-// $Name: DRUPAL-6--2-8 $
+Image Picker for D6 in 6.x-2.x, 20011-03-31
+------------------------------------
+by hutch, cleanup for new release
+
+Image Picker for D6 in 6.x-2.x, 20011-03-27
+------------------------------------
+by hutch, removed all arg(), fixed bug in public_roles
+  fixed bug in iframe js for tinymce
+
+Image Picker for D6 in 6.x-2.x, 20011-03-17
+------------------------------------
+by hutch, added multiple uploads
+
+Image Picker for D6 in 6.x-2.x, 20011-03-06
+------------------------------------
+by hutch, moved some functions back to imagepicker.module
+
+Image Picker for D6 in 6.x-2.x, 20011-03-04
+------------------------------------
+by hutch, various fixes to private download support
+
+Image Picker for D6 in 6.x-2.x, 20011-03-03
+------------------------------------
+by hutch, added private download support,
+  #1079540 patch by klflote
+
+Image Picker for D6 in 6.x-2.x, 20011-02-27
+------------------------------------
+by hutch, changed InsertatCursor to imagepickerInsertatCursor
+  in imagepicker_iframe.js to avoid potential clashes with insert module
+
+Image Picker  for D6 in DRUPAL-6--2, 20011-02-17
+------------------------------------
+by hutch, reorganised files for reduced footprint
+
+Image Picker  for D6 in DRUPAL-6--2, 20011-01-29
+------------------------------------
+by hutch, improved gallery blocks
+
+Image Picker  for D6 in DRUPAL-6--2, 20011-01-26
+------------------------------------
+by hutch, added gallery blocks
+
+Image Picker  for D6 in DRUPAL-6--2, 20011-01-24
+------------------------------------
+by hutch, by hutch, fixed jpeg quality issue #1036216
+  fixed rows per page bug #1038288
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-12-21
+------------------------------------
+by hutch  added PECL uploadprogress support
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-12-13
+------------------------------------
+by hutch, cleaned up js and themeing
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-11-08
+------------------------------------
+by hutch, changed img_date field to int, added date format to config
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-11-07
+------------------------------------
+by hutch, fixed hook_form_alter reference bug and incompatibility with filepicker
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-10-09
+------------------------------------
+by hutch, improved theming in browse and list
+fixed sql count in group table
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-10-06
+------------------------------------
+by hutch, added groups to Bulk Operations
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-09-23
+------------------------------------
+by hutch, added Bulk Operations to image list
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-09-18
+------------------------------------
+by hutch, added IMAGEPICKER_PATH constant
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-09-08
+------------------------------------
+by hutch, improved iframe integration
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-08-23
+------------------------------------
+by hutch, improved wysiwyg support
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-08-09
+------------------------------------
+by hutch, fixed public groups bug #873094
+added js to public groups form
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-08-02
+------------------------------------
+by hutch, fixed groups paging, improved theming,
+added config for table paging.
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-07-10
+------------------------------------
+by hutch, added menu access callback functions
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-06-14
+------------------------------------
+by hutch, replaced include_once with module_load_include
+
+Image Picker  for D6 in DRUPAL-6--2, 20010-06-09
+------------------------------------
+by hutch, added class imgp_img to inserted image
+replaced split() with explode()
 
 Image Picker  for D6 in DRUPAL-6--2, 20010-05-15
 ------------------------------------
-by hutch, added public select box, 
+by hutch, added public select box,
 changed hidden formfields to 'value'
 
 Image Picker  for D6 in DRUPAL-6--2, 20010-05-14

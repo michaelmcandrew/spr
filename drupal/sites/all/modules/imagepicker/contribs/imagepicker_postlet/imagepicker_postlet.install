@@ -1,7 +1,5 @@
 <?php
-// $Id: imagepicker_postlet.install,v 1.1.2.1 2009/11/06 18:59:40 hutch Exp $
-// $Name: DRUPAL-6--2-8 $
-// for D6. Version 2
+
 /**
  * @file
  * imagepicker_postlet module install, update and uninstall functions.

@@ -1,5 +1,5 @@
 <?php
-// $Id: quotes.admin.inc,v 1.1.2.15 2009/10/01 04:26:30 nancyw Exp $
+// $Id: quotes.admin.inc,v 1.1.2.17 2010/08/16 02:33:28 nancyw Exp $
 /**
  * @file
  * The quotes module allows users to maintain a list of quotes that
@@ -9,6 +9,13 @@
  * @copyright Copyright (c) 2003-2007 Jim Riggs.  All rights reserved.
  * @author Jim Riggs <drupal at jim and lissa dot com>
  */
+
+// OPEN CODE.
+// Enable the form for Vertical Tabs.
+  if (module_exists('vertical_tabs')) {
+    global $conf;
+    $conf['vertical_tabs_forms']['quotes_admin_settings'] = TRUE;
+  }
 
 /**
  * Displays the admin settings page.
@@ -25,8 +32,12 @@ function quotes_admin_settings_page() {
  */
 function quotes_admin_settings() {
   $form = array();
-  $yesno = array(1 => t('Yes'), 0 => t('No'));
+  $myjs = drupal_get_path('module', 'quotes') . '/quotes.admin.js';
+  $vert_tabs = array('js' => array('vertical-tabs' => $myjs));
+  $yesno = array(t('No'), t('Yes'));
+
   $count = db_result(db_query("SELECT COUNT(*) FROM {node} n where n.type='quotes' AND n.status=1"));
+
   $form['count'] = array(
     '#type' => 'item',
     '#value' => t('There are currently !count published quotations.', array('!count' => $count)),
@@ -37,7 +48,9 @@ function quotes_admin_settings() {
     '#title' => t('Display Options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
+    '#attached' => $vert_tabs,
     '#description' => t('These options are for general theming.'),
+    '#group' => 'display',
     );
 
   $form['display']['quotes_per_page'] = array(
@@ -53,15 +66,16 @@ function quotes_admin_settings() {
     '#type' => 'textfield',
     '#title' => t('Author leader'),
     '#default_value' => variable_get('quotes_leader', '&mdash;'),
-    '#description' => t('The text placed before the author attribution (e.g. "&amp;mdash;" for an em-dash or "&amp;#8226;" for a bullet).')
+    '#description' => t('The text placed before the author attribution (e.g. "&amp;mdash;" for an em-dash or "&amp;#8226;" for a bullet).'),
     );
 
   $form['display']['quotes_author_link'] = array(
     '#type' => 'radios',
     '#options' => $yesno,
-    '#prefix' => '<div class="quotes-radios">',
-    '#suffix' => '</div>',
     '#title' => t('Make author a link'),
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="author-link">',
+    '#suffix' => '</div>',
     '#default_value' => variable_get('quotes_author_link', FALSE),
     '#description' => t('If selected, the author text will be a link to show all quotes by that author.'),
     );
@@ -72,7 +86,8 @@ function quotes_admin_settings() {
     '#title' => t("Include author's bio"),
     '#default_value' => variable_get('quotes_author_bio', FALSE),
     '#description' => t("If selected, the author's biography will be shown on the Quotes page."),
-    '#prefix' => '<div class="quotes-radios">',
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="author-bio">',
     '#suffix' => '</div>',
     );
 
@@ -87,18 +102,39 @@ function quotes_admin_settings() {
     '#title' => t('Author, citation, and bio input format'),
     '#default_value' => variable_get('quotes_format', 0),
     '#description' => t('This will be used as the input format for the author, citation, and bio fields.'),
-    '#prefix' => '<div class="quotes-radios">',
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="quotes-format">',
     '#suffix' => '</div>',
+    '#group' => 'display',
     );
 
   $form['display']['quotes_edit_link'] = array(
     '#type' => 'radios',
     '#options' => $yesno,
-    '#prefix' => '<div class="quotes-radios">',
-    '#suffix' => '</div>',
     '#title' => t('Add an "edit" link'),
     '#default_value' => variable_get('quotes_edit_link', TRUE),
     '#description' => t('If selected, an "edit" link will be shown for each quote.'),
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="quotes-edit-link">',
+    '#suffix' => '</div>',
+    '#group' => 'display',
+    );
+
+  $form['display']['quotes_quick_nav_original'] = array(
+    '#type' => 'value',
+    '#value' => variable_get('quotes_quick_nav', TRUE),
+    );
+
+  $form['display']['quotes_quick_nav'] = array(
+    '#type' => 'radios',
+    '#options' => $yesno,
+    '#title' => t('Show quick navigation tabs'),
+    '#default_value' => variable_get('quotes_quick_nav', TRUE),
+    '#description' => t('If selected, quick navigation tabs will be shown at the top of the quotes page.'),
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="quotes-quick-nav">',
+    '#suffix' => '</div>',
+    '#group' => 'display',
     );
 
   $form['myquotes'] = array(
@@ -111,11 +147,12 @@ function quotes_admin_settings() {
   $form['myquotes']['quotes_showlink'] = array(
     '#type' => 'radios',
     '#options' => $yesno,
-    '#prefix' => '<div class="quotes-radios">',
-    '#suffix' => '</div>',
     '#title' => t('Show link to users\' quotes'),
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="quotes-user-link">',
+    '#suffix' => '</div>',
     '#default_value' => variable_get('quotes_showlink', TRUE),
-    '#description' => t('Uncheck this to disable the link to each users\' "my quotes" page when viewing a node.')
+    '#description' => t('Uncheck this to disable the link to each users\' "my quotes" page when viewing a node.'),
     );
 
   $form['myquotes']['quotes_show_myquotes_original'] = array(
@@ -126,11 +163,12 @@ function quotes_admin_settings() {
   $form['myquotes']['quotes_show_myquotes'] = array(
     '#type' => 'radios',
     '#options' => $yesno,
-    '#prefix' => '<div class="quotes-radios">',
-    '#suffix' => '</div>',
     '#title' => t('Show the "my quotes" menu item'),
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="quotes-myquotes">',
+    '#suffix' => '</div>',
     '#default_value' => variable_get('quotes_show_myquotes', TRUE),
-    '#description' => t('Uncheck this to disable the "My quotes" menu item for all users. Note, changing this setting will <a href="!url">require the menu to be rebuilt</a>.', array('!url' => url('admin/settings/performance')))
+    '#description' => t('Uncheck this to disable the "My quotes" menu item for all users. Note, changing this setting will <a href="!url">require the menu to be rebuilt</a>.', array('!url' => url('admin/settings/performance'))),
     );
 
   $form['user'] = array(
@@ -139,28 +177,34 @@ function quotes_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#description' => t('These options are for users.'),
+    '#group' => 'user',
     );
 
   $form['user']['quotes_user_recent'] = array(
     '#type' => 'radios',
     '#options' => $yesno,
-    '#prefix' => '<div class="quotes-radios">',
-    '#suffix' => '</div>',
     '#title' => t('Add a "Quotes" tab on the "My account" page'),
-    '#default_value' => variable_get('quotes_user_recent', FALSE),
+    '#attributes' => array('class' => 'container-inline'),
+    '#prefix' => '<div id="myquotes-tab">',
+    '#suffix' => '</div>',
+    '#default_value' => variable_get('quotes_user_recent', 0),
     );
 
+  // Add a submit handler to force a menu rebuild, if needed.
   $form['#submit'][] = '_quotes_settings_form_submit';
   return system_settings_form($form);
 }
 
 /**
- *  Check the menu settings for changes..
+ *  Check the menu settings for changes.
  */
-function _quotes_settings_form_submit($form, &$form_state) {
-  if ($form_state['values']['quotes_show_myquotes'] != $form_state['values']['quotes_show_myquotes_original']) {
-    // Force the menu to be rebuilt.
-    menu_rebuild();
+function _quotes_settings_form_submit() {
+  if (($form_state['values']['quotes_show_myquotes'] != $form_state['values']['quotes_show_myquotes_original'])
+    || ($form_state['values']['quotes_quick_nav'] != $form_state['values']['quotes_quick_nav_original'])) {
+    // Force the menu to be rebuilt soon.
+//    menu_rebuild();
+    variable_set('menu_rebuild_needed', TRUE);
+    drupal_set_message(t('The menu will be rebuilt.'));
   }
 }
 
@@ -206,7 +250,7 @@ function quotes_export() {
  *
  *  @param  $text
  *    The text to be scanned.
- *  @return 
+ *  @return
  *    Text with newlines processed.
  */
 function _quotes_escape_newlines($text) {
@@ -333,7 +377,7 @@ function theme_quotes_blocks_settings($form) {
  */
 function _quotes_block_delete($form_stuff, $bid) {
   $block = db_fetch_object(db_query('SELECT qb.name FROM {quotes_blocks} qb WHERE qb.bid = %d', $bid));
-  
+
   $form = array();
   $form['bid'] = array(
     '#type' => 'value',
@@ -379,7 +423,7 @@ function quotes_bios(&$form_state, $aid = NULL) {
   $first_pass = is_null($aid);
 
   if ($first_pass) {
-    $auths = quotes_get_authors();  
+    $auths = quotes_get_authors();
     $count = count($auths);
     $data = array('name' => NULL, 'bio' => NULL);
   }

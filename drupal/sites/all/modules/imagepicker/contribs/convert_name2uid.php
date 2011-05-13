@@ -1,5 +1,4 @@
 <?php
-// $Id: convert_name2uid.php,v 1.1.2.2 2009/09/29 09:40:45 hutch Exp $
 /**
  * @file
  * Contributed by RusRabbit, see http://drupal.org/comment/reply/568168

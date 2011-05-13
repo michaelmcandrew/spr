@@ -1,4 +1,4 @@
-/* $Id: quotes.css,v 1.1.2.8 2009/10/01 04:26:30 nancyw Exp $ */
+/* $Id: quotes.css,v 1.1.2.11 2010/08/16 04:03:50 nancyw Exp $ */
 
 /**
  * @file
@@ -46,15 +46,21 @@
   clear: left;
 }
 
+#quotes-block-settings .form-item {
+  margin-bottom: 0;
+}
+
+#quotes-block-settings input,
+#quotes-block-settings select,
+#quotes-block-settings .resizable-textarea,
+#quotes-block-settings .description,
 #quotes-admin-settings input {
-  margin-left: 2em;
+  margin-left: 1em;
 }
 
 .quotes-radios .form-item  label.option {
   position: relative;
-  float: left;
   margin-right: 2em;
-  margin-top: 0;
 }
 
 .quotes-radios .description {
@@ -71,7 +77,7 @@
 }
 
 .block-quotes {
-  font-size: 89%;
+  /*font-size: 89%;*/
 }
 
 .block-quotes h2 {
@@ -93,5 +99,5 @@
 
 .quotes-view-link {
   float: left;
-  font-style: italic; 
+  font-style: italic;
 }

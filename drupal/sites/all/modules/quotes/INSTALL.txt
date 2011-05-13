@@ -1,6 +1,5 @@
 quotes.module
 INSTALL.txt
-$Id: INSTALL.txt,v 1.9 2007/02/14 15:28:35 jhriggs Exp $
 
 For a new installation, copy the entire quotes module directory to the
 appropriate module directory within your Drupal installation. Then log

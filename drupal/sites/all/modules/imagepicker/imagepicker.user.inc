@@ -1,13 +1,12 @@
 <?php
-// $Id: imagepicker.user.inc,v 1.1.2.11 2010/05/15 18:30:28 hutch Exp $
-// $Name: DRUPAL-6--2-8 $
 
 /**
  * @file
  * my imagepicker in my account
  */
 function imagepicker_user_page($uid, $path="", $func="", $id=0) {
-  drupal_add_css(drupal_get_path('module', 'imagepicker') .'/imagepicker.css');
+  drupal_add_css(IMAGEPICKER_PATH .'/imagepicker.css');
+  drupal_add_js(IMAGEPICKER_PATH .'/imagepicker.js');
   $content = '';
   // path/func/id
   if ($path == 'images') {
@@ -15,7 +14,7 @@ function imagepicker_user_page($uid, $path="", $func="", $id=0) {
       $content .= imagepicker_user_view($id);
     }
     elseif ($func == 'edit' && is_numeric($id) && $id > 0) {
-      include_once('imagepicker.edit.inc');
+      module_load_include('inc', 'imagepicker', 'imagepicker.edit');
       $content .= imagepicker_user_image_edit($id);
     }
     elseif ($func == 'browse') {
@@ -37,7 +36,7 @@ function imagepicker_user_page($uid, $path="", $func="", $id=0) {
     }
   }
   elseif (variable_get('imagepicker_groups_enabled', 1) && $path == 'groups') {
-    include_once('imagepicker.group.inc');
+    module_load_include('inc', 'imagepicker', 'imagepicker.group');
     if ($func == 'edit' && is_numeric($id) && $id > 0) {
       $content .= imagepicker_user_groups($func, $id);
     }
@@ -59,7 +58,7 @@ function imagepicker_user_page($uid, $path="", $func="", $id=0) {
     $content .= imagepicker_user_config_admin();
   }
   else {
-    include_once('imagepicker.upload.inc');
+    module_load_include('inc', 'imagepicker', 'imagepicker.upload');
     $content .= imagepicker_user_upload();
   }
   return $content;
@@ -84,7 +83,7 @@ function imagepicker_user_browse_admin() {
 }
 
 function imagepicker_user_view($img_id) {
-  drupal_add_js(drupal_get_path('module', 'imagepicker') .'/imagepicker.js');
+  drupal_add_js(IMAGEPICKER_PATH .'/imagepicker.js');
 
   $img = _imagepicker_get_img($img_id);
   if ($img) {
@@ -194,6 +193,7 @@ function imagepicker_user_config_admin_form(&$form_state, $account = FALSE) {
   $form['imagepicker_defaults']['imagepicker_default_thumbnail_size'] = imagepicker_thumbnail_size_elem((isset($user->imagepicker_default_thumbnail_size) ? $user->imagepicker_default_thumbnail_size : NULL));
   $form['imagepicker_defaults']['imagepicker_default_scale'] = imagepicker_scale_elem((isset($user->imagepicker_default_scale) ? $user->imagepicker_default_scale : NULL));
   $form['imagepicker_defaults']['imagepicker_default_pagelink'] = imagepicker_pagelink_elem((isset($user->imagepicker_default_pagelink) ? $user->imagepicker_default_pagelink : NULL));
+  $form['imagepicker_defaults']['imagepicker_rows_per_page'] = imagepicker_rows_per_page_elem((isset($user->imagepicker_rows_per_page) ? $user->imagepicker_rows_per_page : NULL));
 
   // insert settings
   $form['imagepicker_insert_defaults'] = array(
@@ -277,13 +277,11 @@ function imagepicker_user_config_admin_form(&$form_state, $account = FALSE) {
       '#default_value' => (isset($user->imagepicker_watermark_image) ? $user->imagepicker_watermark_image : ''),
       '#options' => $wf,
       '#title' => t('Select Watermark image'),
-      '#prefix' => '<div class="container-inline">',
       );
       $form['imagepicker_watermark']['imagepicker_watermark_image_delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete'),
       '#submit' => array('imagepicker_user_config_admin_form_delete'),
-      '#suffix' => '</div>'
       );
     }
     $form['imagepicker_watermark']['file_upload'] = array(
@@ -361,13 +359,11 @@ function imagepicker_user_config_admin_form(&$form_state, $account = FALSE) {
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save configuration'),
-    '#prefix' => '<div class="container-inline">',
   );
   $form['reset'] = array(
     '#type' => 'submit',
     '#value' => t('Reset'),
     '#submit' => array('imagepicker_user_config_form_reset'),
-    '#suffix' => '</div>'
   );
   return $form;
 }
@@ -387,6 +383,9 @@ function imagepicker_user_config_admin_form_validate($form, &$form_state) {
   }
   if (drupal_strlen($form_state['values']['imagepicker_default_scale']) && ! is_numeric($form_state['values']['imagepicker_default_scale'])) {
     form_set_error('imagepicker_default_scale', t('The Scale field must be a number'));
+  }
+  if (drupal_strlen($form_state['values']['imagepicker_rows_per_page']) && ! is_numeric($form_state['values']['imagepicker_rows_per_page'])) {
+    form_set_error('imagepicker_rows_per_page', t('Rows per page must be a number'));
   }
 
   if (variable_get('imagepicker_default_align_show', 1)) {
@@ -447,7 +446,7 @@ function imagepicker_user_config_admin_form_validate($form, &$form_state) {
   }
 
   if (! empty($_FILES['files']['name']['file_upload'])) {
-    include_once('imagepicker.upload.inc');
+    module_load_include('inc', 'imagepicker', 'imagepicker.upload');
     if (!isset($_FILES['files']['tmp_name']['file_upload']) || !file_exists($_FILES['files']['tmp_name']['file_upload'])) {
       form_set_error('file_upload', t('Error while uploading file.'));
     }
@@ -469,7 +468,7 @@ function imagepicker_user_config_admin_form_submit($form, &$form_state) {
   }
 
   if (! empty($_FILES['files']['name']['file_upload'])) {
-    include_once('imagepicker.upload.inc');
+    module_load_include('inc', 'imagepicker', 'imagepicker.upload');
     $wdir = imagepicker_get_watermarks_dir();
     if (file_check_directory($wdir, TRUE)) {
       // clear out the noisy 'created' messages
@@ -508,6 +507,7 @@ function imagepicker_user_config_admin_form_submit($form, &$form_state) {
 
   user_save($user, array('imagepicker_default_thumbnail_size' => $form_state['values']['imagepicker_default_thumbnail_size']));
   user_save($user, array('imagepicker_default_scale' => $form_state['values']['imagepicker_default_scale']));
+  user_save($user, array('imagepicker_rows_per_page' => $form_state['values']['imagepicker_rows_per_page']));
 
   user_save($user, array('imagepicker_default_pagelink' => $form_state['values']['imagepicker_default_pagelink']));
 
@@ -567,6 +567,7 @@ function imagepicker_user_config_form_reset($form, &$form_state) {
   user_save($user, array('imagepicker_watermark_min_width' => NULL));
   user_save($user, array('imagepicker_default_thumbnail_size' => NULL));
   user_save($user, array('imagepicker_default_scale' => NULL));
+  user_save($user, array('imagepicker_rows_per_page' => NULL));
   user_save($user, array('imagepicker_insert_defaults_align' => NULL));
   user_save($user, array('imagepicker_insert_defaults_show' => NULL));
   user_save($user, array('imagepicker_insert_defaults_link' => NULL));

@@ -1,106 +1,71 @@
-// $Id: imagepicker.js,v 1.1.2.6 2010/02/25 15:15:04 hutch Exp $
-// Original Id: upload_progress.js,v 1.1 2007/11/17 06:47:47 pfournier Exp
 /**
  * @file
- * Javascript functions for progress bar status on node creation forms
+ * Javascript functions for admin form enhancement
  *
- * @author Patrick Fournier <patrick at patrickfournier dot com>
- * @author Fabio Varesano <fvaresano at yahoo dot it>
- * Adapted by Bob Hutchinson for imagepicker upload form
 */
 
-/**
- * Hide the node form and show the busy div
-*/
-Drupal.imagepicker_upload_progress_hide_timeout = function() {
-  var delay = Drupal.settings["imagepicker_upload_progress"]["delay"];
-  setTimeout('imagepicker_upload_progress_hide()', delay*1000);
-}
-
-function imagepicker_upload_progress_hide() {
-  $('#imagepicker-upload-form').hide();
-  $("#sending").show();
-  $("#imagepicker_upload_progress_cancel_link").click(Drupal.imagepicker_upload_progress_show);
-}
-
-Drupal.imagepicker_upload_progress_show = function() {
-  $('#imagepicker-upload-form').show();
-  $("#sending").hide();
-
-  // "reload" the form
-  window.location = window.location;
-}
-
-// Global killswitch
-if (Drupal.jsEnabled) {
-  Drupal.behaviors.imagepicker = function() {
-    // Attaches the upload behaviour to the imagepicker upload form.
-    $('#imagepicker-upload-form').submit(Drupal.imagepicker_upload_progress_hide_timeout);
+(function ($) {
+  Drupal.behaviors.imagepicker = function(context) {
 
     // exif info toggle
-    $('#imgp_trig').click(function() {
-      $('#imgp_targ').toggle('slow');
+    $('#imgp_trig', context).click(function() {
+      $('#imgp_targ', context).toggle('slow');
     });
 
     // form enhancement
-    if ($("#edit-imagepicker-quota-byrole").attr('checked')) {
-      $("#wrap_imagepicker_quota_role").show();
-    }
-    else {
-      $("#wrap_imagepicker_quota_role").hide();
-    }
-    $("#edit-imagepicker-quota-byrole").change(function() {
-      if ($("#edit-imagepicker-quota-byrole").attr('checked')) {
-        $("#wrap_imagepicker_quota_role").show();
+    $("#edit-imagepicker-quota-byrole", context).change(function() {
+      if ($(this).attr('checked')) {
+        $("#wrap-imagepicker-quota-role", context).show();
       }
       else {
-        $("#wrap_imagepicker_quota_role").hide();
+        $("#wrap-imagepicker-quota-role", context).hide();
       }
     });
 
-    if ($("#edit-imagepicker-import-enabled").attr('checked')) {
-      $("#wrap-imagepicker-import").show();
-    }
-    else {
-      $("#wrap-imagepicker-import").hide();
-    }
-    $("#edit-imagepicker-import-enabled").change(function() {
-      if ($("#edit-imagepicker-import-enabled").attr('checked')) {
-        $("#wrap-imagepicker-import").show();
+    $("#edit-imagepicker-import-enabled", context).change(function() {
+      if ($(this).attr('checked')) {
+        $("#wrap-imagepicker-import", context).show();
       }
       else {
-        $("#wrap-imagepicker-import").hide();
+        $("#wrap-imagepicker-import", context).hide();
       }
     });
 
-    if ($("#edit-imagepicker-exifinfo-enable").attr('checked')) {
-      $("#wrap-imagepicker-exifinfo-external").show();
-    }
-    else {
-      $("#wrap-imagepicker-exifinfo-external").hide();
-    }
-    $("#edit-imagepicker-exifinfo-enable").change(function() {
-      if ($("#edit-imagepicker-exifinfo-enable").attr('checked')) {
-        $("#wrap-imagepicker-exifinfo-external").show();
+    $("#edit-imagepicker-upload-progress-enabled", context).change(function() {
+      if ($(this).attr('checked')) {
+        $("#wrap-imagepicker-upload-progress", context).show();
       }
       else {
-        $("#wrap-imagepicker-exifinfo-external").hide();
+        $("#wrap-imagepicker-upload-progress", context).hide();
       }
     });
 
-    if ($("#edit-imagepicker-upload-progress-enabled").attr('checked')) {
-      $("#wrap-imagepicker-upload-progress").show();
-    }
-    else {
-      $("#wrap-imagepicker-upload-progress").hide();
-    }
-    $("#edit-imagepicker-upload-progress-enabled").change(function() {
-      if ($("#edit-imagepicker-upload-progress-enabled").attr('checked')) {
-        $("#wrap-imagepicker-upload-progress").show();
+    $("#edit-imagepicker-groups-enabled", context).change(function() {
+      if ($(this).attr('checked')) {
+        $("#wrap-imagepicker-groups", context).show();
       }
       else {
-        $("#wrap-imagepicker-upload-progress").hide();
+        $("#wrap-imagepicker-groups", context).hide();
       }
     });
+
+    $("#edit-imagepicker-watermark-enable", context).change(function() {
+      if ($(this).attr('checked')) {
+        $("#wrap-imagepicker-watermark", context).show();
+      }
+      else {
+        $("#wrap-imagepicker-watermark", context).hide();
+      }
+    });
+
+    $("#edit-imagepicker-galleryblocks-enabled", context).change(function() {
+      if ($(this).attr('checked')) {
+        $("#wrap-imagepicker-blocks", context).show();
+      }
+      else {
+        $("#wrap-imagepicker-blocks", context).hide();
+      }
+    });
+
   };
-}
+})(jQuery);

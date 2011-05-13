@@ -1,8 +1,6 @@
-Imagepicker postlet module for Drupal 6.x
+Imagepicker postlet module for Drupal 6.x-2.x
 
 This module depends on the Imagepicker module
-
-imagepicker.module,v 1.21.2.28 or later
 
 If you have any questions or suggestions please contact me at
 http://drupal.org/user/52366

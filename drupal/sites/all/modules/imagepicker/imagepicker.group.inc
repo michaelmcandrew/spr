@@ -1,33 +1,31 @@
 <?php
-// $Id: imagepicker.group.inc,v 1.1.2.8 2010/05/15 18:30:28 hutch Exp $
-// $Name: DRUPAL-6--2-8 $
 
 /**
  * @file
  * contains the functions for group management
  */
 
-function imagepicker_groups() {
+function imagepicker_groups($mode="", $gid=0) {
+  drupal_add_js(IMAGEPICKER_PATH .'/imagepicker.js');
 
   // from iframe
-  if (! arg(2)) {
+  if ( empty($mode)) {
     $content = imagepicker_groups_list();
     $content .= drupal_get_form('imagepicker_groups_form');
   }
-  elseif ( arg(2) == 'edit') {
-    $record = imagepicker_get_user_group(arg(3));
+  elseif ( $mode == 'edit') {
+    $record = imagepicker_get_user_group($gid);
     $content .= drupal_get_form('imagepicker_groups_form', $record);
   }
-  elseif (arg(2) == 'delete') {
-    $content .= drupal_get_form('imagepicker_group_delete_form', arg(3));
+  elseif ($mode == 'delete') {
+    $content .= drupal_get_form('imagepicker_group_delete_form', $gid);
   }
-  elseif ( is_numeric(arg(2)) && arg(2) > 0 ) {
-    imagepicker_set_user_group_state(1, arg(2));
+  elseif ( is_numeric($mode) && $mode > 0 ) {
+    imagepicker_set_user_group_state(1, $mode);
     drupal_goto('imagepicker/browse');
   }
-  theme('imagepicker', $content);
+  return theme('imagepicker_iframe', $content);
 }
-
 
 /**
  * groups
@@ -63,7 +61,6 @@ function imagepicker_groups_form(&$form_state, $record=0, $account=FALSE) {
     '#title' => t('Group name'),
     '#size' => 20,
     '#default_value' => (isset($record->group_name) ? $record->group_name : ''),
-    '#description' => t(''),
     '#required' => TRUE
   );
   $form['groupsave']['group_description'] = array(
@@ -178,10 +175,10 @@ function imagepicker_insert_user_group($record) {
   if (db_query(
     "INSERT INTO {imagepicker_user_groups} (uid, group_name, group_description, public, avail_roles) VALUES (%d, '%s', '%s', %d, '%s')",
     array($record['uid'], $record['group_name'], $record['group_description'], $record['public'], $record['avail_roles']))) {
-    drupal_set_message(t('Group was successfully inserted'));
+    drupal_set_message(t('Group was successfully created'));
   }
   else {
-    drupal_set_message(t('Error while trying to insert your group.'));
+    drupal_set_message(t('Error while trying to create your group.'));
   }
 }
 
@@ -272,9 +269,9 @@ function imagepicker_groups_list($src=FALSE, $account=FALSE, $label="") {
   }
   if ($src) {
     if ($src == 'admin') {
-      $editpath = 'admin/settings/imagepicker/groups/user/'. $user->uid .'/edit/';
-      $deletepath = 'admin/settings/imagepicker/groups/user/'. $user->uid .'/delete/';
-      $browsepath = 'admin/settings/imagepicker/groups/user/'. $user->uid .'/browse/';
+      $editpath = IMAGEPICKER_ADMIN_PATH .'/groups/user/'. $user->uid .'/edit/';
+      $deletepath = IMAGEPICKER_ADMIN_PATH .'/groups/user/'. $user->uid .'/delete/';
+      $browsepath = IMAGEPICKER_ADMIN_PATH .'/groups/user/'. $user->uid .'/browse/';
     }
     else {
       $editpath = 'user/'. $user->uid .'/imagepicker/groups/edit/';
@@ -301,6 +298,7 @@ function imagepicker_groups_list($src=FALSE, $account=FALSE, $label="") {
       array('data' => t('Public'), 'field' => 'g.public'),
       array('data' => t('Actions'), 'colspan' => 2),
     );
+    $cols = 7;
   }
   else {
     $header = array(
@@ -310,14 +308,16 @@ function imagepicker_groups_list($src=FALSE, $account=FALSE, $label="") {
       t('State'),
       array('data' => t('Actions'), 'colspan' => 2),
     );
+    $cols = 6;
   }
 
+  $countsql = "SELECT COUNT(DISTINCT(g.gid)) FROM {imagepicker_user_groups} g JOIN {imagepicker_group_images} u USING(gid) WHERE  g.uid=%d";
   $sql = "SELECT g.gid, g.group_name, g.group_description, g.public, COUNT(i.img_id) AS ct
     FROM {imagepicker_user_groups} g LEFT JOIN {imagepicker_group_images} i USING(gid)
-    WHERE  uid=%d
-    GROUP BY g.gid". tablesort_sql($header);
+    WHERE  g.uid=%d
+    GROUP BY g.gid, g.group_name, g.group_description, g.public". tablesort_sql($header);
 
-  $result = pager_query($sql, $how_many, 0, NULL, array($user->uid));
+  $result = pager_query($sql, $how_many, 0, $countsql, array($user->uid));
   $rows = array();
   $totcount = 0;
   $rowcount = 0;
@@ -347,7 +347,7 @@ function imagepicker_groups_list($src=FALSE, $account=FALSE, $label="") {
     $rows[] = $row_data;
     $rowcount++;
   }
-  return theme('imagepicker_list', $header, $rows, $how_many, t('No groups found.'), '<div class="imgp_groups_list">', '</div>', $label);
+  return theme('imagepicker_list', $header, $rows, $how_many, t('No groups found.'), '<div class="imgp_groups_list">', '</div>', $label, $cols);
 
 }
 

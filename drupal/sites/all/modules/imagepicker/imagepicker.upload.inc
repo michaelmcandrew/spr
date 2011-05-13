@@ -1,13 +1,11 @@
 <?php
-// $Id: imagepicker.upload.inc,v 1.3.2.14 2010/05/15 18:30:28 hutch Exp $
-// $Name: DRUPAL-6--2-8 $
 
 /**
  * @file
  * upload functions
  */
 
-include_once("imagepicker.imagefuncs.inc");
+module_load_include('inc', 'imagepicker', 'imagepicker.imagefuncs');
 
 /**
  * Menu callback; presents the upload form for imagepicker
@@ -19,7 +17,7 @@ function imagepicker_upload() {
     $content = imagepicker_upload_progress_get_script(variable_get('imagepicker_upload_progress_delay', 0));
   }
   $content .= imagepicker_quota_ok('iframe', FALSE, '', t('Upload images. You can give them a title and description'));
-  theme('imagepicker', $content);
+  return theme('imagepicker_iframe', $content);
 }
 // account
 function imagepicker_user_upload() {
@@ -33,6 +31,12 @@ function imagepicker_user_upload() {
 }
 
 function imagepicker_upload_form($form_state, $account=FALSE, $admin = FALSE) {
+  // multiple uploads
+  $max_uploads = variable_get('imagepicker_max_uploads', 1);
+  $settings = array('imagepicker_upload_link' => array('max_uploads' => $max_uploads));
+  drupal_add_js(IMAGEPICKER_PATH .'/imagepicker_upload_link.js');
+  drupal_add_js($settings, 'setting');
+
   if ($account) {
     $user = $account;
   }
@@ -40,59 +44,82 @@ function imagepicker_upload_form($form_state, $account=FALSE, $admin = FALSE) {
     global $user;
   }
   $form['#attributes']['enctype'] = 'multipart/form-data';
-  $form['file_upload'] = array(
-    '#type' => 'file',
-    '#title' => t('Image file'),
-    '#description' => t('Browse your computer for image file'),
-    '#required' => TRUE,
-    '#value' => 1,
-    '#size' => 40,
+  if (variable_get('imagepicker_upload_progress_enabled', 1) && variable_get('imagepicker_uploadprogress_server', '')) {
+    $form[IMAGEPICKER_UPLOAD_ID] = array(
+      '#type' => 'hidden',
+      '#value' => uniqid(),
+      '#weight' => -50,
+    );
+  }
+  $form['maxmsg'] = array(
+    '#type' => 'markup',
+    '#value' => '',
   );
-  $form['thumb'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Thumbnail size'),
-    '#size' => 10,
-    '#default_value' => (isset($user->imagepicker_default_thumbnail_size) ? $user->imagepicker_default_thumbnail_size : variable_get('imagepicker_default_thumbnail_size', 100)),
-    '#description' => t('Size in pixels of thumbnail\'s bigger side'),
-    '#required' => TRUE,
-  );
-  $form['scale'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Scale image'),
-    '#size' => 10,
-    '#default_value' => (isset($user->imagepicker_default_scale) ? $user->imagepicker_default_scale : variable_get('imagepicker_default_scale', '')),
-    '#description' => t('Scale image to this size in pixels if not left empty'),
-  );
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#description' => t('Add a title for your image'),
-  );
-  $form['description'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Description'),
-    '#rows' => 2,
-    '#cols' => 80,
-    '#description' => t('Add a description for your image'),
-  );
-  if ( imagepicker_image_check_functions(TRUE) && variable_get('imagepicker_watermark_enable', 0)) {
-    if (! variable_get('imagepicker_watermark_image', '')
-      && ($user->imagepicker_watermark_image ? $user->imagepicker_watermark_image : FALSE)
-      && $user->imagepicker_watermark_enable) {
-      $form['watermark'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Use watermark'),
-        '#description' => t('Use watermark on this image.'),
-        '#default_value' => ($user->imagepicker_watermark_use ? $user->imagepicker_watermark_use : FALSE),
-      );
+
+
+#  $max_filesize = ini_get('upload_max_filesize');
+
+  for ($ct = 1; $ct <= $max_uploads; $ct++) {
+    $form['file_upload_' . $ct] = array(
+      '#type' => 'file',
+      '#title' => ($max_uploads == 1 ? t('Image file') : t('Image file %ct', array('%ct' => $ct))),
+      '#required' => ($ct == 1 ? TRUE : FALSE),
+      '#value' => 1,
+      '#size' => 50,
+    );
+    $form['thumb_' . $ct] = array(
+      '#type' => 'textfield',
+      '#title' => t('Thumbnail size'),
+      '#size' => 10,
+      '#default_value' => (isset($user->imagepicker_default_thumbnail_size) ? $user->imagepicker_default_thumbnail_size : variable_get('imagepicker_default_thumbnail_size', 100)),
+      '#description' => t('Size in pixels of thumbnail\'s bigger side'),
+      '#required' => TRUE,
+    );
+    $form['scale_' . $ct] = array(
+      '#type' => 'textfield',
+      '#title' => t('Scale image'),
+      '#size' => 10,
+      '#default_value' => (isset($user->imagepicker_default_scale) ? $user->imagepicker_default_scale : variable_get('imagepicker_default_scale', '')),
+      '#description' => t('Scale image to this size in pixels if not left empty'),
+    );
+    if ( imagepicker_image_check_functions(TRUE) && variable_get('imagepicker_watermark_enable', 0)) {
+      if (! variable_get('imagepicker_watermark_image', '')
+        && ($user->imagepicker_watermark_image ? $user->imagepicker_watermark_image : FALSE)
+        && $user->imagepicker_watermark_enable) {
+        $form['watermark_' . $ct] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Use watermark'),
+          '#description' => ($max_uploads == 1 ? t('Use watermark on this image.') : t('Use watermark on Image file %ct', array('%ct' => $ct))),
+          '#default_value' => ($user->imagepicker_watermark_use ? $user->imagepicker_watermark_use : FALSE),
+        );
+      }
+      elseif (variable_get('imagepicker_watermark_image', '')) {
+        $form['watermark_' . $ct] = array(
+          '#type' => 'value',
+          '#value' => 1,
+        );
+      }
     }
-    elseif (variable_get('imagepicker_watermark_image', '')) {
-      $form['watermark'] = array(
-        '#type' => 'value',
-        '#value' => 1,
+    $form['title_' . $ct] = array(
+      '#type' => 'textfield',
+      '#title' => ($max_uploads == 1 ? t('Title') : t('Title for Image file %ct', array('%ct' => $ct))),
+      '#description' => t('Add a title for your image'),
+    );
+    $form['description_' . $ct] = array(
+      '#type' => 'textarea',
+      '#title' => ($max_uploads == 1 ? t('Description') : t('Description for Image file %ct', array('%ct' => $ct))),
+      '#rows' => 2,
+      '#cols' => 80,
+      '#description' => t('Add a description for your image'),
+    );
+    if ($ct < $max_uploads) {
+      $form['link_' . $ct] = array(
+        '#type' => 'markup',
+        '#value' => '',
       );
     }
   }
+####
   // groups
   if (variable_get('imagepicker_groups_enabled', 1) && variable_get('imagepicker_groups_in_upload_enabled', 1)) {
     $grouplist = imagepicker_get_groups( ($admin ? $user : FALSE));
@@ -132,34 +159,41 @@ function imagepicker_upload_form($form_state, $account=FALSE, $admin = FALSE) {
  * Validate form
  */
 function imagepicker_upload_form_validate($form, &$form_state) {
-  foreach ($form_state['values'] as $name => $value) {
-    switch ($name) {
-      case 'file_upload':
-        if (empty($_FILES['files']['name']['file_upload'])) {
-          form_set_error($name, t('Image file field is required.'));
+
+  $max_uploads = variable_get('imagepicker_max_uploads', 1);
+  for ($ct = 1; $ct <= $max_uploads; $ct++) {
+    foreach ($form_state['values'] as $name => $value) {
+      if ($ct == 1 && $name == 'file_upload_' . $ct) {
+        if (empty($_FILES['files']['name'][$name])) {
+          form_set_error($name, t('File upload field is required.'));
         }
-        elseif (!isset($_FILES['files']['tmp_name']['file_upload']) || !file_exists($_FILES['files']['tmp_name']['file_upload'])) {
+        elseif (!isset($_FILES['files']['tmp_name'][$name]) || !file_exists($_FILES['files']['tmp_name'][$name])) {
           form_set_error($name, t('Error while uploading file.'));
         }
-        elseif (!image_get_info($_FILES['files']['tmp_name']['file_upload'])) {
-          form_set_error($name, t('Uploaded file is not an image.'));
+        elseif (!imagepicker_get_uploaded_file_extension($name)) {
+          form_set_error($name, t('Illegal file.'));
         }
-        elseif (!imagepicker_get_uploaded_file_extension('file_upload')) {
-          form_set_error($name, t('Only .jpg, .gif and .png image files are accepted.'));
+      }
+      else {
+        if ($name == 'file_upload_' . $ct && !empty($_FILES['files']['name'][$name])) {
+          if (!isset($_FILES['files']['tmp_name'][$name]) || !file_exists($_FILES['files']['tmp_name'][$name])) {
+            form_set_error($name, t('Error while uploading file.'));
+          }
+          elseif (!imagepicker_get_uploaded_file_extension($name)) {
+            form_set_error($name, t('Illegal file.'));
+          }
         }
-        break;
-
-      case 'thumb':
+      }
+      if ( $name == 'thumb_' . $ct ) {
         if (!preg_match('/^[0-9]{1,3}$/', $value) || $value <= 0) {
           form_set_error($name, t('Thumbnail size should be an integer between 1 and 999.'));
         }
-        break;
-
-      case 'scale':
+      }
+      if ( $name == 'scale_' . $ct ) {
         if (!preg_match('/^[0-9]{0,3}$/', $value)) {
-          form_set_error($name, t('Scale value should be an integer between 1 and 999 or leave it empty if you don\'t want to scale your image.'));
+          form_set_error($name, t("Scale value should be an integer between 1 and 999 or leave it empty if you don't want to scale your image."));
         }
-        break;
+      }
     }
   }
 }
@@ -168,6 +202,8 @@ function imagepicker_upload_form_validate($form, &$form_state) {
  * Submit form
  */
 function imagepicker_upload_form_submit($form, &$form_state) {
+  $success = 0;
+  $errormsg = '';
   if ($form_state['values']['op'] == t('Upload')) {
     if ( isset($form_state['values']['account']) && isset($form_state['values']['admin'])) {
       $user = user_load(array('uid' => $form_state['values']['account']));
@@ -192,113 +228,117 @@ function imagepicker_upload_form_submit($form, &$form_state) {
       $thumbsdir = $thumbsdir . DIRECTORY_SEPARATOR;
       $browserdir = $browserdir . DIRECTORY_SEPARATOR;
       $origdir = $origdir . DIRECTORY_SEPARATOR;
-      $maxthumbsize = $form_state['values']['thumb'] ? $form_state['values']['thumb'] : 100;
-      $scaleto = $form_state['values']['scale'] ? $form_state['values']['scale'] : FALSE;
-
-      // $destination gets altered in imagepicker_copy_uploaded_file to give us the final path + name
-      $destination = $origdir;
-
-      // save the original and use that from here on
-      if ( $imagemoved = imagepicker_copy_uploaded_file($destination, 'file_upload') ) {
-        // $destination has been changed in imagepicker_copy_uploaded_file()
-        // to point to the new file
-        $file = basename($destination);
-        $source = $origdir . $file;
-        if ($scaleto) {
-          $imagescaled = imagepicker_scale_image($source, $destdir . $file, $scaleto);
-        }
-        else {
-          // no scaling, save direct from $origdir to $destdir
-          file_copy($source, $destdir, FILE_EXISTS_RENAME);
-        }
-      }
-
-      if (!$scaleto && $imagemoved || $scaleto && $imagescaled) {
-
-        // Source file should still be an uploaded one, as scaled image
-        // might have some watermarks etc. from drupal's filters/hooks.
-
-        // if watermark is enabled just apply to destdir image, not orig or the thumbs
-        if ( isset($form_state['values']['watermark']) && $form_state['values']['watermark'] ) {
-          if (! imagepicker_watermark_process($destdir . $file, $user)) {
-            drupal_set_message(t('Error while watermarking an uploaded image.'), 'error');
-          }
-        }
-
-        // not sure why this has to be restated, but if not done the thumbs
-        // get wmarked too when not scaling image above
-        $source = $origdir . $file;
-        if (imagepicker_scale_image($source, $thumbsdir . $file, $maxthumbsize)) {
-          imagepicker_scale_image($source, $browserdir . $file, ($user->imagepicker_default_browser_thumbnail_size ? $user->imagepicker_default_browser_thumbnail_size : variable_get('imagepicker_default_browser_thumbnail_size', 100)));
-          $title = htmlspecialchars($form_state['values']['title']);
-          $description = htmlspecialchars($form_state['values']['description']);
-          $nextimgid = imagepicker_insert_image($user->uid, $file, $title, $description);
-          if ($nextimgid) {
-            if ( is_array($form_state['values']['grouplist']) && variable_get('imagepicker_groups_enabled', 1) && variable_get('imagepicker_groups_in_upload_enabled', 1) ) {
-              $result = db_query("SELECT img_id FROM {imagepicker} WHERE uid = '%d' AND img_name = '%s'", array($user->uid, $file));
-              $row = db_fetch_array($result);
-              $record['img_id']  = $row['img_id'];
-              foreach ($form_state['values']['grouplist'] AS $gid) {
-                $record['gid'] = $gid;
-                imagepicker_insert_group_image($record);
+      $max_uploads = variable_get('imagepicker_max_uploads', 1);
+      for ($ct = 1; $ct <= $max_uploads; $ct++) {
+        $maxthumbsize = $form_state['values']['thumb_' . $ct] ? $form_state['values']['thumb_' . $ct] : 100;
+        $scaleto = $form_state['values']['scale_' . $ct] ? $form_state['values']['scale_' . $ct] : FALSE;
+        // $destination gets altered in imagepicker_copy_uploaded_file to give us the final path + name
+        $destination = $origdir;
+        foreach ($form_state['values'] as $name => $value) {
+          if ($name == 'file_upload_' . $ct && !empty($_FILES['files']['name'][$name])) {
+            // save the original and use that from here on
+            if ( $imagemoved = imagepicker_copy_uploaded_file($destination, $name) ) {
+              #$file = substr($destination, strrpos($destination, DIRECTORY_SEPARATOR)+1);
+              $file = basename($destination);
+              $source = $origdir . $file;
+              if ($scaleto) {
+                $imagescaled = imagepicker_scale_image($source, $destdir . $file, $scaleto);
+              }
+              else {
+                // no scaling, save direct from $origdir to $destdir
+                file_copy($source, $destdir, FILE_EXISTS_RENAME);
               }
             }
-            drupal_set_message(t('Image was successfully uploaded.'));
-            if (isset($form_state['values']['admin'])) {
-              $outpath = 'admin/settings/imagepicker/images/user/'. $user->uid .'/browse';
-            }
-            elseif (isset($form_state['values']['account'])) {
-              $outpath = 'user/'. $user->uid .'/imagepicker/images/browse';
+
+            if (!$scaleto && $imagemoved || $scaleto && $imagescaled) {
+
+              // Source file should still be an uploaded one, as scaled image
+              // might have some watermarks etc. from drupal's filters/hooks.
+
+              // if watermark is enabled just apply to destdir image, not orig or the thumbs
+              if ( isset($form_state['values']['watermark_' . $ct]) && $form_state['values']['watermark_' . $ct] ) {
+                if (! imagepicker_watermark_process($destdir . $file, $user)) {
+                  drupal_set_message(t('Error while watermarking an uploaded image.'), 'error');
+                }
+              }
+
+              // not sure why this has to be restated, but if not done the thumbs
+              // get wmarked too when not scaling image above
+              $source = $origdir . $file;
+              if (imagepicker_scale_image($source, $thumbsdir . $file, $maxthumbsize)) {
+                imagepicker_scale_image($source, $browserdir . $file, ($user->imagepicker_default_browser_thumbnail_size ? $user->imagepicker_default_browser_thumbnail_size : variable_get('imagepicker_default_browser_thumbnail_size', 100)));
+                $title = htmlspecialchars($form_state['values']['title_' . $ct]);
+                $description = htmlspecialchars($form_state['values']['description_' . $ct]);
+                $nextimgid = imagepicker_insert_image($user->uid, $file, $title, $description);
+                if ($nextimgid) {
+                  if ( is_array($form_state['values']['grouplist']) && variable_get('imagepicker_groups_enabled', 1) && variable_get('imagepicker_groups_in_upload_enabled', 1) ) {
+                    $result = db_query("SELECT img_id FROM {imagepicker} WHERE uid = '%d' AND img_name = '%s'", array($user->uid, $file));
+                    $row = db_fetch_array($result);
+                    $record['img_id']  = $row['img_id'];
+                    foreach ($form_state['values']['grouplist'] AS $gid) {
+                      $record['gid'] = $gid;
+                      imagepicker_insert_group_image($record);
+                    }
+                  }
+                  // external functions
+                  if (variable_get('imagepicker_invoke_extra', 0)) {
+                    module_invoke_all('imagepicker_upload_extra', $nextimgid);
+                  }
+                  $success++;
+                }
+                else {
+                  file_delete($thumbsdir . $file);
+                  file_delete($browserdir . $file);
+                  file_delete($origdir . $file);
+                  file_delete($destdir . $file);
+                  $errormsg = t('Error while saving information to database for uploaded image.');
+                }
+              }
+              else {
+                $errormsg = t('Error while creating a thumbnail for uploaded image.');
+              }
             }
             else {
-              $outpath = 'imagepicker/browse/'. $nextimgid;
+              if (!$scaleto && !$imagemoved) {
+                $errormsg = t('Error while moving uploaded file to its destination.');
+              }
+              else {
+                $errormsg = t('Error while scaling uploaded file.');
+              }
             }
-            // external functions
-            module_invoke_all('imagepicker_upload_extra', $nextimgid);
-            drupal_goto($outpath);
-          }
-          else {
-            file_delete($thumbsdir . $file);
-            file_delete($browserdir . $file);
-            file_delete($origdir . $file);
-            file_delete($destdir . $file);
-            drupal_set_message(t('Error while saving information to database for uploaded image.'), 'error');
           }
         }
-        else {
-          drupal_set_message(t('Error while creating a thumbnail for uploaded image.'), 'error');
-        }
-      }
-      else {
-        if (!$scaleto && !$imagemoved) {
-          drupal_set_message(t('Error while moving uploaded file to its destination.'), 'error');
-        }
-        else {
-          drupal_set_message(t('Error while scaling uploaded file.'), 'error');
-        }
-      }
-      file_delete($destdir . $file);
+      } // ct
     }
     else {
       drupal_set_message(t('Unable to create a directory structure for your images.'), 'error');
     }
   }
-  if (isset($form_state['values']['admin'])) {
-    $outpath = 'admin/settings/imagepicker/images';
-  }
-  elseif (isset($form_state['values']['account'])) {
-    $outpath = 'user/'. $user->uid .'/imagepicker';
+
+  if ($success) {
+    drupal_set_message(t('%c successfully uploaded.', array('%c' => format_plural($success, '1 image', '@count images'))));
+    if (isset($form_state['values']['admin'])) {
+      $outpath = IMAGEPICKER_ADMIN_PATH .'/images/user/'. $user->uid .'/browse';
+    }
+    elseif (isset($form_state['values']['account'])) {
+      $outpath = 'user/'. $user->uid .'/imagepicker/images/browse';
+    }
+    else {
+      $outpath = 'imagepicker/browse'. ($success == 1 ? '/' . $nextimgid : '');
+    }
+    drupal_goto($outpath);
   }
   else {
-    $outpath = 'imagepicker';
+    if (! $errormsg) {
+      $max_filesize = ini_get('upload_max_filesize');
+      $errormsg = t('No files uploaded. This may be because the files totalled more than %c', array('%c' => $max_filesize));
+    }
+    drupal_set_message($errormsg, 'error');
   }
-  drupal_goto($outpath);
 }
-
 
 function imagepicker_copy_uploaded_file(&$destination, $name) {
   $source = $_FILES['files']['tmp_name'][$name];
-
   if (file_copy($source, $destination, FILE_EXISTS_RENAME)) {
     // Fix bug in drupal's file_copy function which uses '/' instead of
     // DIRECTORY_SEPARATOR for making directories. This causes problems on
@@ -309,7 +349,6 @@ function imagepicker_copy_uploaded_file(&$destination, $name) {
     $destination = $destination . $file;
     return @rename($source, $destination);
   }
-
   return FALSE;
 }
 
@@ -353,12 +392,41 @@ function imagepicker_get_uploaded_file_name($destination, $name) {
 }
 
 function imagepicker_upload_progress_get_script($delay) {
-  drupal_add_js(drupal_get_path('module', 'imagepicker') .'/imagepicker.js');
-  drupal_add_js(array('imagepicker_upload_progress' => array('delay' => $delay[0])), 'setting');
+
+  $message = variable_get('imagepicker_upload_progress_message', t('Processing form... please wait.'));
+  if (variable_get('imagepicker_uploadprogress_server', '')) {
+    // Immediately disable devel shutdown functions so that it doesn't botch our
+    // JSON output.
+    $GLOBALS['devel_shutdown'] = FALSE;
+    $settings = array(
+      'imagepicker_upload_progress' => array(
+        'callback' => 'http://' . $_SERVER['HTTP_HOST'] . url('imagepicker/progress'),
+        'interval' => variable_get('imagepicker_uploadprogress_interval', 1),
+        'name' => IMAGEPICKER_UPLOAD_ID,
+        'delay' => $delay,
+        'initmessage' => $message,
+        'cancelmessage' => t('Cancel'),
+      ),
+    );
+  }
+  else {
+    $settings = array(
+      'imagepicker_upload_progress' => array(
+        'callback' => '',
+        'interval' => '',
+        'name' => '',
+        'delay' => $delay,
+        'initmessage' => $message,
+        'cancelmessage' => t('Cancel'),
+      ),
+    );
+  }
+
+  drupal_add_js(IMAGEPICKER_PATH .'/imagepicker_upload.js');
+  drupal_add_js($settings, 'setting');
 }
 
 function imagepicker_upload_progress_busy() {
-  $message = variable_get('imagepicker_upload_progress_message', t('Processing form... please wait.'));
-  return theme('imagepicker_upload_progress_message', $message);
+  return '<div id="imagepicker-sending" style="display: none;"></div>';
 }
 

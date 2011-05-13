@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.6.4.2 2009/02/10 17:07:14 nancyw Exp $
 
 The quotes module allows users to maintain a list of quotations that
 they find notable, humorous, famous, infamous, or otherwise worthy of

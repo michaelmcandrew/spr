@@ -1,4 +1,3 @@
-/* $Id: quotes.js,v 1.1.4.2 2008/08/23 17:15:55 nancyw Exp $ */
 
 function quotes_more_handler(event) {
   if ($("input[@name=block_type]:checked").val() == '0') {

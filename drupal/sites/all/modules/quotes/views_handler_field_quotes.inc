@@ -1,5 +1,4 @@
 <?php
-// $Id: views_handler_field_quotes.inc,v 1.1.2.1 2009/02/19 06:05:06 nancyw Exp $
 /**
  * @file
  * Provide views data and handlers for quotes.module

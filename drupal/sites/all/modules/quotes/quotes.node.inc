@@ -1,5 +1,4 @@
 <?php
-// $Id: quotes.node.inc,v 1.1.2.4 2009/10/01 04:26:30 nancyw Exp $
 
 /**
  * @file

@@ -1,5 +1,3 @@
-/* $Id: imagepicker.css,v 1.8.2.7 2010/05/11 09:47:18 hutch Exp $ */
-/* $Name: DRUPAL-6--2-8 $ */
 
 #imgp {
   clear: both;
@@ -134,4 +132,12 @@
 /* add this to your style.css to control the body of the imagepicker iframe */
 #imagepicker {
 
+}
+
+/* class for the inserted image container */
+.imgp_img {
+
+}
+.imagepicker_upload_link {
+  margin: 4px 0 8px 0;
 }
