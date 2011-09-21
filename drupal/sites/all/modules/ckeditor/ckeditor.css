@@ -42,6 +42,11 @@ table.cke_editor fieldset {
 .cke_editor,#ie#bug {
   display: inline-table !important;
 }
+
+.cke_panel_listItem {
+    background-image: none;
+    padding-left: 0;
+}
 /* remove top border from tbody - overwrite system.css - [#751672] */
 tbody {
     border: 0;

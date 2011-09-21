@@ -75,6 +75,29 @@ function imagepicker_image_form($form_state, $img_id, $public = FALSE) {
   }
   $form['show'] = imagepicker_get_show_opts(isset($user->imagepicker_insert_defaults_show) ? $user->imagepicker_insert_defaults_show : variable_get('imagepicker_insert_defaults_show', 'full'));
   $form['link'] = imagepicker_get_link_opts(isset($user->imagepicker_insert_defaults_link) ? $user->imagepicker_insert_defaults_link : variable_get('imagepicker_insert_defaults_link', 'none'));
+
+  if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0)) {
+    $presets = imagecache_presets();
+    $opts = array('' => t('None'));
+    if (count($presets)) {
+      foreach ($presets AS $preset) {
+        $opts[$preset['presetname']] = $preset['presetname'];
+      }
+      $form['presets_show'] = array(
+        '#type' => 'select',
+        '#title' => t('Presets for Show'),
+        '#options' => $opts,
+        '#default_value' => variable_get('imagepicker_imagecache_default_show', ''),
+      );
+      $form['presets_link'] = array(
+        '#type' => 'select',
+        '#title' => t('Presets for Link'),
+        '#options' => $opts,
+        '#default_value' => variable_get('imagepicker_imagecache_default_link', ''),
+      );
+    }
+  }
+
   $form['desc'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show Description'),
@@ -92,6 +115,26 @@ function imagepicker_image_form($form_state, $img_id, $public = FALSE) {
       '#description' => t('You can add additional css here, eg. class="myclass". This will be inserted into the image tag'),
     );
   }
+  // rel
+  if (module_exists('colorbox') && variable_get('imagepicker_colorbox_enable', 0)) {
+    if ((variable_get('imagepicker_use_relbox', 0)
+      && ! isset($user->imagepicker_use_relbox))
+      || ((variable_get('imagepicker_use_relbox', 0)
+      && isset($user->imagepicker_use_relbox) && $user->imagepicker_use_relbox))) {
+      $form['relbox'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Add rel attribute'),
+        '#size' => 20,
+        '#description' => t('You can add a rel tag here, it will be added to the link when colorbox is selected. Useful for creating galleries. No spaces.'),
+      );
+      $form['linkhide'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Hide this link'),
+      '#description' => t('Use this on subsequent links added to a gallery.'),
+      );
+    }
+  }
+
   $form['insert'] = array(
     '#type' => 'button',
     '#value' => t('Insert image'),
@@ -150,7 +193,7 @@ function imagepicker_image_delete($img_id, $account=FALSE, $src='iframe') {
   drupal_goto($outpath);
 }
 
-function _imagepicker_image_delete($img_id, $account=FALSE, $src='iframe') {
+function _imagepicker_image_delete($img_id, $account=FALSE, $src='iframe', $suppress = FALSE) {
   if ($account) {
     $user = $account;
     $userdir = array('name' => $user->name, 'uid' => $user->uid);
@@ -172,7 +215,9 @@ function _imagepicker_image_delete($img_id, $account=FALSE, $src='iframe') {
     if (db_query("DELETE FROM {imagepicker} WHERE uid = %d AND img_id = %d", array($user->uid, $img_id))) {
       // groups entries
       db_query("DELETE FROM {imagepicker_group_images} WHERE img_id = %d", array($img_id));
-      drupal_set_message(t('Image was successfully deleted'));
+      if (! $suppress) {
+        drupal_set_message(t('Image was successfully deleted'));
+      }
     }
     else {
       drupal_set_message(t('Error while trying to delete your image from database.'), 'error');
@@ -187,7 +232,7 @@ function _imagepicker_image_delete($img_id, $account=FALSE, $src='iframe') {
 /**
  * Menu callback; presents the image page for imagepicker
  */
-function imagepicker_image_page($img_id) {
+function imagepicker_image_page($img_id, $preset = FALSE) {
   global $base_url;
 
   $content = '';
@@ -200,11 +245,23 @@ function imagepicker_image_page($img_id) {
     // js link
     $account = user_load(array('uid' => $img['uid']));
     $link = (isset($account->imagepicker_default_pagelink) ? $account->imagepicker_default_pagelink : variable_get('imagepicker_default_pagelink', 1));
-    if ( variable_get('file_downloads', '1') == 2 ) {
-      $imgpath = imagepicker_get_image_path($img, 'full', array('uid' => $img['uid']));
+    if (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PRIVATE) {
+      if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0) && $preset) {
+        $imgpath = imagepicker_get_image_path($img, 'full', array('uid' => $img['uid']), TRUE);
+        $imgpath = preg_replace("~__PRESET__~", $preset, $imgpath);
+      }
+      else {
+        $imgpath = imagepicker_get_image_path($img, 'full', array('uid' => $img['uid']));
+      }
     }
     else {
-      $imgpath = imagepicker_get_path(TRUE, $img) . $img['img_name'];
+      if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0) && $preset) {
+        $imgpath = imagepicker_get_image_path($img, 'full', array('uid' => $img['uid']), TRUE);
+        $imgpath = preg_replace("~__PRESET__~", $preset, $imgpath);
+      }
+      else {
+        $imgpath = imagepicker_get_path(TRUE, $img) . $img['img_name'];
+      }
     }
     $content = theme('imagepicker_fullpage', $img, $imgpath, $link);
   }
@@ -586,7 +643,7 @@ function imagepicker_multitask_delete_form_submit($form, &$form_state) {
 
   $img_ids = explode('-', $simg_ids);
   foreach ($img_ids AS $img_id) {
-    _imagepicker_image_delete($img_id, FALSE, 'admin');
+    _imagepicker_image_delete($img_id, FALSE, 'admin', TRUE);
   }
 
   drupal_set_message(t('%c deleted', array('%c' => format_plural( count($img_ids), '1 image', '@count images'))));
@@ -863,10 +920,18 @@ function _imagepicker_browse_public($src="iframe", $range=1, $label="") {
   if (_imagepicker_has_public_groups($user, ($src=='admin' ? TRUE : FALSE))) {
     if ($src == 'admin') {
       $gid = variable_get('imagepicker_public_currentgroup', 0);
+      if (! imagepicker_group_exists($gid)) {
+        variable_del("imagepicker_public_currentgroup");
+        $gid = 0;
+      }
     }
     else {
       // get the current users setting
       $gid = (isset($user->imagepicker_public_currentgroup) ? $user->imagepicker_public_currentgroup : 0);
+      if (! imagepicker_group_exists($gid)) {
+        $user->imagepicker_public_currentgroup = NULL;
+        $gid = 0;
+      }
     }
   }
 
@@ -1481,8 +1546,14 @@ function imagepicker_get_enabled_group($account = FALSE) {
   return FALSE;
 }
 
-
-
+function imagepicker_group_exists($gid) {
+  $result = db_query("SELECT gid FROM {imagepicker_user_groups} WHERE gid = %d", array($gid));
+  $row = db_fetch_array($result);
+  if ($row['gid']) {
+    return TRUE;
+  }
+  return FALSE;
+}
 
 /**
  * all the groups for the current user which have images attached
@@ -1498,9 +1569,19 @@ function imagepicker_browse_groups_form(&$form_state, $account = FALSE) {
   $grouplist = imagepicker_get_grouplist($user);
   if ($account) {
     $enabledlist = variable_get('imagepicker_currentgroup', 0);
+    // check it
+    if (! imagepicker_group_exists($enabledlist)) {
+      variable_del("imagepicker_currentgroup");
+      $enabledlist = '';
+    }
   }
   else {
     $enabledlist = imagepicker_get_enabled_group($user);
+    // check it
+    if (! imagepicker_group_exists($enabledlist)) {
+      $user->imagepicker_currentgroup = NULL;
+      $enabledlist = '';
+    }
   }
 
   $form['gid'] = array(
@@ -1573,9 +1654,19 @@ function imagepicker_browse_public_groups_form(&$form_state, $account = FALSE, $
   $grouplist = imagepicker_get_public_grouplist($user, $admin);
   if ($admin) {
     $enabledlist = variable_get('imagepicker_public_currentgroup', 0);
+    // check it
+    if (! imagepicker_group_exists($enabledlist)) {
+      variable_del("imagepicker_public_currentgroup");
+      $enabledlist = '';
+    }
   }
   else {
     $enabledlist = (isset($user->imagepicker_public_currentgroup) ? $user->imagepicker_public_currentgroup : 0);
+    // check it
+    if (! imagepicker_group_exists($enabledlist)) {
+      $user->imagepicker_public_currentgroup = NULL;
+      $enabledlist = '';
+    }
   }
 
   $form['gid'] = array(
@@ -2784,12 +2875,16 @@ function imagepicker_group_images_count($gid) {
 function imagepicker_box() {
   $a1 = FALSE;
   $a2 = 0;
+  $a3 = FALSE;
 
   if (arg(1)) {
     $a1 = arg(1);
   }
   if (arg(2) && is_numeric(arg(2))) {
     $a2 = arg(2);
+  }
+  if (arg(3) && $a2) {
+    $a3 = arg(3);
   }
 
   if ($a1 == 'browse') {
@@ -2805,7 +2900,7 @@ function imagepicker_box() {
     $content = imagepicker_image_edit($a2);
   }
   elseif ($a1 == 'image') {
-    $content = imagepicker_image_page($a2);
+    $content = imagepicker_image_page($a2, $a3);
   }
   elseif ($a1 == 'upload_postlet') {
     $content = imagepicker_postlet_page();
@@ -2851,3 +2946,21 @@ function imagepicker_uploadprogress_callback($progress_key='') {
 
   exit;
 }
+
+function imagepicker_get_insert_template() {
+  $file = IMAGEPICKER_PATH . DIRECTORY_SEPARATOR . IMAGEPICKER_INSERT_TEMPLATE;
+  $t = "<div class='imgp_title'>__TITLE__</div>__INSERT__<div class='imgp_desc'>__DESC__</div>";
+  $template = '';
+  if ( file_exists($file) ) {
+    // for php 4
+    $handle = fopen($file, "r");
+    $template = fread($handle, filesize($file));
+    fclose($handle);
+    //$template = file_get_contents($file);
+  }
+  if ($template) {
+    return $template;
+  }
+  return $t;
+}
+

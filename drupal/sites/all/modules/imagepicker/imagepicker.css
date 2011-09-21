@@ -141,3 +141,27 @@
 .imagepicker_upload_link {
   margin: 4px 0 8px 0;
 }
+
+#imgp_presets_control {
+  clear: both;
+}
+
+#imgp_presets_show_control {
+  width: 180px;
+  float: left;
+}
+
+#imgp_presets_link_control {
+  width: 180px;
+  float: left;
+}
+
+#imgp_relbox_control {
+  clear: both;
+}
+
+#imgp_relbox_show_control {
+}
+
+#imgp_relbox_link_control {
+}

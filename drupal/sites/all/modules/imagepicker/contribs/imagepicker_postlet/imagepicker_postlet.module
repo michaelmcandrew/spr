@@ -19,6 +19,18 @@ function imagepicker_postlet_help($path, $arg) {
 }
 
 /**
+ * Implementation of hook_init().
+ */
+function imagepicker_postlet_init() {
+  global $user;
+  if ($user->uid > 0) {
+    module_load_include('inc', 'imagepicker', 'imagepicker.functions');
+    module_load_include('inc', 'imagepicker', 'imagepicker.theme');
+    module_load_include('inc', 'imagepicker', 'imagepicker.form-elements');
+  }
+}
+
+/**
  * Implementation of hook_menu().
  */
 function imagepicker_postlet_menu() {

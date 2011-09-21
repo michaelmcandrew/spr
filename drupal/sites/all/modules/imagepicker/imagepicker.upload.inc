@@ -56,9 +56,6 @@ function imagepicker_upload_form($form_state, $account=FALSE, $admin = FALSE) {
     '#value' => '',
   );
 
-
-#  $max_filesize = ini_get('upload_max_filesize');
-
   for ($ct = 1; $ct <= $max_uploads; $ct++) {
     $form['file_upload_' . $ct] = array(
       '#type' => 'file',
@@ -92,6 +89,14 @@ function imagepicker_upload_form($form_state, $account=FALSE, $admin = FALSE) {
           '#description' => ($max_uploads == 1 ? t('Use watermark on this image.') : t('Use watermark on Image file %ct', array('%ct' => $ct))),
           '#default_value' => ($user->imagepicker_watermark_use ? $user->imagepicker_watermark_use : FALSE),
         );
+        $form['watermark_perc_' . $ct] = array(
+          '#type' => 'textfield',
+          '#title' => t('JPEG quality'),
+          '#size' => 10,
+          '#maxlength' => 3,
+          '#default_value' => ($user->imagepicker_watermark_perc ? $user->imagepicker_watermark_perc : variable_get('image_jpeg_quality', 75)),
+          '#description' => t('Define the image quality for JPEG manipulations. Ranges from 0 to 100. Higher values mean better image quality but bigger files.'),
+        );
       }
       elseif (variable_get('imagepicker_watermark_image', '')) {
         $form['watermark_' . $ct] = array(
@@ -119,7 +124,7 @@ function imagepicker_upload_form($form_state, $account=FALSE, $admin = FALSE) {
       );
     }
   }
-####
+
   // groups
   if (variable_get('imagepicker_groups_enabled', 1) && variable_get('imagepicker_groups_in_upload_enabled', 1)) {
     $grouplist = imagepicker_get_groups( ($admin ? $user : FALSE));
@@ -194,6 +199,11 @@ function imagepicker_upload_form_validate($form, &$form_state) {
           form_set_error($name, t("Scale value should be an integer between 1 and 999 or leave it empty if you don't want to scale your image."));
         }
       }
+      if ($name == 'watermark_perc_' . $ct) {
+        if (! is_numeric($value) || $value < 0 || $value > 100) {
+          form_set_error($name, t("JPEG quality value should be an integer between 0 and 100."));
+        }
+      }
     }
   }
 }
@@ -238,7 +248,6 @@ function imagepicker_upload_form_submit($form, &$form_state) {
           if ($name == 'file_upload_' . $ct && !empty($_FILES['files']['name'][$name])) {
             // save the original and use that from here on
             if ( $imagemoved = imagepicker_copy_uploaded_file($destination, $name) ) {
-              #$file = substr($destination, strrpos($destination, DIRECTORY_SEPARATOR)+1);
               $file = basename($destination);
               $source = $origdir . $file;
               if ($scaleto) {
@@ -257,7 +266,8 @@ function imagepicker_upload_form_submit($form, &$form_state) {
 
               // if watermark is enabled just apply to destdir image, not orig or the thumbs
               if ( isset($form_state['values']['watermark_' . $ct]) && $form_state['values']['watermark_' . $ct] ) {
-                if (! imagepicker_watermark_process($destdir . $file, $user)) {
+                $perc = (isset($form_state['values']['watermark_perc' . $ct]) ? $form_state['values']['watermark_perc' . $ct] : variable_get('image_jpeg_quality', 75));
+                if (! imagepicker_watermark_process($destdir . $file, $user, $perc)) {
                   drupal_set_message(t('Error while watermarking an uploaded image.'), 'error');
                 }
               }
@@ -342,7 +352,7 @@ function imagepicker_copy_uploaded_file(&$destination, $name) {
   if (file_copy($source, $destination, FILE_EXISTS_RENAME)) {
     // Fix bug in drupal's file_copy function which uses '/' instead of
     // DIRECTORY_SEPARATOR for making directories. This causes problems on
-    // Windows mashines.
+    // Windows machines.
     $source = str_replace('/', DIRECTORY_SEPARATOR, $source);
 
     $file = imagepicker_get_uploaded_file_name($destination, $name);

@@ -12,6 +12,7 @@ define('IMAGEPICKER_ORIG_DIR', 'orig');
 define('IMAGEPICKER_WATERMARK_DIR', 'watermarks');
 define('IMAGEPICKER_ADMIN_PATH', 'admin/settings/imagepicker');
 define('IMAGEPICKER_PATH', drupal_get_path('module', 'imagepicker'));
+define('IMAGEPICKER_INSERT_TEMPLATE', 'imagepicker_insert_template.txt');
 // Minimum PHP version for extension
 define('IMAGEPICKER_UPLOAD_STATUS_MIN_PHP', '5.2.1');
 define('IMAGEPICKER_UPLOAD_ID', 'UPLOAD_IDENTIFIER');
@@ -107,6 +108,12 @@ function imagepicker_menu() {
     'access arguments' => array('access content'),
     'type'             => MENU_CALLBACK
   );
+  $items['imagepicker/image/%imagepicker_id/%'] = array(
+    'title'            => 'Imagepicker',
+    'page callback'    => 'imagepicker_box',
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK
+  );
   // uploadprogress callback
   $items['imagepicker/progress'] = array(
     'page callback' => 'imagepicker_uploadprogress_callback',
@@ -127,8 +134,7 @@ function imagepicker_menu() {
     'title'            => 'General',
     'description'      => 'Imagepicker settings.',
     'access callback'  => 'imagepicker_access_admin',
-    'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('imagepicker_settings_form'),
+    'page callback'    => 'imagepicker_settings_page',
     'type'             => MENU_DEFAULT_LOCAL_TASK,
     'file'             => 'imagepicker.admin.inc',
     'weight'           => -10
@@ -326,6 +332,21 @@ function imagepicker_menu() {
     'access callback'  => 'imagepicker_access_admin',
     'type' => MENU_CALLBACK,
   );
+  // orphans
+  $items[IMAGEPICKER_ADMIN_PATH . '/orphans'] = array(
+    'title'            => 'Orphaned images',
+    'description'      => 'Manage orphaned images.',
+    'page callback'    => 'imagepicker_admin_orphans',
+    'access callback'  => 'imagepicker_access_admin',
+    'type'             => MENU_CALLBACK,
+    'file'             => 'imagepicker.admin.inc',
+  );
+  $items[IMAGEPICKER_ADMIN_PATH .'/orphans/autocomplete'] = array(
+    'access callback'  => 'imagepicker_access_admin',
+    'page callback'    => 'imagepicker_user_autocomplete',
+    'type'             => MENU_CALLBACK,
+    'file'             => 'imagepicker.admin.inc'
+  );
   // My imagepicker
   $items['user/%imagepicker_uid/imagepicker'] = array(
     'title'            => 'My imagepicker',
@@ -416,7 +437,6 @@ function imagepicker_menu() {
     'access callback'  => 'imagepicker_access_user_pages',
     'type' => MENU_CALLBACK,
   );
-
   return $items;
 }
 
@@ -523,7 +543,7 @@ function imagepicker_access_use_group() {
  */
 function imagepicker_block($op = 'list', $delta = 0, $edit = array()) {
 
-  if(variable_get('imagepicker_galleryblocks_enabled', 0) && module_exists('colorbox')) {
+  if (variable_get('imagepicker_galleryblocks_enabled', 0) && module_exists('colorbox')) {
     $howmany = variable_get('imagepicker_galleryblocks_howmany', 1);
     switch ($op) {
       case 'list':
@@ -616,6 +636,7 @@ function imagepicker_block_form($i) {
     '#default_value' => variable_get('imagepicker_galleryblocks_link_'. $i, t('Photo Gallery !i', array('!i' => $i))),
     '#required' => TRUE,
     '#description' => t('Set the link text for this block. Can contain html.'),
+    '#maxlength' => 255,
   );
   $form['imagepicker_galleryblocks_group_'. $i] = array(
     '#type' => 'select',
@@ -791,12 +812,12 @@ function imagepicker_get_user_group($gid, $obj=TRUE) {
 // for blocks
 function imagepicker_get_all_groups($override = NULL) {
   $public = FALSE;
-   if ($override == NULL) {
+  if ($override == NULL) {
     $public = variable_get('imagepicker_galleryblocks_public', 0);
-   }
-   else {
+  }
+  else {
     $public = $override;
-   }
+  }
   $data = FALSE;
   $sql = "SELECT gid, group_name FROM {imagepicker_user_groups}";
   if ($public) {
@@ -881,7 +902,7 @@ function imagepicker_get_userpath($userdir, $dirsep = '/') {
   return $path;
 }
 
-function imagepicker_get_image_path($img, $type = 'browser', $public = FALSE) {
+function imagepicker_get_image_path($img, $type = 'browser', $public = FALSE, $preset = FALSE) {
   $userdir = is_array($public) ? $public : TRUE;
   $imgbasedir = imagepicker_get_path(FALSE, $userdir);
   $found = FALSE;
@@ -940,19 +961,39 @@ function imagepicker_get_image_path($img, $type = 'browser', $public = FALSE) {
   }
   if ($found) {
     if ($suffix) {
-      if (variable_get('imagepicker_use_full_url', 0) || variable_get('file_downloads', '1') == 2) {
-        $imgpath = file_create_url(IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $suffix . '/' . $img_name);
+      if (variable_get('imagepicker_use_full_url', 0) || variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PRIVATE) {
+        if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0) && $preset && $suffix == IMAGEPICKER_THUMBS_DIR) {
+          $imgpath = imagecache_create_url('__PRESET__', IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $suffix . '/' . $img_name);
+        }
+        else {
+          $imgpath = file_create_url(IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $suffix . '/' . $img_name);
+        }
       }
       else {
-        $imgpath = imagepicker_get_path(TRUE, $userdir) . $suffix . '/' . $img_name;
+        if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0) && $preset && $suffix == IMAGEPICKER_THUMBS_DIR) {
+          $imgpath = base_path() . imagecache_create_path('__PRESET__', IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $suffix . '/' . $img_name);
+        }
+        else {
+          $imgpath = imagepicker_get_path(TRUE, $userdir) . $suffix . '/' . $img_name;
+        }
       }
     }
     else {
-      if (variable_get('imagepicker_use_full_url', 0) || variable_get('file_downloads', '1') == 2) {
-        $imgpath = file_create_url(IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $img_name);
+      if (variable_get('imagepicker_use_full_url', 0) || variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PRIVATE) {
+        if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0) && $preset) {
+          $imgpath = imagecache_create_url('__PRESET__', IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $img_name);
+        }
+        else {
+          $imgpath = file_create_url(IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $img_name);
+        }
       }
       else {
-        $imgpath = imagepicker_get_path(TRUE, $userdir) . $img_name;
+        if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0) && $preset) {
+          $imgpath = base_path() . imagecache_create_path('__PRESET__', IMAGEPICKER_FILES_DIR . '/' . imagepicker_get_userpath($userdir) . $img_name);
+        }
+        else {
+          $imgpath = imagepicker_get_path(TRUE, $userdir) . $img_name;
+        }
       }
     }
   }

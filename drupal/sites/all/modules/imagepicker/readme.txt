@@ -99,3 +99,10 @@ There is now an external hook in the upload submit function,
 called 'imagepicker_upload_extra'. So other modules can do things to images.
 It passes the new image id using the Drupal function module_invoke_all().
 
+	Templating
+To tweak Imagepicker to suit your needs, copy imagepicker.tpl.php over to your
+theme and modify it there. You can also copy any function from
+imagepicker.theme.inc to your theme's template.php, renaming accordingly.
+To change the insert layout, copy imagepicker_insert_template.txt.example
+to imagepicker_insert_template.txt in the same directory and modify it to suit.
+

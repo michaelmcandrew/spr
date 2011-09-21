@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.1.4.2 2009/06/27 11:45:19 fuerst Exp $
 
 Overview
 --------

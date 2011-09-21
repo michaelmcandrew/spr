@@ -23,7 +23,11 @@ $(document).ready(function() {
 
   Drupal.ckeditorUiColorOnChange = function() {
     var color = CKEDITOR.instances["edit-uicolor-textarea"].getUiColor();
-    if ($("#edit-uicolor").val() == "custom" && typeof(color) != "undefined") {
+    $("#edit-uicolor").val("custom");
+    if (typeof(color) != "undefined") {
+      if (color == "default"){
+        $("#edit-uicolor").val("default");
+      }
       $('#edit-uicolor-user').val(color);
     }
   };

@@ -30,7 +30,7 @@ function imagepicker_scale_image($source, $destination, $maxsize) {
  * Adapted from watermark module.
  *
  */
-function imagepicker_watermark_process($image_path, $account=FALSE) {
+function imagepicker_watermark_process($image_path, $account=FALSE, $perc = '') {
   if ($account) {
     $user = $account;
   }
@@ -163,6 +163,7 @@ function imagepicker_watermark_process($image_path, $account=FALSE) {
   // image create function according to original image type
   $img_create_func = 'image'. $im_info['type'];
 
+  $perc = (empty($perc) ? variable_get('image_jpeg_quality', 75) : $perc);
   // scaling on - resampling image
   if ($scaling && !imagecopyresampled($im, $wm, $dest_x, $dest_y, 0, 0, $wm_x, $wm_y, $wm_info['width'], $wm_info['height'])) {
       drupal_set_message(t('Failed to merge image with watermark.'), 'error');
@@ -174,11 +175,11 @@ function imagepicker_watermark_process($image_path, $account=FALSE) {
     watchdog('imagepicker', 'Failed to merge image with watermark.', array(), WATCHDOG_ERROR);
   }
   // create an image of the same type!
-  elseif ($im_info['type'] == 'jpeg' && !$img_create_func($im, $image_path, variable_get('image_jpeg_quality', 75))) {
+  elseif ($im_info['type'] == 'jpeg' && !$img_create_func($im, $image_path, $perc)) {
     drupal_set_message(t('Failed to save merged image.'), 'error');
     watchdog('imagepicker', 'Failed to save merged image.', array(), WATCHDOG_ERROR);
   }
-  elseif (!$img_create_func($im, $image_path)) {
+  elseif ($im_info['type'] != 'jpeg' && !$img_create_func($im, $image_path)) {
     drupal_set_message(t('Failed to save merged image.'), 'error');
     watchdog('imagepicker', 'Failed to save merged image.', array(), WATCHDOG_ERROR);
   }

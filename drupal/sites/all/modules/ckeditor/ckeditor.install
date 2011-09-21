@@ -353,12 +353,12 @@ function _ckeditor_requirements_getinstalledversion() {
  */
 function _ckeditor_requirements_ckfinder_config_check($profile_name) {
   module_load_include('module', 'ckeditor');
-  $module_drupal_path = drupal_get_path('module', 'ckeditor');
-  $config_path = $module_drupal_path .'/ckfinder/config.php';
+  $lib_path = drupal_get_path('module', 'ckeditor');
+  $config_path = $lib_path .'/ckfinder/config.php';
 
   if (!file_exists($config_path)) {
     return t('!ckfinder is not installed correctly: !config not found. Make sure that you have uploaded all files or didn\'t remove that file accidentally.', array(
-      '!config' => $module_drupal_path .'/ckfinder/config.php',
+      '!config' => $lib_path .'/ckfinder/config.php',
       '!ckfinder' => '<a href="http://ckfinder.com">CKFinder</a>'
     ));
   }
@@ -463,6 +463,47 @@ function ckeditor_update_6100() {
   $ret[] = update_sql( "UPDATE {ckeditor_role} SET name = REPLACE(name,'/','')");
   $ret[] = update_sql( "UPDATE {ckeditor_settings} SET name = REPLACE(name,'+','')");
   $ret[] = update_sql( "UPDATE {ckeditor_settings} SET name = REPLACE(name,'/','')");
+  
+  return $ret;
+}
+
+/**
+ *	Implementation of hook_update_N().
+ *
+ *	Fix static paths to plugin files
+ */
+ 
+function ckeditor_update_6101() {
+  module_load_include('inc', 'ckeditor', 'includes/ckeditor.lib');
+    
+  $render = array();
+  $render["%base_path%"] = base_path();
+  $render["%editor_path%"] = ckeditor_path(TRUE) . '/';
+  $render["%ckeditor_path%"] = drupal_get_path('module', 'ckeditor') . '/';
+  $render["%plugin_dir%"] = $render["%ckeditor_path%"] . 'plugins/';
+  $render["%plugin_dir_extra%"] = ckeditor_plugins_path(TRUE) . '/';
+  
+  if ($render["%plugin_dir%"] == $render["%plugin_dir_extra%"]) {
+      unset($render["%plugin_dir_extra%"]);
+  }
+  
+  $ret = array();
+  
+  $result = db_query("SELECT * FROM {ckeditor_settings} WHERE name <> 'CKEditor Global Profile'");
+    
+  while (($profile = db_fetch_object($result))) {
+    $name = $profile->name;
+    $settings = unserialize($profile->settings);
+        
+    foreach ((array) $settings['loadPlugins'] as $i => $plugin) {
+      $settings['loadPlugins'][$i]['path'] = str_replace(array_values($render), array_keys($render), $plugin['path']);
+    }
+        
+    $settings = serialize($settings);
+    
+    $return = db_query( "UPDATE {ckeditor_settings} SET settings = '%s' WHERE name = '%s'", $settings, $name);
+    $ret[] = array('success' => $return !== FALSE, 'query' => "UPDATE PROFILE - {$name}");
+  }
   
   return $ret;
 }

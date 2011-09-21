@@ -62,7 +62,7 @@ function ckeditor_help_delegate($path, $arg) {
         '<p>'. t('More information about the editor is located at the !ckeditorlink. A small !userguidelink is available.',
           array(
             '!ckeditorlink' => l(t('CKEditor homepage'), 'http://ckeditor.com'),
-            '!userguidelink' => l(t('user guide'), 'http://docs.cksource.com/FCKeditor_2.x/Users_Guide/Quick_Reference'),
+            '!userguidelink' => l(t('user guide'), 'http://docs.cksource.com/CKEditor_3.x/Users_Guide'),
           )) .'</p>'.
         '<p>'. t('Profiles can be defined based on user roles. A CKEditor profile can define which pages receive this CKEditor capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. It is possible also to define the Global Profile that will hold values that will be appended to all other profiles.') .'</p>'.
         '<p>'. t('Lastly, only users with the %accesspermission !permissionlink will be able to use CKEditor.',
@@ -80,7 +80,7 @@ function ckeditor_help_delegate($path, $arg) {
       $output .= '<p>'. t('More information about the editor is located at the !ckeditorlink. A small !userguidelink is available.',
           array(
             '!ckeditorlink' => l(t('CKEditor homepage'), 'http://ckeditor.com'),
-            '!userguidelink' => l(t('user guide'), 'http://docs.cksource.com/FCKeditor_2.x/Users_Guide/Quick_Reference'),
+            '!userguidelink' => l(t('user guide'), 'http://docs.cksource.com/CKEditor_3.x/Users_Guide'),
           )) .'</p>'.
       $output .= '<h3>'. t('Configuration') .'</h3>';
       $output .= '<ol>';

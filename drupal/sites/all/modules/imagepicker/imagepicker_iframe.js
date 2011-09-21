@@ -37,16 +37,22 @@ if (Drupal.jsEnabled) {
       var imgpImageElement;
       var imgpImageStyle;
       var imgpImageCss = 'class="imgp_img"';
+      var imgpLinkRel = '';
+      var imgpLinkHide = '';
       var imgpInsertion;
       var imgpImageAlt = Drupal.settings.imagepicker_iframe.imgpImageAlt;
       var imgpImageTitle = Drupal.settings.imagepicker_iframe.imgpImageTitle;
       var imgpImageDesc = Drupal.settings.imagepicker_iframe.imgpImageDesc;
       var imgpFileLink = Drupal.settings.imagepicker_iframe.imgpFileLink;
+      var imgpPresetFileLink = Drupal.settings.imagepicker_iframe.imgpPresetFileLink;
       var imgpThumbLink = Drupal.settings.imagepicker_iframe.imgpThumbLink;
+      var imgpPresetThumbLink = Drupal.settings.imagepicker_iframe.imgpPresetThumbLink;
       var imgpPageLink = Drupal.settings.imagepicker_iframe.imgpPageLink;
+      var imgpTemplate = Drupal.settings.imagepicker_iframe.imgpTemplate;
       var isFCKeditor = Drupal.settings.imagepicker_iframe.isFCKeditor;
       var isWysiwyg = Drupal.settings.imagepicker_iframe.isWysiwyg;
       var use_cssbox = Drupal.settings.imagepicker_iframe.use_cssbox;
+      var use_relbox = Drupal.settings.imagepicker_iframe.use_relbox;
       var default_align_show = Drupal.settings.imagepicker_iframe.default_align_show;
       var lightbox2_insert = Drupal.settings.imagepicker_iframe.lightbox2_insert;
       var fleft = Drupal.settings.imagepicker_iframe.default_fleft;
@@ -56,21 +62,31 @@ if (Drupal.jsEnabled) {
 
       // Get show value
       for (i = 0; i < imgpForm.show.length; i++) {
-        if(imgpForm.show[i].checked) {
+        if (imgpForm.show[i].checked) {
           imgpShow = imgpForm.show[i].value;
         }
       }
       // Get link value
       for (i = 0; i < imgpForm.link.length; i++) {
-        if(imgpForm.link[i].checked) {
+        if (imgpForm.link[i].checked) {
           imgpLink = imgpForm.link[i].value;
         }
       }
-
+      // cssbox
       if (use_cssbox) {
         // get css value
-        if(imgpForm.cssbox.value) {
+        if (imgpForm.cssbox.value) {
           imgpImageCss = imgpForm.cssbox.value;
+        }
+      }
+      // relbox
+      if (use_relbox) {
+        // get rel value
+        if (imgpForm.relbox.value) {
+          imgpLinkRel = "rel='" + imgpForm.relbox.value + "'";
+          if (imgpForm.linkhide.checked) {
+            imgpLinkHide = "js-hide";
+          }
         }
       }
       // alignment settings
@@ -98,17 +114,40 @@ if (Drupal.jsEnabled) {
       else {
         imgpImageStyle = '';
       }
+      // imagecache
+      var presetFileLink = false;
+      if (imgpForm.presets_show) {
+        if (imgpForm.presets_show.value && imgpPresetFileLink) {
+          presetFileLink = imgpPresetFileLink.replace('__PRESET__', imgpForm.presets_show.value);
+        }
+      }
+      var presetThumbLink = false;
+      if (imgpForm.presets_show) {
+        if (imgpForm.presets_show.value && imgpPresetThumbLink) {
+          presetThumbLink = imgpPresetThumbLink.replace('__PRESET__', imgpForm.presets_show.value);
+        }
+      }
 
       switch (imgpShow) {
         case 'full':
-          imgpImagePath = imgpFileLink;
+          if (presetFileLink) {
+            imgpImagePath = presetFileLink;
+          }
+          else {
+            imgpImagePath = imgpFileLink;
+          }
           break;
         case 'title':
           imgpImagePath = '';
           break;
         case 'thumb':
         default:
-          imgpImagePath = imgpThumbLink;
+          if (presetThumbLink) {
+            imgpImagePath = presetThumbLink;
+          }
+          else {
+            imgpImagePath = imgpThumbLink;
+          }
           break;
       }
 
@@ -118,6 +157,14 @@ if (Drupal.jsEnabled) {
       }
       else {
         imgpImageElement = "<span>" + imgpImageTitle + "</span>";
+      }
+
+      // imagecache
+      if (imgpForm.presets_link) {
+        if (imgpForm.presets_link.value) {
+          imgpFileLink = imgpPresetFileLink.replace('__PRESET__', imgpForm.presets_link.value);
+          imgpPageLink = imgpPageLink + '/' + imgpForm.presets_link.value;
+        }
       }
 
       // Create a link HTML string
@@ -135,7 +182,7 @@ if (Drupal.jsEnabled) {
           imgpInsertion = "<a href='" + imgpFileLink + "' title='" + imgpImageTitle + "' class='thickbox' >" + imgpImageElement + "</a>";
           break;
         case 'colorbox':
-          imgpInsertion = "<a href='" + imgpFileLink + "' title='" + imgpImageTitle + "' class='colorbox' >" + imgpImageElement + "</a>";
+          imgpInsertion = "<a href='" + imgpFileLink + "' title='" + imgpImageTitle + "' class='colorbox " + imgpLinkHide + "' " + imgpLinkRel + ">" + imgpImageElement + "</a>";
           break;
         case 'file':
         default:
@@ -144,7 +191,9 @@ if (Drupal.jsEnabled) {
       }
       // wrap title and description if requested
       if (imgpForm.desc.checked) {
-        imgpInsertion = "<div class='imgp_title'>" + imgpImageTitle + "</div>" + imgpInsertion + "<div class='imgp_desc'>" + imgpImageDesc + "</div>";
+        imgpTemplate = imgpTemplate.replace("__TITLE__", imgpImageTitle);
+        imgpTemplate = imgpTemplate.replace("__INSERT__", imgpInsertion);
+        imgpInsertion = imgpTemplate.replace("__DESC__", imgpImageDesc);
       }
 
       // Get the parent window of imagepicker iframe

@@ -50,7 +50,9 @@ $_ckeditor_ids = array();
 function ckeditor_form_alter(&$form, $form_state, $form_id) {
   // [#659278], [#666560], [#666616]
   if (substr($form_id, -10) == '_node_form') {
-    $nodetype = $form['type']['#value'];
+    if (!empty($form['#node']->language)) {
+        $form['body_field']['body']['#scayt_language'] = _ckeditor_scayt_langcode($form['#node']->language);
+    }
     if (!empty($form['body_field']['teaser_js']['#teaser'])) {
       $setting['ckeditor']['teaser'] = $form['body_field']['teaser_js']['#teaser'];
       drupal_add_js($setting, 'setting');
@@ -258,6 +260,15 @@ function ckeditor_menu() {
     'page callback' => 'ckeditor_filter_xss',
     'file' => 'includes/ckeditor.page.inc',
     'access arguments' => array('access ckeditor'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['ckeditor/disable/wysiwyg'] = array(
+    'title' => 'Disable WYSIWYG module',
+    'description' => 'Disable WYSIWYG module.',
+    'page callback' => 'ckeditor_disable_wysiwyg',
+    'file' => 'includes/ckeditor.admin.inc',
+    'access arguments' => array('administer ckeditor'),
     'type' => MENU_CALLBACK,
   );
 
@@ -531,7 +542,7 @@ function ckeditor_process_textarea($element) {
         $content .= $element['#value'];
       }
       $wysiwyg_link = '';
-      $wysiwyg_link .= "<a class=\"ckeditor_links\" style=\"display:none\" href=\"javascript:Drupal.ckeditorToggle('{$textarea_id}','". str_replace("'", "\\'", t('Switch to plain text editor')) ."','". str_replace("'", "\\'", t('Switch to rich text editor')) ."',". $xss_check .");\" id=\"switch_{$textarea_id}\">";
+      $wysiwyg_link .= "<a class=\"ckeditor_links\" style=\"display:none\" href=\"javascript:void(0);\" onclick=\"javascript:Drupal.ckeditorToggle('{$textarea_id}','". str_replace("'", "\\'", t('Switch to plain text editor')) ."','". str_replace("'", "\\'", t('Switch to rich text editor')) ."',". $xss_check .");\" id=\"switch_{$textarea_id}\">";
       $wysiwyg_link .= $ckeditor_on ? t('Switch to plain text editor') : t('Switch to rich text editor');
       $wysiwyg_link .= '</a>';
 
@@ -542,9 +553,13 @@ function ckeditor_process_textarea($element) {
     $module_drupal_path = drupal_get_path('module', 'ckeditor');
     $module_full_path   = $host . $module_drupal_path;
     $editor_path        = ckeditor_path(FALSE);
+    $lib_path           = dirname($editor_path);
     $editor_local_path  = ckeditor_path(TRUE);
+    $lib_local_path     = dirname($editor_local_path);
     // get the default drupal files path
     $files_path         = $host . file_directory_path();
+
+    drupal_set_html_head('<script type="text/javascript">window.CKEDITOR_BASEPATH = "' . $editor_path . '/";</script>');
 
     // sensible default for small toolbars
     if (isset($element['#rows'])) {
@@ -558,43 +573,20 @@ function ckeditor_process_textarea($element) {
       /* In D6 drupal_add_js() can't add external JS, in D7 use drupal_add_js(...,'external') */
       if ( $conf['popup'] != 't' ) {
         if (isset($conf['ckeditor_load_method'])) {
-          drupal_set_html_head('<script type="text/javascript" src="'. $editor_path . '/' . $conf['ckeditor_load_method'] . '?I"></script>');
+          drupal_add_js($editor_local_path . '/' . $conf['ckeditor_load_method'], 'module', 'header', FALSE, TRUE, FALSE);
           if ($conf['ckeditor_load_method'] == 'ckeditor_basic.js') {
-            drupal_set_html_head('<script type="text/javascript">CKEDITOR.loadFullCoreTimeout = ' . $conf['ckeditor_load_time_out'] . ';</script>');
+            drupal_add_js('CKEDITOR.loadFullCoreTimeout = ' . $conf['ckeditor_load_time_out'] . ';', 'inline');
             drupal_add_js(array('ckeditor' => array('load_timeout' => TRUE)), 'setting');
           }
         }
         else {
-          drupal_set_html_head('<script type="text/javascript" src="'. $editor_path .'/ckeditor.js?I"></script>');
+          drupal_add_js($editor_local_path . '/ckeditor.js?I', 'module', 'header', FALSE, TRUE, FALSE);
         }
       }
       else {
-        drupal_set_html_head('<script type="text/javascript" src="'. $editor_path .'/ckeditor_basic.js?I"></script>');
+        drupal_add_js($editor_local_path . '/ckeditor_basic.js?I', 'module', 'header', FALSE, TRUE, FALSE);
       }
-      drupal_add_js(array('ckeditor' => array('module_path' => $module_full_path)), 'setting');
-      if ($conf['popup'] == 't') {
-        drupal_add_js(array('ckeditor' => array('editor_path' => $editor_path)), 'setting');
-      }
-      if (module_exists('paging')) {
-        drupal_add_js(array('ckeditor' => array('pagebreak' => TRUE)), 'setting');
-      }
-      if (module_exists('linktocontent_node')) {
-        drupal_add_js(array('ckeditor' => array('linktocontent_node' => TRUE)), 'setting');
-      }
-      if (module_exists('linktocontent_menu')) {
-        drupal_add_js(array('ckeditor' => array('linktocontent_menu' => TRUE)), 'setting');
-      }
-      if (module_exists('pagebreak')) {
-        drupal_add_js(array('ckeditor' => array('pagebreak' => TRUE)), 'setting');
-      }
-      if (function_exists('linktocontent_node_menu')) {
-        if (!empty($global_conf['linktoc']) && $global_conf['linktoc']!='p') {
-          drupal_add_js(array('ckeditor' => array('linktocontent_node_path_filter' => TRUE)), 'setting');
-          if ($global_conf['linktoc'] == 'pn') {
-            drupal_add_js(array('ckeditor' => array('linktocontent_node_select_type' => TRUE)), 'setting');
-          }
-        }
-      }
+      drupal_add_js(array('ckeditor' => array('module_path' => $module_full_path, 'editor_path' => $editor_path)), 'setting');
       $is_running = TRUE;
     }
 
@@ -642,6 +634,14 @@ function ckeditor_process_textarea($element) {
           break;
       }
     }
+    if (isset($conf['loadPlugins'])) {
+      $settings[$textarea_id]['loadPlugins'] = ckeditor_plugins_render($conf['loadPlugins']);
+    }
+    if (isset($conf['html_entities']) && $conf['html_entities'] == 'f') {
+      $settings[$textarea_id]['entities'] = FALSE;
+      $settings[$textarea_id]['entities_greek'] = FALSE;
+      $settings[$textarea_id]['entities_latin'] = FALSE;
+    }
     if (isset($conf['scayt_autoStartup']) && $conf['scayt_autoStartup'] == 't') {
       $settings[$textarea_id]['scayt_autoStartup'] = TRUE;
     }
@@ -650,6 +650,9 @@ function ckeditor_process_textarea($element) {
     }
     if ($conf['auto_lang']=="f") {
       $settings[$textarea_id]['language'] = $conf['lang'];
+    }
+    if (isset($element['#scayt_language'])) {
+      $settings[$textarea_id]['scayt_sLang'] = $element['#scayt_language'];
     }
     if (isset($conf['forcePasteAsPlainText']) && $conf['forcePasteAsPlainText'] == 't') {
       $settings[$textarea_id]['forcePasteAsPlainText'] = TRUE;
@@ -865,19 +868,18 @@ function ckeditor_process_textarea($element) {
     }
 
     if (!empty($conf['js_conf'])) {
-      $lines = preg_split("/[\n\r]+/", $conf['js_conf']);
-      foreach ($lines as $l) {
-        //parsing lines with custom configuration
-        preg_match_all('#(config\.)?(\w+)[ ]*=(.+)[;]?#is', $l, $matches);
-        if (!empty($matches[0])) {
-          $value=trim($matches[3][0], " ;'\"\n\r\t\0\x0B");
+      //parsing lines with custom configuration
+      preg_match_all('#config\.(\w+)[\s]*=[\s]*(.+?);[\s]*(?=config\.|$)#is', preg_replace("/[\n\r]+/", "", $conf['js_conf']), $matches);
+      foreach ($matches[2] as $i => $match) {
+        if (!empty($match)) {
+          $value=trim($match, " ;\n\r\t\0\x0B");
           if ( strcasecmp($value, 'true') == 0 ) {
             $value=TRUE;
           }
           if ( strcasecmp($value, 'false') == 0 ) {
             $value=FALSE;
           }
-          $settings[$textarea_id][$matches[2][0]]=$value;
+          $settings[$textarea_id]["js_conf"][$matches[1][$i]]=$value;
         }
       }
     }
@@ -926,6 +928,11 @@ function ckeditor_process_textarea($element) {
             foreach ($theme_info->stylesheets as $type => $stylesheets) {
               if ($type != "print") {
                 foreach ($stylesheets as $name => $path) {
+                  // Checks if less module exists...
+                  if (strstr($path, '.less') && module_exists('less')) {
+                    $path = 'sites/default/files/less/' . $path; // append the less file path
+                    $path = str_replace('.less', '', $path); // remove the .less
+                  }
                   if (file_exists($path)) {
                     $css_files[$name] = $host . $path . $query_string;
                     // Grab rtl stylesheets ( will get rtl css files when thay are named with suffix "-rtl.css" (ex: fusion baased themes) )
@@ -1079,6 +1086,7 @@ function ckeditor_path($local = FALSE, $refresh = FALSE) {
 
   if ($refresh || (!$cke_path)) {
     $mod_path = drupal_get_path('module', 'ckeditor');
+    $lib_path = 'sites/all/libraries';
     $global_profile = ckeditor_profile_load('CKEditor Global Profile', $refresh);
 
     //default: path to ckeditor subdirectory in the ckeditor module directory (starting from the document root)
@@ -1088,13 +1096,13 @@ function ckeditor_path($local = FALSE, $refresh = FALSE) {
     //default: path to ckeditor subdirectory in the ckeditor module directory (relative to index.php)
     //e.g.: sites/all/modules/ckeditor/ckeditor
     $cke_local_path = $mod_path .'/ckeditor';
-
+    
     if ($global_profile) {
       $gs = $global_profile->settings;
 
       if (isset($gs['ckeditor_path'])) {
         $tmp_path = $gs['ckeditor_path'];
-        $tmp_path = strtr($tmp_path, array("%b" => base_path(), "%m" => base_path() . $mod_path));
+        $tmp_path = strtr($tmp_path, array("%b" => base_path(), "%m" => base_path() . $mod_path, "%l" => base_path() . $lib_path));
         $tmp_path   = str_replace('\\', '/', $tmp_path);
         $tmp_path   = str_replace('//', '/', $tmp_path);
         $tmp_path = rtrim($tmp_path, ' \/');
@@ -1110,6 +1118,9 @@ function ckeditor_path($local = FALSE, $refresh = FALSE) {
           }
           if (FALSE !== strpos($gs['ckeditor_path'], "%b")) {
             $gs['ckeditor_local_path'] = strtr($gs['ckeditor_path'], array("%b" => "."));
+          }
+          if (FALSE !== strpos($gs['ckeditor_path'], "%l")) {
+            $gs['ckeditor_local_path'] = strtr($gs['ckeditor_path'], array("%l" => "sites/all/libraries"));
           }
         }
       }
@@ -1136,6 +1147,80 @@ function ckeditor_path($local = FALSE, $refresh = FALSE) {
   }
 }
 
+/**
+ * Read CKEditor plugins path from Global profile
+ *
+ * @return
+ *   path to CKEditor plugins folder
+ */
+function ckeditor_plugins_path($local = FALSE, $refresh = FALSE) {
+  static $cke_plugins_path;
+  static $cke_plugins_local_path;
+
+  if ($refresh || (!$cke_plugins_path)) {
+    $mod_path = drupal_get_path('module', 'ckeditor');
+    $lib_path = 'sites/all/libraries';
+    $global_profile = ckeditor_profile_load('CKEditor Global Profile', $refresh);
+
+    //default: path to plugins subdirectory in the ckeditor module directory (starting from the document root)
+    //e.g. for http://example.com/drupal it will be /drupal/sites/all/modules/ckeditor/plugins
+    $cke_plugins_path = base_path() . $mod_path .'/plugins';
+
+    //default: path to plugins subdirectory in the ckeditor module directory (relative to index.php)
+    //e.g.: sites/all/modules/ckeditor/plugins
+    $cke_plugins_local_path = $mod_path .'/plugins';
+
+    if ($global_profile) {
+      $gs = $global_profile->settings;
+
+      if (isset($gs['ckeditor_plugins_path'])) {
+        $tmp_path = $gs['ckeditor_plugins_path'];
+        $tmp_path = strtr($tmp_path, array("%b" => base_path(), "%m" => base_path() . $mod_path, "%l" => base_path() . $lib_path));
+        $tmp_path   = str_replace('\\', '/', $tmp_path);
+        $tmp_path   = str_replace('//', '/', $tmp_path);
+        $tmp_path = rtrim($tmp_path, ' \/');
+        if (substr($tmp_path, 0, 1) != '/') {
+          $tmp_path = '/'. $tmp_path; //starts with '/'
+        }
+        $cke_plugins_path = $tmp_path;
+
+        if (empty($gs['ckeditor_plugins_local_path'])) {
+          //fortunately wildcards are used, we can easily get the right server path
+          if (FALSE !== strpos($gs['ckeditor_plugins_path'], "%m")) {
+            $gs['ckeditor_plugins_local_path'] = strtr($gs['ckeditor_plugins_path'], array("%m" => $mod_path));
+          }
+          if (FALSE !== strpos($gs['ckeditor_plugins_path'], "%b")) {
+            $gs['ckeditor_plugins_local_path'] = strtr($gs['ckeditor_plugins_path'], array("%b" => "."));
+          }
+          if (FALSE !== strpos($gs['ckeditor_plugins_path'], "%l")) {
+            $gs['ckeditor_plugins_local_path'] = strtr($gs['ckeditor_plugins_path'], array("%l" => "sites/all/libraries"));
+          }
+        }
+      }
+
+      //ckeditor_plugins_path is defined, but wildcards are not used, we need to try to find out where is
+      //the document root located and append ckeditor_plugins_path to it.
+      if (!is_null($gs['ckeditor_plugins_local_path']) && !empty($gs['ckeditor_plugins_local_path'])) {
+        $cke_plugins_local_path = $gs['ckeditor_plugins_local_path'];
+      }
+      elseif (!empty($gs['ckeditor_plugins_path'])) {
+        module_load_include('inc', 'ckeditor', 'includes/ckeditor.lib');
+        $local_path = ckeditor_resolve_url( $gs['ckeditor_plugins_path'] ."/" );
+        if (FALSE !== $local_path) {
+          $cke_plugins_local_path = $local_path;
+        }
+      }
+    }
+  }
+
+  if ($local) {
+    return $cke_plugins_local_path;
+  }
+  else {
+    return $cke_plugins_path;
+  }
+}
+
 function ckeditor_get_nodetype($get_q) {
   static $nodetype;
 
@@ -1159,7 +1244,7 @@ function ckeditor_get_nodetype($get_q) {
       }
     }
   }
-
+  $nodetype = str_replace('-', '_', $nodetype);
   return $nodetype;
 }
 
@@ -1177,4 +1262,34 @@ function ckeditor_features_api() {
       'file' => drupal_get_path('module', 'ckeditor') .'/includes/ckeditor.features.inc',
     )
   );
+}
+
+/**
+ * Get the language locale code supported by Scayt for the specified language
+ */
+function _ckeditor_scayt_langcode($lang) {
+  $scayt_langs = array(
+    'en' => 'en_US',
+    'es' => 'es_ES',
+    'fr' => 'fr_FR',
+    'de' => 'de_DE',
+    'it' => 'it_IT',
+    'el' => 'el_EL',
+    'pt' => 'pt_PT',
+    'da' => 'da_DA',
+    'sv' => 'sv_SE',
+    'nl' => 'nl_NL',
+    'nb' => 'no_NO',
+    'fi' => 'fi_FI',
+  );
+  if (array_key_exists($lang, $scayt_langs)) {
+    return $scayt_langs[$lang];
+  }
+
+  $default = language_default('language');
+  if (array_key_exists($default, $scayt_langs)) {
+    return $scayt_langs[$default];
+  }
+
+  return 'en_US';
 }

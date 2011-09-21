@@ -250,6 +250,12 @@ function imagepicker_theme() {
         'form' => NULL,
       ),
     ),
+    'imagepicker_admin_orphans_form' => array(
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+
   );
 }
 
@@ -279,17 +285,27 @@ function theme_imagepicker_iframe($content, $img='', $public=FALSE) {
   drupal_add_css(IMAGEPICKER_PATH .'/imagepicker.css');
   if ($img) {
     global $user;
+    $presetfilelink = '';
+    $presetthumblink = '';
+    if (module_exists('imagecache') && variable_get('imagepicker_imagecache_enable', 0)) {
+      $presetfilelink = imagepicker_get_image_path($img, 'full', ($public ? array('name' => $img['name'], 'uid' => $img['uid'] ) : FALSE), TRUE);
+      $presetthumblink = imagepicker_get_image_path($img, 'thumb', ($public ? array('name' => $img['name'], 'uid' => $img['uid'] ) : FALSE), TRUE);
+    }
     $settings = array(
       'imagepicker_iframe' => array(
         'imgpImageAlt' => ($img['img_title'] ? addslashes(check_plain($img['img_title'])) : t('Image') ),
         'imgpImageTitle' => ($img['img_title'] ? addslashes(check_plain($img['img_title'])) : ''),
         'imgpImageDesc' => preg_replace("/(\n|\r)/", '', nl2br($img['img_description'])),
-        'imgpFileLink' => imagepicker_get_image_path($img, 'full', ($public ? array('name' => $img['name'], 'uid' => $img['uid'] ) : FALSE) ),
+        'imgpFileLink' => imagepicker_get_image_path($img, 'full', ($public ? array('name' => $img['name'], 'uid' => $img['uid'] ) : FALSE)),
+        'imgpPresetFileLink' => $presetfilelink,
         'imgpThumbLink' => imagepicker_get_image_path($img, 'thumb', ($public ? array('name' => $img['name'], 'uid' => $img['uid'] ) : FALSE)),
+        'imgpPresetThumbLink' => $presetthumblink,
         'imgpPageLink' => url('imagepicker/image/'. $img['img_id']),
+        'imgpTemplate' => imagepicker_get_insert_template(),
         'isFCKeditor' => (module_exists('fckeditor') ? 'yes' : 'no' ),
         'isWysiwyg' => (module_exists('wysiwyg') ? 'yes' : 'no' ),
         'use_cssbox' => ((variable_get('imagepicker_use_cssbox', 0) && ! isset($user->imagepicker_use_cssbox) ) ? 1 : (variable_get('imagepicker_use_cssbox', 0) && isset($user->imagepicker_use_cssbox) && $user->imagepicker_use_cssbox) ? 1 : 0),
+        'use_relbox' => ((variable_get('imagepicker_use_relbox', 0) && ! isset($user->imagepicker_use_relbox) ) ? 1 : (variable_get('imagepicker_use_relbox', 0) && isset($user->imagepicker_use_relbox) && $user->imagepicker_use_relbox) ? 1 : 0),
         'default_align_show' => ((variable_get('imagepicker_default_align_show', 1) && ! isset($user->imagepicker_default_align_show) ) ? 1 : (variable_get('imagepicker_default_align_show', 1) && isset($user->imagepicker_default_align_show) && $user->imagepicker_default_align_show) ? 1 : 0),
         'default_fleft' => (isset($user->imagepicker_default_fleft) ? $user->imagepicker_default_fleft : variable_get('imagepicker_default_fleft', 'style="float: left"')),
         'default_fright' => (isset($user->imagepicker_default_fright) ? $user->imagepicker_default_fright : variable_get('imagepicker_default_fright', 'style="float: right"')),
@@ -619,6 +635,19 @@ function theme_imagepicker_image_form($form) {
   $form['desc']['#suffix'] = '</div>';
   $form['insert']['#prefix'] = '<div id="imgp_controls">';
   $form['delete']['#suffix'] = '</div>';
+  if (isset($form['presets_show'])) {
+    $form['presets_show']['#prefix'] = '<div id="imgp_presets_control"><div id="imgp_presets_show_control">';
+    $form['presets_show']['#suffix'] = '</div>';
+    $form['presets_link']['#prefix'] = '<div id="imgp_presets_link_control">';
+    $form['presets_link']['#suffix'] = '</div></div>';
+  }
+  if (isset($form['relbox'])) {
+    $form['relbox']['#prefix'] = '<div id="imgp_relbox_control"><div id="imgp_relbox_show_control">';
+    $form['relbox']['#suffix'] = '</div>';
+    $form['linkhide']['#prefix'] = '<div id="imgp_relbox_link_control">';
+    $form['linkhide']['#suffix'] = '</div></div>';
+  }
+
   $output .= drupal_render($form);
   return $output;
 }
@@ -712,6 +741,9 @@ function theme_imagepicker_settings_form($form) {
   $jshide = ($form['imagepicker_watermark']['imagepicker_watermark_enable']['#default_value'] ? '' : ' class="js-hide"');
   $form['imagepicker_watermark']['imagepicker_watermark_image']['#prefix'] = '<div id="wrap-imagepicker-watermark"'. $jshide .'>';
   $form['imagepicker_watermark']['imagepicker_watermark_scale']['#suffix'] = '</div>';
+
+  $form['imagepicker_settings']['imagepicker_admin_message']['#prefix'] = '<div class="messages">';
+  $form['imagepicker_settings']['imagepicker_admin_message']['#suffix'] = '</div>';
 
   $output .= drupal_render($form);
   return $output;
@@ -832,3 +864,12 @@ function theme_imagepicker_import_dir_form($form) {
   $output .= drupal_render($form);
   return $output;
 }
+
+function theme_imagepicker_admin_orphans_form($form) {
+  $output = '';
+  $form['msg']['#prefix'] = '<div class="messages">';
+  $form['msg']['#suffix'] = '</div>';
+  $output .= drupal_render($form);
+  return $output;
+}
+

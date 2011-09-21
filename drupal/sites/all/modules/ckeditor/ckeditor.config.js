@@ -23,24 +23,13 @@ CKEDITOR.editorConfig = function(config) {
   // side
   // (as does Drupal), so just leave this line as is.
   config.protectedSource.push(/<\?[\s\S]*?\?>/g); // PHP Code
+  config.protectedSource.push(/<code>[\s\S]*?<\/code>/gi); // Code tags
   config.extraPlugins = '';
-  if (Drupal.ckeditorCompareVersion('3.1')) {
-    config.extraPlugins += (config.extraPlugins ? ',drupalbreaks' : 'drupalbreaks' );
-  }
-
-  if (Drupal.settings.ckeditor.linktocontent_node) {
-    config.extraPlugins += (config.extraPlugins ? ',linktonode' : 'linktonode' );
-  }
-  if (Drupal.settings.ckeditor.linktocontent_menu) {
-    config.extraPlugins += (config.extraPlugins ? ',linktomenu' : 'linktomenu' );
-  }
 
   // Define as many toolbars as you need, you can change toolbar names and remove or add buttons.
   // List of all buttons is here: http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.config.html#.toolbar_Full
 
   // This toolbar should work fine with "Filtered HTML" filter
-  
-  /* Original DrupalFiltered toolbar
   config.toolbar_DrupalFiltered = [
     ['Source'],
     ['Cut','Copy','Paste','PasteText','PasteFromWord','-','SpellChecker', 'Scayt'],
@@ -52,24 +41,8 @@ CKEDITOR.editorConfig = function(config) {
     ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
     ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
     ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-','BidiRtl','BidiLtr'],
-    ['Link','Unlink','Anchor','LinkToNode', 'LinkToMenu'],
+    ['Link','Unlink','Anchor','Linkit','LinkToNode','LinkToMenu'],
     ['DrupalBreak', 'DrupalPageBreak']
-   ];
-  */
-  /* DrupalFiltered toolbar below modified to be similar to earlier FCKeditor version */
-  config.toolbar_DrupalFiltered = [
-    ['Source'],
-    ['Cut','Copy','Paste','PasteText','PasteFromWord'],
-    ['Undo','Redo','Find','Replace','-','SelectAll','RemoveFormat'],
-    ['Link','Unlink','Anchor','LinkToNode', 'LinkToMenu'],
-    ['Image','Flash','Table','HorizontalRule','Smiley','SpecialChar'],
-    '/',
-    ['Format'],
-    ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-    ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
-    ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-    ['DrupalBreak', 'DrupalPageBreak'],
-    ['Maximize', 'ShowBlocks']
    ];
 
  /*
@@ -77,7 +50,7 @@ CKEDITOR.editorConfig = function(config) {
   * if you change the name of DrupalBasic, you have to update
   * CKEDITOR_FORCE_SIMPLE_TOOLBAR_NAME in ckeditor.module
   */
-  config.toolbar_DrupalBasic = [ [ 'Format', '-', 'Bold', 'Italic', '-', 'NumberedList','BulletedList', '-', 'Link', 'Unlink', 'Image' ] ];
+  config.toolbar_DrupalBasic = [ [ 'Format', 'Bold', 'Italic', '-', 'NumberedList','BulletedList', '-', 'Link', 'Unlink', 'Image' ] ];
 
   /*
    * This toolbar is dedicated to users with "Full HTML" access some of commands
@@ -93,7 +66,7 @@ CKEDITOR.editorConfig = function(config) {
       ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
       ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
       ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-','BidiRtl','BidiLtr'],
-      ['Link','Unlink','Anchor','LinkToNode', 'LinkToMenu'],
+      ['Link','Unlink','Anchor','Linkit','LinkToNode', 'LinkToMenu'],
       '/',
       ['Format','Font','FontSize'],
       ['TextColor','BGColor'],
@@ -110,11 +83,15 @@ CKEDITOR.editorConfig = function(config) {
   /**
    * Sample extraCss code for the "marinelli" theme.
    */
-  if (Drupal.settings.ckeditor.theme == "marinelli") {
+  var themeName = Drupal.settings.ckeditor.theme;
+  if (typeof themeName == "object") {
+    themeName = Drupal.settings.ckeditor.theme[0];
+  }
+  if (themeName == "marinelli") {
     config.extraCss += "body{background:#FFF;text-align:left;font-size:0.8em;}";
     config.extraCss += "#primary ol, #primary ul{margin:10px 0 10px 25px;}";
   }
-  if (Drupal.settings.ckeditor.theme == "newsflash") {
+  if (themeName == "newsflash") {
     config.extraCss = "body{min-width:400px}";
   }
 
@@ -128,35 +105,8 @@ CKEDITOR.editorConfig = function(config) {
   /**
    * Sample bodyClass and BodyId for the "marinelli" theme.
    */
-  if (Drupal.settings.ckeditor.theme == "marinelli") {
+  if (themeName == "marinelli") {
     config.bodyClass = 'singlepage';
     config.bodyId = 'primary';
   }
-
-  if (Drupal.ckeditorCompareVersion('3.1')) {
-    CKEDITOR.plugins.addExternal('drupalbreaks', Drupal.settings.ckeditor.module_path + '/plugins/drupalbreaks/');
-  }
-  if (Drupal.settings.ckeditor.linktocontent_menu) {
-    CKEDITOR.plugins.addExternal('linktomenu', Drupal.settings.ckeditor.module_path + '/plugins/linktomenu/');
-    Drupal.settings.ckeditor.linktomenu_basepath = Drupal.settings.basePath;
-  }
-  if (Drupal.settings.ckeditor.linktocontent_node) {
-    CKEDITOR.plugins.addExternal('linktonode', Drupal.settings.ckeditor.module_path + '/plugins/linktonode/');
-    Drupal.settings.ckeditor.linktonode_basepath = Drupal.settings.basePath;
-  }
-  if (Drupal.settings.ckeditor_swf) {
-    config.extraPlugins += (config.extraPlugins) ? ',swf' : 'swf';
-    CKEDITOR.plugins.addExternal('swf', Drupal.settings.ckeditor_swf.module_path + '/plugins/swf/');
-  }
-  if (Drupal.settings.ckeditor_link) {
-    config.extraPlugins += (config.extraPlugins) ? ',drupal_path' : 'drupal_path';
-    CKEDITOR.plugins.addExternal('drupal_path', Drupal.settings.ckeditor_link.module_path + '/plugins/link/');
-  }
-  // 'MediaEmbed' plugin. To enable it, uncomment lines below and add 'MediaEmbed' button to selected toolbars.
-  //config.extraPlugins += (config.extraPlugins ? ',mediaembed' : 'mediaembed' );
-  //CKEDITOR.plugins.addExternal('mediaembed', Drupal.settings.ckeditor.module_path + '/plugins/mediaembed/');
-
-  // 'IMCE' plugin. If IMCE module is enabled, you may uncomment lines below and add an 'IMCE' button to selected toolbar. 
-  //config.extraPlugins += (config.extraPlugins ? ',imce' : 'imce' );
-  //CKEDITOR.plugins.addExternal('imce', Drupal.settings.ckeditor.module_path + '/plugins/imce/');
 };

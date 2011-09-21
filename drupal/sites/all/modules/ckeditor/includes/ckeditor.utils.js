@@ -41,8 +41,8 @@ Drupal.ckeditorOn = function(textarea_id) {
   if (!CKEDITOR.env.isCompatible) {
     return;
   }
-
-  if (teaser = Drupal.ckeditorTeaserInfo(textarea_id)) {
+  var teaser = Drupal.ckeditorTeaserInfo(textarea_id);
+  if (teaser) {
     var ch_checked = teaser.checkbox.attr('checked');
     var tv = teaser.textarea.val();
     if (!teaser.textarea.attr("disabled")) {
@@ -78,7 +78,10 @@ Drupal.ckeditorOn = function(textarea_id) {
   $("#" + textarea_id).next(".grippie").css("display", "none");
   $("#" + textarea_id).addClass("ckeditor-processed");
 
-  Drupal.settings.ckeditor.settings[textarea_id]['on'] = 
+  var textarea_settings = false;
+  textarea_settings = Drupal.settings.ckeditor.settings[textarea_id];
+
+  textarea_settings['on'] =
   {
     configLoaded  : function(ev)
     {
@@ -87,14 +90,18 @@ Drupal.ckeditorOn = function(textarea_id) {
     instanceReady : function(ev)
     {
       var body = $(ev.editor.document.$.body);
-      if (typeof(Drupal.settings.ckeditor.settings[textarea_id].custom_formatting) != 'undefined') {
+      // Don't enter line breaks after paragraph so we can be friendly to drupal's line break filter.
+      ev.editor.dataProcessor.writer.setRules('p', {
+        breakAfterOpen: false
+      });
+      if (typeof(textarea_settings.custom_formatting) != 'undefined') {
         var dtd = CKEDITOR.dtd;
         for ( var e in CKEDITOR.tools.extend( {}, dtd.$block, dtd.$listItem, dtd.$tableContent ) ) {
-          ev.editor.dataProcessor.writer.setRules( e, Drupal.settings.ckeditor.settings[textarea_id].custom_formatting);
+          ev.editor.dataProcessor.writer.setRules( e, textarea_settings.custom_formatting);
 		}
         ev.editor.dataProcessor.writer.setRules( 'pre',
         {
-          indent: Drupal.settings.ckeditor.settings[textarea_id].output_pre_indent
+          indent: textarea_settings.output_pre_indent
         });
       }
 
@@ -112,7 +119,21 @@ Drupal.ckeditorOn = function(textarea_id) {
     }
   };
 
-  Drupal.ckeditorInstance = CKEDITOR.replace(textarea_id, Drupal.settings.ckeditor.settings[textarea_id]);
+  if (typeof textarea_settings['js_conf'] != 'undefined'){
+      for (var add_conf in textarea_settings['js_conf']){
+          textarea_settings[add_conf] = eval(textarea_settings['js_conf'][add_conf]);
+      }
+  }
+
+  textarea_settings.extraPlugins = '';
+  if (typeof CKEDITOR.plugins != 'undefined'){
+    for (var plugin in textarea_settings['loadPlugins']){
+      textarea_settings.extraPlugins += (textarea_settings.extraPlugins) ? ',' + textarea_settings['loadPlugins'][plugin]['name'] : textarea_settings['loadPlugins'][plugin]['name'];
+      CKEDITOR.plugins.addExternal(textarea_settings['loadPlugins'][plugin]['name'], textarea_settings['loadPlugins'][plugin]['path']);
+    }
+  }
+
+  Drupal.ckeditorInstance = CKEDITOR.replace(textarea_id, textarea_settings);
 };
 
 /**
@@ -132,7 +153,8 @@ Drupal.ckeditorOff = function(textarea_id) {
 
   var data = CKEDITOR.instances[textarea_id].getData();
   CKEDITOR.instances[textarea_id].destroy();
-  if (teaser = Drupal.ckeditorTeaserInfo(textarea_id)) {
+  var teaser = Drupal.ckeditorTeaserInfo(textarea_id);
+  if (teaser) {
     var brcode = /<!--break-->/;
     data = data.split(brcode);
     if (data.length > 1) {
@@ -370,12 +392,11 @@ Drupal.behaviors.ckeditor = function (context) {
     if ((typeof(Drupal.settings.ckeditor.autostart) != 'undefined') && (typeof(Drupal.settings.ckeditor.autostart[ta_id]) != 'undefined')) {
       Drupal.ckeditorOn(ta_id);
     }
-    else {
-      $(this).parents('form').bind('submit', function() {
-        $(this).find('textarea').each(function() {
-          $(this).val(Drupal.ckeditorLinebreakConvert(ta_id, $(this).val()));
-        });
-      });
-    }
+  });
+
+  $("form").bind('submit', function() {
+    $(this).find('textarea.ckeditor-processed').each(function() {
+      $(this).val(Drupal.ckeditorLinebreakConvert($(this).attr("id"), $(this).val()));
+    });
   });
 };
