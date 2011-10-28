@@ -58,7 +58,7 @@
 		</h2>
 	<?php else: ?>
 		<h3 class="title">
-			By <?php print $node->field_author[0][view]; ?>
+			By <?php print $node->field_author[0][view]; ?> <?php print $node->field_authorsurname[0][view]; ?>  <?php print $node->field_otherauthors[0][view]; ?>
 		</h3>
 	<?php endif; ?>
 
