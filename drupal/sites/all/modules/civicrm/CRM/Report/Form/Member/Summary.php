@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,6 +50,8 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                  );
     protected $_add2groupSupported = false;
     
+    protected $_customGroupExtends = array( 'Membership' );
+    protected $_customGroupGroupBy = false;
     function __construct( ) {
         // UI for selecting columns to appear in the report list
         // array conatining the columns, group_bys and filters build and provided to Form
@@ -67,9 +69,19 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                          
                          'filters'     =>             
                          array( 'join_date' =>
-                                array('title'         => 'Membership Join Date',
+                                array('title'         => ts('Member Since'),
                                       'type'          => CRM_Utils_Type::T_DATE,
                                       'operatorType'  => CRM_Report_Form::OP_DATE ),
+                                'membership_start_date' =>
+                                array('name'         => 'start_date',
+                                      'title'        => ts('Membership Start Date'),
+                                      'type'         => CRM_Utils_Type::T_DATE,
+                                      'operatorType' => CRM_Report_Form::OP_DATE ),
+                                'membership_end_date' =>
+                                array('name'         => 'end_date',
+                                      'title'        => ts('Membership End Date'),
+                                      'type'         => CRM_Utils_Type::T_DATE,
+                                      'operatorType' => CRM_Report_Form::OP_DATE ),
                                 'membership_type_id'  =>
                                 array('title'         => ts('Membership Type'),
                                       'operatorType'  => CRM_Report_Form::OP_MULTISELECT,
@@ -83,7 +95,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                 ),  
                          'group_bys'        =>
                          array( 'join_date' => 
-                                array('title'      => ts('Join Date'),
+                                array('title'      => ts('Member Since'),
                                       'default'    => true,
                                       'frequency'  => true,
                                       'chart'      => true,
@@ -93,6 +105,14 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                        'default'   => true,
                                       'chart'      => true, )
                                 ),
+                         ),
+
+                  'civicrm_contact' =>
+                  array( 'dao'       => 'CRM_Contact_DAO_Contact',
+                         'fields'    =>
+                          array( 'contact_id' => 
+                                 array( 'no_display'=> true, ) 
+                                 )
                          ),
                   
                   'civicrm_contribution' =>
@@ -109,13 +129,16 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                 ),
                          'filters'       => 
                          array( 'contribution_status_id' => 
-                                array( 'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                                array( 'title'        => ts('Contribution Status'),
+                                       'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                        'options'      => CRM_Contribute_PseudoConstant::contributionStatus( ),
                                        ),
                                 ),
                          'grouping'   => 'member-fields',
                          ),
                    );
+        $this->_tagFilter = true;
+        $this->_groupFilter = true;            
         parent::__construct( );
     }
     
@@ -125,7 +148,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
         $this->_columnHeaders = array( ); 
         $select[] = " COUNT( DISTINCT {$this->_aliases['civicrm_membership']}.id ) as civicrm_membership_member_count";
         $select['joinDate'] = " {$this->_aliases['civicrm_membership']}.join_date  as civicrm_membership_member_join_date";
-        $this->_columnHeaders["civicrm_membership_member_join_date"] = array( 'title' => ts('Join Date'),
+        $this->_columnHeaders["civicrm_membership_member_join_date"] = array( 'title' => ts('Member Since'),
                                                                               'type'  => CRM_Utils_Type::T_DATE);
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('group_bys', $table) ) {
@@ -247,6 +270,9 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
     function from( ) {
         $this->_from = "
         FROM  civicrm_membership {$this->_aliases['civicrm_membership']}
+               
+              LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON ( {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_contact']}.id )  
+               
               LEFT JOIN civicrm_membership_status 
                         ON ({$this->_aliases['civicrm_membership']}.status_id = civicrm_membership_status.id  )
               LEFT JOIN civicrm_membership_payment payment
@@ -432,7 +458,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
             if ( $isMembershipType ) { 
                 $graphRows['value'] = $display;
                 $chartInfo          = array( 'legend' => 'Membership Summary',
-                                             'xname'  => 'Join Date / Member Type',
+                                             'xname'  => 'Member Since / Member Type',
                                              'yname'  => 'Fees' );                
                 CRM_Utils_OpenFlashChart::reportChart( $graphRows, $this->_params['charts'], $interval, $chartInfo );
             } else {                

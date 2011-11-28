@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 {if $hasContributions}
 <div id="chartData">
 <table class="chart">
-  <tr crm-contribution-form-block-open_flash_chart">
+  <tr class="crm-contribution-form-block-open_flash_chart">
      <td>
          {if $hasByMonthChart}
       	     {* display monthly chart *}
@@ -55,7 +55,7 @@
 {/if}
 
 {if $hasOpenFlashChart}
-{include file="CRM/common/openFlashChart.tpl"}
+{include file="CRM/common/openFlashChart.tpl" contriChart=true}
 
 {literal}
 <script type="text/javascript">

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -130,7 +130,7 @@ function civicrm_source( $dsn, $fileName, $lineMode = false ) {
         $string = file_get_contents( $fileName );
 
         // change \r\n to fix windows issues
-        $string = ereg_replace("\r\n", "\n", $string );
+        $string = str_replace("\r\n", "\n", $string );
 
         //get rid of comments starting with # and --
 
@@ -186,6 +186,7 @@ function civicrm_config( &$config ) {
     $params['CMSdbPass']  = $config['drupal']['password'];
     $params['CMSdbHost']  = $config['drupal']['server'];
     $params['CMSdbName']  = $config['drupal']['database'];
+    $params['siteKey']    = md5(uniqid( '', true ) . $params['baseURL']);
 
     $str = file_get_contents( $tplPath . 'civicrm.settings.php.tpl' );
     foreach ( $params as $key => $value ) { 
@@ -200,11 +201,6 @@ function civicrm_cms_base( ) {
     // for drupal
     $numPrevious = 6;
 
-    // for standalone
-    if ( $installType == 'standalone' ) {
-        $numPrevious = 2;
-    }
-
     if ( ! isset( $_SERVER['HTTPS'] ) ||
          strtolower( $_SERVER['HTTPS'] )  == 'off' ) {
         $url = 'http://' . $_SERVER['HTTP_HOST'];
@@ -214,10 +210,19 @@ function civicrm_cms_base( ) {
 
     $baseURL = $_SERVER['SCRIPT_NAME'];
 
-    for ( $i = 1; $i <= $numPrevious; $i++ ) {
-        $baseURL = dirname( $baseURL );
+    if ( $installType == 'drupal' ) {
+        //don't assume 6 dir levels, as civicrm 
+        //may or may not be in sites/all/modules/
+        //lets allow to install in custom dir. CRM-6840
+        global $cmsPath;
+        $crmDirLevels = str_replace( $cmsPath,      '', str_replace( '\\', '/', $_SERVER['SCRIPT_FILENAME'] ) );
+        $baseURL      = str_replace( $crmDirLevels, '', str_replace( '\\', '/', $baseURL ) );
+    } else { 
+        for ( $i = 1; $i <= $numPrevious; $i++ ) {
+            $baseURL = dirname( $baseURL );
+        }
     }
-
+    
     // remove the last directory separator string from the directory
     if ( substr( $baseURL, -1, 1 ) == DIRECTORY_SEPARATOR ) {
         $baseURL = substr( $baseURL, 0, -1 );

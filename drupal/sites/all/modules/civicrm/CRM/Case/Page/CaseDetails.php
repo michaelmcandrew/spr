@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,6 +50,7 @@ class CRM_Case_Page_CaseDetails extends CRM_Core_Page
     {
         $this->_action  = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
         $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this ) ;
+        $type           = CRM_Utils_Request::retrieve('type', 'String', CRM_Core_DAO::$_nullObject ) ;
 
         $this->assign( 'action', $this->_action );
         $this->assign( 'context', $this->_context );
@@ -66,7 +67,7 @@ class CRM_Case_Page_CaseDetails extends CRM_Core_Page
         
         $caseDetails = array( );
         if ( CRM_Case_BAO_Case::accessCiviCase( ) ) {
-            $caseDetails = CRM_Case_BAO_Case::getCaseActivity( $caseId, $params, $this->_contactId );
+            $caseDetails = CRM_Case_BAO_Case::getCaseActivity( $caseId, $params, $this->_contactId, null, null, $type );
         }
         
         $this->assign( 'rows',      $caseDetails );

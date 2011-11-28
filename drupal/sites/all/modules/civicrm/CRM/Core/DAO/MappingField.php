@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -128,6 +128,12 @@ class CRM_Core_DAO_MappingField extends CRM_Core_DAO
      * @var int unsigned
      */
     public $im_provider_id;
+    /**
+     * Which type of website does this site belong
+     *
+     * @var int unsigned
+     */
+    public $website_type_id;
     /**
      * Relationship type, if required
      *
@@ -236,6 +242,10 @@ class CRM_Core_DAO_MappingField extends CRM_Core_DAO
                 ) ,
                 'im_provider_id' => array(
                     'name' => 'im_provider_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                ) ,
+                'website_type_id' => array(
+                    'name' => 'website_type_id',
                     'type' => CRM_Utils_Type::T_INT,
                 ) ,
                 'relationship_type_id' => array(

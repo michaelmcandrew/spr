@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -77,7 +77,8 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
                 $this->_isTagSet = true;
             }
 
-            $allTag = array ('' => '- ' . ts('select') . ' -') + CRM_Core_PseudoConstant::tag();
+            require_once 'CRM/Core/BAO/Tag.php';
+            $allTag = array ('' => '- ' . ts('select') . ' -') + CRM_Core_BAO_Tag::getTagsNotInTagset( );
 
             if ( $this->_id ) {
                 unset( $allTag[$this->_id] );
@@ -126,25 +127,8 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
             }
             $this->assign( 'adminReservedTags', $adminReservedTags );
             
-            $this->addFormRule( array( 'CRM_Admin_Form_Tag',   'formRule' ) );
-            
             parent::buildQuickForm( ); 
         }
-    }
-
-    static function formRule( $fields, $errors ) {
-        $errors = array( );
-        if ( $fields['parent_id'] ) {            
-            //  get the parent id of the parent
-            $parentId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag',  $fields['parent_id'], 'parent_id' );
-            
-            // check if parent is tag set
-            if ( $parentId && CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag',  $parentId, 'is_tagset' ) ) {
-                $errors['parent_id'] = ts( 'You cannot add a child tag for the tag that belong to a tagset.');
-                return $errors;
-            }  
-        }
-        return true;
     }
     
     /**

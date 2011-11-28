@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,7 +34,7 @@ require_once 'CRM/Core/Component/Info.php';
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -94,6 +94,11 @@ class CRM_Report_Info extends CRM_Core_Component_Info
     public function getActivityTypes()
     {
         return null;
+    }
+    
+    // add shortcut to Create New
+    public function creatNewShortcut( &$shortCuts ) {
+
     }
     
 }

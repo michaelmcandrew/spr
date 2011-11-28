@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -74,8 +74,14 @@ class CRM_Admin_Form_Setting extends CRM_Core_Form
 
             require_once "CRM/Core/BAO/Preferences.php";
             $listEnabled = CRM_Core_BAO_Preferences::valueOptions( 'contact_autocomplete_options' );
+
+            $autoSearchFields = array();
+            if ( !empty( $list ) && !empty( $listEnabled ) ) { 
+                $autoSearchFields = array_combine($list, $listEnabled);
+            }
+            
             //Set sort_name for default
-            $this->_defaults['autocompleteContactSearch'] = array( '1' => 1 ) + array_combine($list, $listEnabled);
+            $this->_defaults['autocompleteContactSearch'] = array( '1' => 1 ) + $autoSearchFields;
         }
         return $this->_defaults;
     }

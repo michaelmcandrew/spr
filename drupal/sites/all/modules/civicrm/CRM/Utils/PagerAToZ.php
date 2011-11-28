@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -125,6 +125,11 @@ class CRM_Utils_PagerAToZ
         //get the current path
         $path = CRM_Utils_System::currentPath() ;
 
+        $qfKey = CRM_Utils_Array::value( 'qfKey', $query->_formValues );
+        if ( empty($qfKey) ) {
+            $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this, false, null, $_REQUEST );
+        }
+        
         $aToZBar = array( );
         foreach ( $AToZBar as $key => $link ) {
             if ( ! $link ) {
@@ -138,7 +143,7 @@ class CRM_Utils_PagerAToZ
                     $element['class'] = "active";
                     $klass = 'class="active"';
                 }
-                $url = CRM_Utils_System::url( $path, "q=$path&force=1&sortByCharacter=" );
+                $url = CRM_Utils_System::url( $path, "force=1&qfKey=$qfKey&sortByCharacter=" );
                 // we do it this way since we want the url to be encoded but not the link character
                 // since that seems to mess up drupal utf-8 encoding etc
                 $url .= $link;
@@ -153,7 +158,7 @@ class CRM_Utils_PagerAToZ
         }
         
         $url = sprintf('<a href="%s">%s</a>',
-                       CRM_Utils_System::url( $path, "q=$path&force=1&sortByCharacter=1" ),
+                       CRM_Utils_System::url( $path, "force=1&qfKey=$qfKey&sortByCharacter=1" ),
                        'All' );
         $aToZBar[] = array( 'item' => $url );
         return $aToZBar;

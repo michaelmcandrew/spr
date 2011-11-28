@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,8 +31,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_UF
  * 
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: UFGroup.php 26310 2010-02-18 15:10:24Z shot $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: UFGroup.php 32998 2011-03-14 22:00:35Z kurund $
  *
  */
 

@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -79,7 +79,7 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      * Pledge ID
      *
@@ -110,6 +110,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
      * @var float
      */
     public $amount;
+    /**
+     * Original amount for each of the installments.
+     *
+     * @var float
+     */
+    public $original_installment_amount;
     /**
      * 3 character string, value from config setting or input via user.
      *
@@ -218,6 +224,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
      */
     public $is_test;
     /**
+     * The campaign for which this pledge has been initiated.
+     *
+     * @var int unsigned
+     */
+    public $campaign_id;
+    /**
      * class constructor
      *
      * @access public
@@ -241,6 +253,7 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                 'contribution_type_id' => 'civicrm_contribution_type:id',
                 'contribution_page_id' => 'civicrm_contribution_page:id',
                 'honor_contact_id' => 'civicrm_contact:id',
+                'campaign_id' => 'civicrm_campaign:id',
             );
         }
         return self::$_links;
@@ -278,9 +291,13 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                     'export' => true,
                     'FKClassName' => 'CRM_Contact_DAO_Contact',
                 ) ,
-                'contribution_type_id' => array(
+                'pledge_contribution_type_id' => array(
                     'name' => 'contribution_type_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'export' => false,
+                    'where' => 'civicrm_pledge.contribution_type_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
                     'FKClassName' => 'CRM_Contribute_DAO_ContributionType',
                 ) ,
                 'contribution_page_id' => array(
@@ -299,13 +316,19 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                     'dataPattern' => '',
                     'export' => true,
                 ) ,
+                'pledge_original_installment_amount' => array(
+                    'name' => 'original_installment_amount',
+                    'type' => CRM_Utils_Type::T_MONEY,
+                    'title' => ts('Original Installment Amount') ,
+                    'required' => true,
+                ) ,
                 'currency' => array(
                     'name' => 'currency',
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Currency') ,
-                    'required' => true,
                     'maxlength' => 3,
                     'size' => CRM_Utils_Type::FOUR,
+                    'default' => 'UL',
                 ) ,
                 'frequency_unit' => array(
                     'name' => 'frequency_unit',
@@ -402,12 +425,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                 'pledge_status_id' => array(
                     'name' => 'status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Pledge Status') ,
+                    'title' => ts('Pledge Status Id') ,
                     'import' => true,
                     'where' => 'civicrm_pledge.status_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
                 'pledge_is_test' => array(
                     'name' => 'is_test',
@@ -418,6 +441,17 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                     'headerPattern' => '',
                     'dataPattern' => '',
                     'export' => true,
+                ) ,
+                'pledge_campaign_id' => array(
+                    'name' => 'campaign_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Campaign ID') ,
+                    'import' => true,
+                    'where' => 'civicrm_pledge.campaign_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
+                    'FKClassName' => 'CRM_Campaign_DAO_Campaign',
                 ) ,
             );
         }

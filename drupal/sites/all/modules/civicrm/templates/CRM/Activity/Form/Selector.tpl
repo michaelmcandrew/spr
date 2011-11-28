@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
 
 {strip}
 <table class="selector">
-   <thead class="sticky">
+   <tr class="sticky">
      {if !$single and $context eq 'Search' }
         <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th> 
      {/if}
@@ -45,7 +45,7 @@
         {/if}
         </th>
      {/foreach}
-   </thead>
+   </tr>
 
 
   {counter start=0 skip=1 print=false}

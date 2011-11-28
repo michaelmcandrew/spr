@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 <Case>
   <Client>{$case.clientName}</Client>
   <CaseType>{$case.caseType}</CaseType>
-  <CaseSubject>{$case.subject}</CaseSubject>
+  <CaseSubject>{$case.subject|escape}</CaseSubject>
   <CaseStatus>{$case.status}</CaseStatus>
   <CaseOpen>{$case.start_date}</CaseOpen>
   <CaseClose>{$case.end_date}</CaseClose>
@@ -41,11 +41,11 @@
        <Fields>
 {foreach from=$activity.fields item=field}
           <Field>
-            <Label>{$field.label}</Label>
+            <Label>{$field.label|escape}</Label>
 {if $field.category}
-            <Category>{$field.category}</Category>
+            <Category>{$field.category|escape}</Category>
 {/if}
-            <Value>{$field.value}</Value>
+            <Value>{$field.value|escape}</Value>
             <Type>{$field.type}</Type>
           </Field>
 {/foreach}
@@ -53,11 +53,11 @@
          <CustomGroups>
 {foreach from=$activity.customGroups key=customGroupName item=customGroup}
             <CustomGroup>
-               <GroupName>{$customGroupName}</GroupName>
+               <GroupName>{$customGroupName|escape}</GroupName>
 {foreach from=$customGroup item=field}
                   <Field>
-                    <Label>{$field.label}</Label>
-                    <Value>{$field.value}</Value>
+                    <Label>{$field.label|escape}</Label>
+                    <Value>{$field.value|escape}</Value>
                     <Type>{$field.type}</Type>
                   </Field>
 {/foreach}

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -63,14 +63,17 @@ class CRM_Mailing_Event_BAO_Subscribe extends CRM_Mailing_Event_DAO_Subscribe {
      * @access public
      * @static
      */
-    public static function &subscribe( $group_id, $email , $contactId = null ) {
+    public static function &subscribe( $group_id, $email , $contactId = null , $context = null) {
         // CRM-1797 - allow subscription only to public groups
         $params = array('id' => (int) $group_id);
         $defaults = array();
+        $contact_id = null;
+        $success    = null;
+
         require_once 'CRM/Contact/BAO/Group.php';
         $bao = CRM_Contact_BAO_Group::retrieve($params, $defaults);
-        if (substr($bao->visibility, 0, 6) != 'Public') {
-            return null;
+        if ( $bao && substr($bao->visibility, 0, 6) != 'Public' && $context != 'profile') {
+          return $success;
         }
         
         $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
@@ -101,8 +104,8 @@ LEFT JOIN civicrm_email      ON contact_a.id = civicrm_email.contact_id
         $transaction = new CRM_Core_Transaction( );
 
         if ( ! $contact_id ) {
-            require_once 'api/v2/Contact.php';
             require_once 'CRM/Core/BAO/LocationType.php';
+            require_once 'api/v2/utils.v2.php';
             /* If the contact does not exist, create one. */
             $formatted = array('contact_type' => 'Individual');
             $locationType = CRM_Core_BAO_LocationType::getDefault( );
@@ -113,15 +116,16 @@ LEFT JOIN civicrm_email      ON contact_a.id = civicrm_email.contact_id
             require_once 'CRM/Import/Parser.php';
             $formatted['onDuplicate'] = CRM_Import_Parser::DUPLICATE_SKIP;
             $formatted['fixAddress'] = true;
+            require_once 'api/v2/Contact.php';
             $contact =& civicrm_contact_format_create($formatted);
-            if (civicrm_error($contact, CRM_Core_Error)) {
-                return null;
+            if ( civicrm_error( $contact ) ) {
+                return $success;
             }
             $contact_id = $contact['id'];
         } else if ( ! is_numeric( $contact_id ) &&
                     (int ) $contact_id > 0 ) {
             // make sure contact_id is numeric
-            return null;
+            return $success;
         }
 
         require_once 'CRM/Core/BAO/Email.php';
@@ -142,7 +146,7 @@ SELECT     civicrm_email.id as email_id
 
         if ( ! $dao->fetch( ) ) {
             CRM_Core_Error::fatal( 'Please file an issue with the backtrace' );
-            return null;
+            return $success;
         }
 
         $se = new CRM_Mailing_Event_BAO_Subscribe();
@@ -174,14 +178,15 @@ SELECT     civicrm_email.id as email_id
      * @static
      */
     public static function &verify($contact_id, $subscribe_id, $hash) {
+        $success = null;
         $se = new CRM_Mailing_Event_BAO_Subscribe();
         $se->contact_id = $contact_id;
         $se->id = $subscribe_id;
         $se->hash = $hash;
         if ($se->find(true)) {
-            return $se;
+            $success = $se;
         }
-        return null;
+        return $success;
     }
 
     /**
@@ -297,14 +302,26 @@ SELECT     civicrm_email.id as email_id
      * Get the group details to which given email belongs
      * 
      * @param string $email     email of the contact
+     * @param int    $contactID contactID if we want an exact match
+     *
      * @return array $groups    array of group ids
      * @access public
      */
-    function getContactGroups($email) {
-        $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
-        $email = $strtolower( $email );
+    function getContactGroups($email, $contactID = null) {
+        if ( $contactID ) {
+            $query = "
+                 SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title 
+                 FROM civicrm_group_contact group_a
+                 LEFT JOIN civicrm_group ON civicrm_group.id = group_a.group_id
+                 LEFT JOIN civicrm_contact ON ( group_a.contact_id = civicrm_contact.id )
+                 WHERE civicrm_contact.id = %1";
+        
+            $params = array( 1 => array( $contactID, 'Integer' ) );
+        } else {
+            $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
+            $email = $strtolower( $email );
 
-        $query = "
+            $query = "
                  SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title 
                  FROM civicrm_group_contact group_a
                  LEFT JOIN civicrm_group ON civicrm_group.id = group_a.group_id
@@ -312,7 +329,9 @@ SELECT     civicrm_email.id as email_id
                  LEFT JOIN civicrm_email ON civicrm_contact.id = civicrm_email.contact_id
                  WHERE civicrm_email.email = %1";
         
-        $params = array( 1 => array( $email, 'String' ) );
+            $params = array( 1 => array( $email, 'String' ) );
+        }
+
         $dao =& CRM_Core_DAO::executeQuery( $query, $params );
         $groups = array();
         while ( $dao->fetch( ) ) {
@@ -337,24 +356,41 @@ SELECT     civicrm_email.id as email_id
      * @public
      * @return void
      */
-    function commonSubscribe( &$groups, &$params, $contactId = null ) 
+    function commonSubscribe( &$groups, &$params, $contactId = null, $context = null) 
     {
-        $success = true;
+        $contactGroups = CRM_Mailing_Event_BAO_Subscribe::getContactGroups($params['email'], $contactId);
+        $group = array( );
+        $success = null;
         foreach ( $groups as $groupID ) {
+            $title = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Group', $groupID, 'title');
+            if ( array_key_exists( $groupID, $contactGroups ) && $contactGroups[$groupID]['status'] != 'Removed' ) {
+                $group[$groupID]['title']  = $contactGroups[$groupID]['title'];
+                
+                $group[$groupID]['status'] = $contactGroups[$groupID]['status'];
+                $status = ts('You are already subscribed in %1, your subscription is %2.', array(1 => $group[$groupID]['title'], 2 => $group[$groupID]['status']));
+                CRM_Utils_System::setUFMessage( $status );
+                continue;
+            }
+            
             $se = self::subscribe( $groupID,
-                                   $params['email'], $contactId );
-            if ( $se !== null ) {
+                                   $params['email'], $contactId, $context );
+            if ( $se !== null ) { 
+                $success       = true;
+                $groupAdded[]  = $title;
+                
                 /* Ask the contact for confirmation */
                 $se->send_confirm_request($params['email']);
             } else {
-                $success = false;
+                $success       = false;
+                $groupFailed[] = $title;
             }
         }
-        
         if ( $success ) {
-            CRM_Utils_System::setUFMessage( ts( "Your subscription request has been submitted. Check your inbox shortly for the confirmation email(s). If you do not see a confirmation email, please check your spam/junk mail folder." ) );
-        } else {
-            CRM_Utils_System::setUFMessage( ts( "We had a problem processing your subscription request. You have tried to subscribe to a private group and/or we encountered a database error. Please contact the site administrator" ) );
+            $groupTitle = implode( ',', $groupAdded );
+            CRM_Utils_System::setUFMessage(ts('Your subscription request has been submitted for group %1. Check your inbox shortly for the confirmation email(s). If you do not see a confirmation email, please check your spam/junk mail folder.', array(1 => $groupTitle)));
+        } else if ( $success === false ) {
+            $groupTitle = implode( ',', $groupFailed );
+            CRM_Utils_System::setUFMessage(ts('We had a problem processing your subscription request for group %1. You have tried to subscribe to a private group and/or we encountered a database error. Please contact the site administrator.', array(1 => $groupTitle)));
         }
     }//end of function
 }
