@@ -17,7 +17,6 @@ function civicrm_member_drupaluser_sync_civicrm_post( $op, $objectName, $objectI
 
 //the main logic
 function civicrm_member_drupaluser_sync_create_user($ContactID) {
-		
 	$params=array( 1 => array( $ContactID, 'Integer'));
 	$query="SELECT uf_id FROM civicrm_uf_match WHERE contact_id=%1";
 	$result = CRM_Core_DAO::executeQuery( $query, $params );
@@ -25,14 +24,15 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
 	// if this user already has a login, nothing else to do
 	if($result->N){
 		return;
+  	
 	}
+	
 	//Get the contact record
 	require_once('api/v2/Contact.php');
 	$contact_params=array('contact_id'=>$ContactID);
 	$contact_result=civicrm_contact_get($contact_params);
-	
 	//do they have an email?  If not, then nothing else to do here as we can't create a username for them
-	$email=$contact_result[$ContactID]['email'];
+	$email=$contact_result[$ContactID]['email'];	
 	if(!strlen($email)){
 		return;
 	}
@@ -47,10 +47,10 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
 	}	
 	
 	//find the display name for this person as the basis for a decent login name
-	$dirty_name=$contact_result[$ContactID]['display_name'];
+	$dirty_name=trim(trim($contact_result[$ContactID]['first_name']).' '.trim($contact_result[$ContactID]['last_name']));
 	$clean_name=civicrm_member_drupaluser_sync_clean_name($dirty_name);
 	$username = civicrm_member_drupaluser_sync_suggest_name($clean_name);
-
+	
 	$pass = user_password();
 	//create the Drupal user
 	$user_data = array(
@@ -61,15 +61,17 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
 		'init' => $email, // same as mail
 		'roles' => array('14'=>'member') // this is the member role
 		);
-		
+    
 	//ready to go - comment out the below if u don't want this to do anything
 	
-	// $new_user=user_save(null, $user_data); // save user
-	// $new_user->password=$pass; // unscramble password
-	// _user_mail_notify('register_admin_created', $new_user); // send email
-	echo "Notified $email (civicrm id: $ContactID) of new account.\n";
-	return;
+  $new_user=user_save(null, $user_data); // save user
+  $new_user->password=$pass; // unscramble password
+  //print_r($new_user);exit;
 	
+  _user_mail_notify('register_admin_created', $new_user); // send email
+		print_r("helloemail"); exit;
+    
+		return "Notified $email (civicrm id: $ContactID) of new account.\n";
 }
 
 //suggests a name to use for a username based on the $clean_name
