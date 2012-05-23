@@ -28,6 +28,5 @@ WHERE uf_id IS NULL AND is_current_member AND email IS NOT NULL AND email !='' A
 GROUP BY cc.id";
 $result = CRM_Core_DAO::executeQuery( $query, $params );
 while($result->fetch()){
-	civicrm_member_drupaluser_sync_create_user($result->id);
-	echo '.';
+	echo civicrm_member_drupaluser_sync_create_user($result->id);
 }
