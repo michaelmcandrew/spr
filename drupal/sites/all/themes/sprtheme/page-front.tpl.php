@@ -82,6 +82,7 @@
 
 <head>
 	<title><?php print $head_title; ?></title>
+	<meta name="google-site-verification" content="nNFNeZnmYvJJhxFM7QR_QQVr4M7mByNXR05BtPPFUew" />
 	<?php print $head; ?>
 	<?php print $styles; ?>
 	<?php print $scripts; ?>
