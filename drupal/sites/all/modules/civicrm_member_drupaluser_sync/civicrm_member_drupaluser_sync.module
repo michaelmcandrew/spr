@@ -32,7 +32,7 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
 	$contact_params=array('contact_id'=>$ContactID);
 	$contact_result=civicrm_contact_get($contact_params);
 	//do they have an email?  If not, then nothing else to do here as we can't create a username for them
-	$email=$contact_result[$ContactID]['email'];	
+	$email=$contact_result[$ContactID]['email'];
 	if(!strlen($email)){
 		return;
 	}
@@ -64,9 +64,9 @@ function civicrm_member_drupaluser_sync_create_user($ContactID) {
     
 	//ready to go - comment out the below if u don't want this to do anything
 	
-  $new_user=user_save(null, $user_data); // save user
-  $new_user->password=$pass; // unscramble password	
-  _user_mail_notify('register_admin_created', $new_user); // send email    
+  //$new_user=user_save(null, $user_data); // save user
+  //$new_user->password=$pass; // unscramble password	
+  //_user_mail_notify('register_admin_created', $new_user); // send email    
 	return "Notified $email (civicrm id: $ContactID) of new account.\n";
 }
 
